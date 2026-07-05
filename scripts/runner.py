@@ -70,14 +70,24 @@ DUAL_STAGES = ("draft_codex", "draft_glm")
 QUEUES = llm.MODELS + ("mix", "dual") + llm.FAKE_MODELS + ("dual-echo",)
 
 
-def get_work(work_id: str) -> dict:
+def work_info(work_id: str) -> dict:
     works = json.loads(WORKS_PATH.read_text(encoding="utf-8"))["works"]
     match = next((w for w in works if w["id"] == work_id), None)
     if match is None:
         raise ValueError(f"未收錄的經典：{work_id}（先在 works.json 建檔）")
+    return match
+
+
+def get_work(work_id: str) -> dict:
+    match = work_info(work_id)
     if not match.get("pipeline_ready"):
         raise ValueError(f"{work_id} {match['title']} 已建檔，但 pipeline 尚未支援（排程任務後續處理）")
     return match
+
+
+def prompt_vars(job: dict) -> dict:
+    info = work_info(job["work"])
+    return {"work": info["id"], "work_title": info["title"], "file_id": info["file_id"]}
 
 
 def stage_model(job: dict, stage: str) -> str:
@@ -273,7 +283,10 @@ def llm_call(job: dict, prompt: str, stage: str) -> str:
 def llm_segment(job: dict, juan: int, lines: dict[str, str], tsv_path: Path) -> None:
     ordered = sorted(((i, t) for i, t in lines.items() if t), key=lambda kv: line_key(kv[0]))
     lines_text = "\n".join(f"{i}\t{t}" for i, t in ordered)
-    prompt = prompt_text("segment", juan=juan, lines=lines_text)
+    last = ordered[min(3, len(ordered) - 1)][0]
+    range_example = f"{ordered[0][0]}-p{last.split('_p')[1]}"  # built from this juan's real line ids
+    prompt = prompt_text("segment", juan=juan, lines=lines_text,
+                         range_example=range_example, **prompt_vars(job))
     errors = ""
     for attempt in range(2):
         raw = llm_call(job, prompt + errors, "segment")
@@ -326,7 +339,7 @@ def translate_sections(job: dict, juan: int, md_path: Path, prog: dict,
         raw = llm_call(job, prompt_text(
             "translate", juan=juan, title=entry.title, note=entry.note or "（無）",
             source=entry.source, glossary=glossary_subset_json(glossary, entry.source),
-            extra=extra), stage)
+            extra=extra, **prompt_vars(job)), stage)
         translation, note = parse_llm_blocks(raw)
         splice(md_path, idx, translation, note if note else None)
         prog["section"] = idx + 1
@@ -352,7 +365,7 @@ def merge_sections(job: dict, juan: int, paths: dict[str, Path], prog: dict) -> 
             "merge", juan=juan, title=entry.title, note=entry.note or "（無）",
             source=entry.source, glossary=glossary_subset_json(glossary, entry.source),
             draft_a=draft_a[idx].translation or "（缺稿）",
-            draft_b=draft_b[idx].translation or "（缺稿）"), "merge")
+            draft_b=draft_b[idx].translation or "（缺稿）", **prompt_vars(job)), "merge")
         translation, note = parse_llm_blocks(raw)
         splice(paths["md"], idx, translation, note)
         prog["section"] = idx + 1
@@ -369,7 +382,8 @@ def review_pass(job: dict, juan: int, md_path: Path, pass_name: str, prog: dict)
         if idx < start_at:
             continue
         vars = dict(juan=juan, title=entry.title, source=entry.source,
-                    translation=entry.translation, note=entry.note or "（無）")
+                    translation=entry.translation, note=entry.note or "（無）",
+                    **prompt_vars(job))
         if pass_name != "review_parallel":
             vars["glossary"] = glossary_subset_json(glossary, entry.source)
         raw = llm_call(job, prompt_text(pass_name, **vars), pass_name)
@@ -444,7 +458,8 @@ def run_juan(job: dict, juan: int) -> None:
     lines = extract_lines(data_path)
     start, end = juan_bounds(lines)
 
-    if not paths["tsv"].exists():
+    if not paths["tsv"].exists() and not paths["md"].exists():
+        # segmentation only feeds the skeleton; an existing md makes it moot
         prog["step"] = "segment"
         save_job(job)
         llm_segment(job, juan, lines, paths["tsv"])
@@ -578,7 +593,7 @@ def worker(model: str) -> None:
                 wait = (datetime.fromisoformat(resume_at) - datetime.now().astimezone()).total_seconds()
                 if wait > 0:
                     print(f"{now_iso()} [{job['id']}] resuming at {resume_at}", flush=True)
-                    time.sleep(min(wait + 60, 3600))
+                    time.sleep(min(wait + 300, 3600))  # 5 min past the reset, chunked by the loop
             run_job(job)
         else:
             time.sleep(POLL_SECONDS)

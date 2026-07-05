@@ -3,3 +3,4 @@ __pycache__/
 jobs/
 locks/
 config/
+runner.log

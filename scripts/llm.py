@@ -26,6 +26,9 @@ FAKE_MODELS = ("echo", "echo-limit-once")
 ZAI_BASE_URL = "https://api.z.ai/api/anthropic"
 ZAI_KEY_FILE = Path.home() / ".zai_key"
 ZAI_MODEL = os.environ.get("ZAI_MODEL", "glm-5.2")
+# z.ai error payloads carry naive datetimes in Beijing time:
+# "[1308][Usage limit reached for 5 hour. Your limit will reset at 2026-07-06 06:10:27][...]"
+ZAI_TZ = dt.timezone(dt.timedelta(hours=8))
 
 # Empty scratch cwd outside the repo so agentic CLIs don't read project files.
 SCRATCH = Path(tempfile.gettempdir()) / "yogacara-llm-scratch"
@@ -60,6 +63,8 @@ RESET_IN_RE = re.compile(
 )
 # "resets_at":"2026-07-05T21:00:00Z" (json error payloads)
 RESET_ISO_RE = re.compile(r"(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:Z|[+-]\d{2}:?\d{2})?)")
+# "will reset at 2026-07-06 06:10:27" (z.ai bare datetime, naive — tz from caller)
+RESET_DATETIME_RE = re.compile(r"(?i)reset(?:s)?\s+at\s+(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2}:\d{2})")
 
 
 @dataclass
@@ -96,7 +101,8 @@ def _env(model: str) -> dict[str, str]:
     return env
 
 
-def parse_resume_at(text: str, now: dt.datetime | None = None) -> dt.datetime | None:
+def parse_resume_at(text: str, now: dt.datetime | None = None,
+                    naive_tz: dt.timezone | None = None) -> dt.datetime | None:
     now = now or dt.datetime.now().astimezone()
     match = RESET_TS_RE.search(text)
     if match:
@@ -108,6 +114,13 @@ def parse_resume_at(text: str, now: dt.datetime | None = None) -> dt.datetime | 
             if parsed.tzinfo is None:
                 parsed = parsed.astimezone()
             return parsed.astimezone()
+        except ValueError:
+            pass
+    match = RESET_DATETIME_RE.search(text)  # before clock24: "…-06 06:10:27" would false-hit it
+    if match:
+        try:
+            parsed = dt.datetime.fromisoformat(f"{match.group(1)}T{match.group(2)}")
+            return parsed.replace(tzinfo=naive_tz or now.tzinfo).astimezone()
         except ValueError:
             pass
     match = RESET_CLOCK_RE.search(text)
@@ -131,10 +144,12 @@ def parse_resume_at(text: str, now: dt.datetime | None = None) -> dt.datetime | 
     return None
 
 
-def classify_output(exit_code: int, stdout: str, stderr: str) -> LLMResult:
+def classify_output(exit_code: int, stdout: str, stderr: str,
+                    naive_tz: dt.timezone | None = None) -> LLMResult:
     combined = f"{stdout}\n{stderr}"
     if LIMIT_PATTERNS.search(combined):
-        return LLMResult(ok=False, limit=True, resume_at=parse_resume_at(combined),
+        return LLMResult(ok=False, limit=True,
+                         resume_at=parse_resume_at(combined, naive_tz=naive_tz),
                          error=combined.strip()[-500:])
     if exit_code != 0:
         return LLMResult(ok=False, error=combined.strip()[-500:] or f"exit {exit_code}")
@@ -185,13 +200,13 @@ def run_llm(model: str, prompt: str, timeout: int = TIMEOUT) -> LLMResult:
                               timeout=timeout, cwd=SCRATCH, env=_env(model))
     except subprocess.TimeoutExpired:
         return LLMResult(ok=False, error=f"timeout after {timeout}s")
+    naive_tz = ZAI_TZ if model == "glm" else None
     stdout = proc.stdout
     if model == "codex":
         stdout = out_file.read_text(encoding="utf-8") if out_file.exists() else ""
         out_file.unlink(missing_ok=True)
-        result = classify_output(proc.returncode, stdout, proc.stdout + proc.stderr)
-        return result
-    return classify_output(proc.returncode, stdout, proc.stderr)
+        return classify_output(proc.returncode, stdout, proc.stdout + proc.stderr, naive_tz)
+    return classify_output(proc.returncode, stdout, proc.stderr, naive_tz)
 
 
 def call_with_limit_retry(model: str, prompt: str, on_wait=None, log=print) -> str:
@@ -219,8 +234,9 @@ def call_with_limit_retry(model: str, prompt: str, on_wait=None, log=print) -> s
             limit_waits += 1
             if on_wait:
                 on_wait(resume_at)
-            log(f"[{model}] usage limit, sleeping until {resume_at:%H:%M}")
-            time.sleep(max(60.0, (resume_at - now).total_seconds() + 60))
+            # retry 5 minutes AFTER the reset time — never race the window edge
+            log(f"[{model}] usage limit, sleeping until {resume_at:%m-%d %H:%M} +5min")
+            time.sleep(max(60.0, (resume_at - now).total_seconds() + 300))
             continue
         transient += 1
         if transient > TRANSIENT_RETRIES:
@@ -266,6 +282,15 @@ if __name__ == "__main__":
     # unparsable phrasing still flags limit, falls back to ladder
     c = classify_output(1, "", "You have been rate-limited, please slow down")
     assert c.limit and c.resume_at is None, c
+    # z.ai bare datetime is Beijing time: 06:10:27 +08:00 == 22:10:27 UTC the day before
+    zai_msg = "[1308][Usage limit reached for 5 hour. Your limit will reset at 2026-07-06 06:10:27][20260706x]"
+    c = classify_output(1, "", zai_msg, naive_tz=ZAI_TZ)
+    assert c.limit and c.resume_at is not None, c
+    assert c.resume_at.astimezone(dt.timezone.utc) == dt.datetime(
+        2026, 7, 5, 22, 10, 27, tzinfo=dt.timezone.utc), c.resume_at
+    # same message without tz hint parses as local, never as 06:10-as-clock24
+    local = parse_resume_at(zai_msg, now)
+    assert local is not None and local.second == 27, local
     # past clock time rolls to tomorrow
     late = dt.datetime(2026, 7, 5, 23, 0, tzinfo=dt.timezone.utc).astimezone()
     rolled = parse_resume_at("resets 3pm", late)

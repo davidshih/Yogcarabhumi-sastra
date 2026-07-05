@@ -1,13 +1,13 @@
 # 瑜伽師地論 HTML
 
-這個 repo 會從 CBETA API 下載《瑜伽師地論》相關卷次，並產出可閱讀的 HTML 檔。`html/sections/` 目前仍依〈聲聞地〉目次切分；`html/translations/` 則可保存任一卷的白話對照翻譯。
+這個 repo 會從 CBETA API 下載《瑜伽師地論》相關卷次，並產出可閱讀的 HTML 檔。`docs/T1579/sections/` 目前仍依〈聲聞地〉目次切分；`docs/T1579/translations/` 則可保存任一卷的白話對照翻譯。
 
 輸出位置：
 
-- `html/index.html`：章節索引
-- `html/sections/*.html`：各章節 HTML
-- `html/translations/T1579-XXX-baihua.html`：各卷白話左右對照翻譯
-- `html/docs/translation-workflow.html`：後續卷次白話翻譯工作流程與 agent 分工
+- `docs/T1579/index.html`：章節索引
+- `docs/T1579/sections/*.html`：各章節 HTML
+- `docs/T1579/translations/T1579-XXX-baihua.html`：各卷白話左右對照翻譯
+- `docs/T1579/docs/translation-workflow.html`：後續卷次白話翻譯工作流程與 agent 分工
 - `data/*.json`：下載時保留的 CBETA API 原始回應
 - `translations/*.md`：白話翻譯來源稿
 - `translations/segments/*.tsv`：每卷翻譯段落切分表，可重建來源稿骨架
@@ -19,9 +19,9 @@
 
 部署方式：
 
-- `.github/workflows/deploy-pages.yml` 會在每次 push 到 `main` 時，把 `html/` 目錄部署到 GitHub Pages。
+- `.github/workflows/deploy-pages.yml` 會在每次 push 到 `main` 時，把 `docs/` 目錄部署到 GitHub Pages。
 - 手動重跑部署可到 GitHub Actions 執行 `Deploy Pages` workflow。
-- 若改用 S3，直接同步 `html/` 目錄即可；但若要 HTTPS、自訂網域與快取，通常還需要 CloudFront 與 DNS 設定。此 repo 目前以 GitHub Pages 為預設發布方式。
+- 若改用 S3，直接同步 `docs/` 目錄即可；但若要 HTTPS、自訂網域與快取，通常還需要 CloudFront 與 DNS 設定。此 repo 目前以 GitHub Pages 為預設發布方式。
 
 使用方式：
 
@@ -41,4 +41,4 @@ python3 scripts/check_html_links.py
 - CBETA 目次 API：`https://cbdata.dila.edu.tw/stable/works/toc?work=T1579`
 - CBETA 卷文 API：`https://cbdata.dila.edu.tw/stable/juans?work=T1579&juan=...&toc=1&work_info=1`
 
-後續翻譯任務請先閱讀 `html/docs/translation-workflow.html`。該頁記錄段落切分、agent pool 分工、術語庫欄位、必要檢查與 commit/push 前流程。
+後續翻譯任務請先閱讀 `docs/T1579/docs/translation-workflow.html`。該頁記錄段落切分、agent pool 分工、術語庫欄位、必要檢查與 commit/push 前流程。

@@ -59,7 +59,8 @@ FORM_PAGE = """<!doctype html>
       </label>
       <label>模型
         <span class="models">
-          <label><input type="radio" name="model" value="mix" checked> mix（省額度推薦）</label>
+          <label><input type="radio" name="model" value="dual" checked> dual（codex+glm 雙稿、claude 終審，推薦）</label>
+          <label><input type="radio" name="model" value="mix"> mix</label>
           <label><input type="radio" name="model" value="claude"> claude</label>
           <label><input type="radio" name="model" value="codex"> codex</label>
           <label><input type="radio" name="model" value="glm"> glm</label>

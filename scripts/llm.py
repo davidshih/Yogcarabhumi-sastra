@@ -32,17 +32,34 @@ SCRATCH = Path(tempfile.gettempdir()) / "yogacara-llm-scratch"
 
 TIMEOUT = 1800
 TRANSIENT_RETRIES = 3
-# ponytail: fixed backoff ladder when no reset time is parsable; minutes
-BACKOFF_MINUTES = {"glm": [5, 5, 15, 30], "default": [15, 30, 60, 60]}
+# All three backends run 5-hour windows. When no reset time is parsable, this
+# ladder (with MAX_LIMIT_WAITS=10) spans a bit over 5h, so an unknown-format
+# limit message can never strand a job short of the next window.
+BACKOFF_MINUTES = [15, 30, 45, 60]
 MAX_LIMIT_WAITS = 10
 
 LIMIT_PATTERNS = re.compile(
     r"(?i)usage limit|limit reached|5-hour limit|hit your usage limit"
-    r"|rate.?limit|too many requests|quota|exhausted|\b429\b"
+    r"|rate.?limit|too many requests|quota|exhausted|\b429\b|overloaded"
 )
-RESET_CLOCK_RE = re.compile(r"(?i)resets?(?:\s+at)?\s+(\d{1,2})(?::(\d{2}))?\s*(am|pm)")
-RESET_TS_RE = re.compile(r"limit reached\|(\d{10})")
-RESET_IN_RE = re.compile(r"(?i)(?:try again|resets?)\s+in\s+(?:(\d+)\s*h(?:ours?)?)?\s*(?:(\d+)\s*m(?:in(?:utes?)?)?)?")
+# "…usage limit reached|1751721600" (claude CLI unix-ts form)
+RESET_TS_RE = re.compile(r"\|(\d{10})\b")
+# "resets 3pm" / "will reset at 8pm" / "Try again at 3:45 PM." / "available at 9 am"
+RESET_CLOCK_RE = re.compile(
+    r"(?i)(?:reset(?:s)?|try again|available|retry)[^\n.]{0,24}?"
+    r"\b(\d{1,2})(?::(\d{2}))?\s*(a\.?m\.?|p\.?m\.?)"
+)
+# "resets 14:30" — 24h clock needs the colon so bare numbers don't match
+RESET_CLOCK24_RE = re.compile(
+    r"(?i)(?:reset(?:s)?|try again|available|retry)[^\n.]{0,24}?\b([01]?\d|2[0-3]):([0-5]\d)\b"
+)
+# "try again in 2 hours 15 minutes" / "resets in 45 min"
+RESET_IN_RE = re.compile(
+    r"(?i)(?:try again|resets?|retry)\s+in\s+(?:(\d+)\s*h(?:ours?|rs?)?)?\s*"
+    r"(?:(\d+)\s*m(?:in(?:utes?)?)?)?"
+)
+# "resets_at":"2026-07-05T21:00:00Z" (json error payloads)
+RESET_ISO_RE = re.compile(r"(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:Z|[+-]\d{2}:?\d{2})?)")
 
 
 @dataclass
@@ -84,10 +101,27 @@ def parse_resume_at(text: str, now: dt.datetime | None = None) -> dt.datetime | 
     match = RESET_TS_RE.search(text)
     if match:
         return dt.datetime.fromtimestamp(int(match.group(1))).astimezone()
+    match = RESET_ISO_RE.search(text)
+    if match:
+        try:
+            parsed = dt.datetime.fromisoformat(match.group(1).replace("Z", "+00:00"))
+            if parsed.tzinfo is None:
+                parsed = parsed.astimezone()
+            return parsed.astimezone()
+        except ValueError:
+            pass
     match = RESET_CLOCK_RE.search(text)
     if match:
-        hour = int(match.group(1)) % 12 + (12 if match.group(3).lower() == "pm" else 0)
+        meridiem = match.group(3).lower().replace(".", "")
+        hour = int(match.group(1)) % 12 + (12 if meridiem.startswith("p") else 0)
         candidate = now.replace(hour=hour, minute=int(match.group(2) or 0), second=0, microsecond=0)
+        if candidate <= now:
+            candidate += dt.timedelta(days=1)
+        return candidate
+    match = RESET_CLOCK24_RE.search(text)
+    if match:
+        candidate = now.replace(hour=int(match.group(1)), minute=int(match.group(2)),
+                                second=0, microsecond=0)
         if candidate <= now:
             candidate += dt.timedelta(days=1)
         return candidate
@@ -124,6 +158,9 @@ def _run_fake(model: str, prompt: str) -> LLMResult:
         text = f"<TSV>\n全卷\t{ids[0]}-p{ids[-1].split('_p')[1]}\t\n</TSV>"
         return LLMResult(ok=True, text=text)
     source = re.search(r"【原文】\n(.*?)\n【原文結束】", prompt, re.DOTALL)
+    if "【譯稿A】" in prompt:  # merge prompts must produce a translation, not "OK"
+        body = source.group(1).strip() if source else "（測試合稿）"
+        return LLMResult(ok=True, text=f"<<<TRANSLATION\n{body}\n>>>\n<<<NOTE\n\n>>>")
     if "審校" in prompt:
         return LLMResult(ok=True, text="OK")
     # echo "translation" = the source itself: passes term checks since patterns include the source term
@@ -172,13 +209,12 @@ def call_with_limit_retry(model: str, prompt: str, on_wait=None, log=print) -> s
         if result.limit:
             if limit_waits >= MAX_LIMIT_WAITS:
                 raise LLMError(f"{model}: gave up after {limit_waits} limit waits")
-            ladder = BACKOFF_MINUTES.get(model, BACKOFF_MINUTES["default"])
             fallback = dt.datetime.now().astimezone() + dt.timedelta(
-                minutes=ladder[min(limit_waits, len(ladder) - 1)])
+                minutes=BACKOFF_MINUTES[min(limit_waits, len(BACKOFF_MINUTES) - 1)])
             resume_at = result.resume_at or fallback
-            # never trust a resume time in the past or absurdly far out
+            # never trust a resume time in the past or beyond one 5h window + slack
             now = dt.datetime.now().astimezone()
-            if resume_at <= now or resume_at > now + dt.timedelta(hours=12):
+            if resume_at <= now or resume_at > now + dt.timedelta(hours=6):
                 resume_at = fallback
             limit_waits += 1
             if on_wait:
@@ -205,8 +241,33 @@ if __name__ == "__main__":
     assert r.ok and r.text == "OK", r
     r = run_llm("echo", "<TSV>\nT30n1579_p0328c02\tabc\nT30n1579_p0335a10\tdef\n")
     assert r.ok and "T30n1579_p0328c02-p0335a10" in r.text, r
-    assert parse_resume_at("resets 3pm") is not None
-    assert parse_resume_at("try again in 2 hours 5 min") is not None
-    c = classify_output(0, "You've hit your usage limit. try again in 1 hours", "")
-    assert c.limit and c.resume_at is not None, c
+    # limit-message formats seen from the three CLIs — every one must yield a reset time
+    now = dt.datetime(2026, 7, 5, 12, 0, tzinfo=dt.timezone.utc).astimezone()
+    cases = {
+        # claude CLI, unix-ts form
+        "Claude AI usage limit reached|1799999999": None,
+        # claude CLI, human form
+        "5-hour limit reached ∙ resets 3pm": (15, 0),
+        "You've reached your usage limit. Your limit will reset at 8pm (America/New_York).": (20, 0),
+        # codex CLI
+        "You've hit your usage limit. Try again at 3:45 PM.": (15, 45),
+        "Rate limit exceeded. Try again in 2 hours 15 minutes.": None,
+        # 24h clock + json payload variants (glm / API errors)
+        "usage limit reached, resets 14:30": (14, 30),
+        '429 {"error":{"message":"quota exhausted","resets_at":"2026-07-05T21:00:00Z"}}': None,
+    }
+    for msg, hm in cases.items():
+        c = classify_output(0, msg, "")
+        assert c.limit, f"not flagged as limit: {msg}"
+        got = parse_resume_at(msg, now)
+        assert got is not None, f"no reset parsed: {msg}"
+        if hm:
+            assert (got.hour, got.minute) == hm, f"{msg} -> {got}"
+    # unparsable phrasing still flags limit, falls back to ladder
+    c = classify_output(1, "", "You have been rate-limited, please slow down")
+    assert c.limit and c.resume_at is None, c
+    # past clock time rolls to tomorrow
+    late = dt.datetime(2026, 7, 5, 23, 0, tzinfo=dt.timezone.utc).astimezone()
+    rolled = parse_resume_at("resets 3pm", late)
+    assert rolled > late, rolled
     print("llm.py self-check OK")

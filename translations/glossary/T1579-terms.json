@@ -1837,6 +1837,193 @@
       ],
       "status": "review",
       "rule": "玄奘音譯「頗胝」即寶石/水晶類；火頗胝、水頚胝分指日輪、月輪材質，全篇一致保留音譯並標寶石。"
+    },
+    {
+      "id": "rūpa-kalāpa",
+      "xuanzang": "色聚",
+      "display": "色聚",
+      "plain": "物質積聚",
+      "english": [
+        "rupa-kalapa",
+        "mass of matter",
+        "cluster of material qualities"
+      ],
+      "sanskrit": [
+        "rūpa-kalāpa"
+      ],
+      "pali": [
+        "rūpa-kalāpa"
+      ],
+      "source_terms": [
+        "色聚"
+      ],
+      "translation_patterns": [
+        "色聚（物質積聚）"
+      ],
+      "status": "review",
+      "rule": "玄奘譯『色聚』指極微聚集之物質群，白話雙軌作『色聚（物質積聚）』"
+    },
+    {
+      "id": "citta-caitta-pinda",
+      "xuanzang": "心心所品",
+      "display": "心心所品",
+      "plain": "心與心所這一類",
+      "english": [
+        "class of mind and mental factors"
+      ],
+      "sanskrit": [
+        "citta-caitta-piṇḍa"
+      ],
+      "pali": [
+        "citta-cetasika-piṇḍa"
+      ],
+      "source_terms": [
+        "心心所品"
+      ],
+      "translation_patterns": [
+        "心心所品（心與心所這一類）"
+      ],
+      "status": "review",
+      "rule": "『品』表品類，雙軌作『心心所品（心與心所這一類）』，避免僅譯為『心心所』而失落『品』義"
+    },
+    {
+      "id": "asaṃskṛta",
+      "xuanzang": "無為",
+      "display": "無為",
+      "plain": "無為法",
+      "english": [
+        "unconditioned dharma",
+        "asamskrta"
+      ],
+      "sanskrit": [
+        "asaṃskṛta"
+      ],
+      "pali": [
+        "asaṅkhata"
+      ],
+      "source_terms": [
+        "無為",
+        "無為法"
+      ],
+      "translation_patterns": [
+        "無為（無為法）"
+      ],
+      "status": "review",
+      "rule": "玄奘『無為』即無為法，雙軌作『無為（無為法）』"
+    },
+    {
+      "id": "prajñapti-sat",
+      "xuanzang": "假有法",
+      "display": "假有法",
+      "plain": "假名安立之法",
+      "english": [
+        "nominally existent dharma",
+        "prajnapti-sat"
+      ],
+      "sanskrit": [
+        "prajñapti-sat"
+      ],
+      "pali": [
+        "paññatti"
+      ],
+      "source_terms": [
+        "假有法",
+        "假有"
+      ],
+      "translation_patterns": [
+        "假有法（假名安立之法）"
+      ],
+      "status": "review",
+      "rule": "『假有』謂無實體、唯假名安立，雙軌作『假有法（假名安立之法）』"
+    },
+    {
+      "id": "paramāṇu",
+      "xuanzang": "極微",
+      "display": "極微",
+      "plain": "物質分析到最小的假立單位",
+      "english": [
+        "paramanu",
+        "atom"
+      ],
+      "sanskrit": [
+        "paramāṇu"
+      ],
+      "pali": [
+        "paramāṇu"
+      ],
+      "source_terms": [
+        "極微"
+      ],
+      "translation_patterns": [
+        "極微（物質分析到最小的假立單位）"
+      ],
+      "status": "review",
+      "rule": "玄奘譯『極微』指分析色法至邊際所假立之最小單位，非實體，白話雙軌作『極微（物質分析到最小的假立單位）』。"
+    },
+    {
+      "id": "dharatu",
+      "xuanzang": "界",
+      "display": "界（大種界）",
+      "plain": "大種界（性質類別）",
+      "english": [
+        "dhatu",
+        "element",
+        "realm"
+      ],
+      "sanskrit": [
+        "dhātu"
+      ],
+      "pali": [
+        "dhātu"
+      ],
+      "source_terms": [
+        "界",
+        "大種界",
+        "地界",
+        "水界",
+        "火界",
+        "風界"
+      ],
+      "translation_patterns": [
+        "界",
+        "大種界",
+        "地界",
+        "水界",
+        "火界",
+        "風界"
+      ],
+      "status": "review",
+      "rule": "此處「界」指色法之性質類別（大種界），非十八界之認識範疇、亦非三界之生存境界；譯文保留「界」並視情況加註「大種」以消歧義。"
+    },
+    {
+      "id": "upadi",
+      "xuanzang": "執受",
+      "display": "執受",
+      "plain": "心心所執持攝受",
+      "english": [
+        "upadana",
+        "appropriation",
+        "clinging"
+      ],
+      "sanskrit": [
+        "upādi",
+        "upādāna"
+      ],
+      "pali": [
+        "upādāna"
+      ],
+      "source_terms": [
+        "執受",
+        "無執受",
+        "有執受"
+      ],
+      "translation_patterns": [
+        "執受",
+        "有執受",
+        "無執受"
+      ],
+      "status": "review",
+      "rule": "「執受」特指心心所執持之內身色及種子，與外色之「無執受」相對；不可譯為一般執著。"
     }
   ]
 }

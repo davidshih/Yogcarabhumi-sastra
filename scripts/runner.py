@@ -56,7 +56,18 @@ MIX_ROUTING = {
     "review_doctrine": "claude",
     "review_parallel": "codex",
 }
-QUEUES = llm.MODELS + ("mix",) + llm.FAKE_MODELS
+# --model dual: codex and glm each produce a full draft file, claude reviews
+# both against the source and settles the final text (replaces the 3-line
+# review). dual-echo is the free offline variant for pipeline testing.
+DUAL_ROUTING = {
+    "segment": "claude",
+    "draft_codex": "codex",
+    "draft_glm": "glm",
+    "merge": "claude",
+    "repair": "claude",
+}
+DUAL_STAGES = ("draft_codex", "draft_glm")
+QUEUES = llm.MODELS + ("mix", "dual") + llm.FAKE_MODELS + ("dual-echo",)
 
 
 def get_work(work_id: str) -> dict:
@@ -70,7 +81,18 @@ def get_work(work_id: str) -> dict:
 
 
 def stage_model(job: dict, stage: str) -> str:
-    return MIX_ROUTING.get(stage, "claude") if job["model"] == "mix" else job["model"]
+    model = job["model"]
+    if model == "mix":
+        return MIX_ROUTING.get(stage, "claude")
+    if model == "dual":
+        return DUAL_ROUTING.get(stage, "claude")
+    if model == "dual-echo":
+        return "echo"
+    return model
+
+
+def is_dual(job: dict) -> bool:
+    return job["model"] in ("dual", "dual-echo")
 
 TRANSLATION_BLOCK_RE = re.compile(r"(Translation:\n<<<\n)(.*?)(\n?>>>)", re.DOTALL)
 NOTE_BLOCK_RE = re.compile(r"(Note:\n<<<\n)(.*?)(\n?>>>)", re.DOTALL)
@@ -140,6 +162,8 @@ def juan_paths(work: str, juan: int) -> dict[str, Path]:
         "data": ROOT / "data" / f"{work}-{juan:03d}.json",
         "tsv": ROOT / "translations" / "segments" / f"{work}-{juan:03d}.tsv",
         "md": ROOT / "translations" / f"{work}-{juan:03d}-baihua.md",
+        "draft_codex": ROOT / "translations" / "drafts" / f"{work}-{juan:03d}-draft-codex.md",
+        "draft_glm": ROOT / "translations" / "drafts" / f"{work}-{juan:03d}-draft-glm.md",
     }
 
 
@@ -289,7 +313,8 @@ def llm_segment(job: dict, juan: int, lines: dict[str, str], tsv_path: Path) -> 
 
 
 def translate_sections(job: dict, juan: int, md_path: Path, prog: dict,
-                       only_titles: set[str] | None = None, extra: str = "") -> None:
+                       only_titles: set[str] | None = None, extra: str = "",
+                       stage: str = "translate") -> None:
     glossary = load_glossary()
     entries = bth.parse_entries(md_path.read_text(encoding="utf-8"))
     prog["sections_total"] = len(entries)
@@ -301,13 +326,39 @@ def translate_sections(job: dict, juan: int, md_path: Path, prog: dict,
         raw = llm_call(job, prompt_text(
             "translate", juan=juan, title=entry.title, note=entry.note or "（無）",
             source=entry.source, glossary=glossary_subset_json(glossary, entry.source),
-            extra=extra), "translate")
+            extra=extra), stage)
         translation, note = parse_llm_blocks(raw)
         splice(md_path, idx, translation, note if note else None)
         prog["section"] = idx + 1
         save_job(job)
-        log(job, f"juan {juan}: translated {idx + 1}/{len(entries)} {entry.title}")
+        log(job, f"juan {juan}: {stage} {idx + 1}/{len(entries)} {entry.title}")
         entries = bth.parse_entries(md_path.read_text(encoding="utf-8"))  # re-read after splice
+
+
+def merge_sections(job: dict, juan: int, paths: dict[str, Path], prog: dict) -> None:
+    """claude reviews both drafts against the source and settles the final text."""
+    glossary = load_glossary()
+    entries = bth.parse_entries(paths["md"].read_text(encoding="utf-8"))
+    draft_a = bth.parse_entries(paths["draft_codex"].read_text(encoding="utf-8"))
+    draft_b = bth.parse_entries(paths["draft_glm"].read_text(encoding="utf-8"))
+    if not (len(entries) == len(draft_a) == len(draft_b)):
+        raise RuntimeError(f"juan {juan}: draft/skeleton section counts differ "
+                           f"({len(entries)}/{len(draft_a)}/{len(draft_b)})")
+    prog["sections_total"] = len(entries)
+    for idx, entry in enumerate(entries):
+        if entry.translation.strip():
+            continue  # resumable; human edits win
+        raw = llm_call(job, prompt_text(
+            "merge", juan=juan, title=entry.title, note=entry.note or "（無）",
+            source=entry.source, glossary=glossary_subset_json(glossary, entry.source),
+            draft_a=draft_a[idx].translation or "（缺稿）",
+            draft_b=draft_b[idx].translation or "（缺稿）"), "merge")
+        translation, note = parse_llm_blocks(raw)
+        splice(paths["md"], idx, translation, note)
+        prog["section"] = idx + 1
+        save_job(job)
+        log(job, f"juan {juan}: merge {idx + 1}/{len(entries)} {entry.title}")
+        entries = bth.parse_entries(paths["md"].read_text(encoding="utf-8"))
 
 
 def review_pass(job: dict, juan: int, md_path: Path, pass_name: str, prog: dict) -> None:
@@ -405,21 +456,40 @@ def run_juan(job: dict, juan: int) -> None:
         paths["md"].parent.mkdir(exist_ok=True)
         atomic_write(paths["md"], render_skeleton(juan, start, end, segments, lines))
 
-    prog["step"] = "translate"
-    save_job(job)
-    translate_sections(job, juan, paths["md"], prog)
-
-    for pass_name in REVIEW_PASSES:
-        if pass_name in prog.get("review_done", []):
-            continue
-        if pass_name != resume_step:  # keep section counter when resuming mid-pass
+    if is_dual(job):
+        # two independent drafts (codex, glm), then claude settles the final text
+        import shutil
+        for stage in DUAL_STAGES:
+            draft = paths[stage]
+            if not draft.exists():
+                draft.parent.mkdir(exist_ok=True)
+                shutil.copyfile(paths["md"], draft)
+            if stage != resume_step:
+                prog["section"] = 0
+            prog["step"] = stage
+            save_job(job)
+            translate_sections(job, juan, draft, prog, stage=stage)
+        if "merge" != resume_step:
             prog["section"] = 0
-        prog["step"] = pass_name
+        prog["step"] = "merge"
         save_job(job)
-        review_pass(job, juan, paths["md"], pass_name, prog)
-        prog.setdefault("review_done", []).append(pass_name)
-        prog["section"] = 0
+        merge_sections(job, juan, paths, prog)
+    else:
+        prog["step"] = "translate"
         save_job(job)
+        translate_sections(job, juan, paths["md"], prog)
+
+        for pass_name in REVIEW_PASSES:
+            if pass_name in prog.get("review_done", []):
+                continue
+            if pass_name != resume_step:  # keep section counter when resuming mid-pass
+                prog["section"] = 0
+            prog["step"] = pass_name
+            save_job(job)
+            review_pass(job, juan, paths["md"], pass_name, prog)
+            prog.setdefault("review_done", []).append(pass_name)
+            prog["section"] = 0
+            save_job(job)
 
     prog["step"] = "checks"
     save_job(job)
@@ -431,7 +501,8 @@ def run_juan(job: dict, juan: int) -> None:
         prog["repaired"] = True
         save_job(job)
         translate_sections(job, juan, paths["md"], prog, only_titles=bad_titles,
-                           extra="注意：前次譯文未通過術語檢查：" + "；".join(issues[:10]))
+                           extra="注意：前次譯文未通過術語檢查：" + "；".join(issues[:10]),
+                           stage="repair")
         issues = run_checks(job, juan, paths["md"], data_path, start, end)
     if issues:
         raise RuntimeError(f"juan {juan} checks failed: " + "; ".join(issues[:10]))

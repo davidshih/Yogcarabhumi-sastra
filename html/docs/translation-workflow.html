@@ -27,6 +27,47 @@
     </section>
 
     <section>
+      <h2>視覺流程</h2>
+      <div class="flowchart" aria-label="白話翻譯主流程">
+        <div class="flow-step">
+          <strong>1. 鎖範圍</strong>
+          <span>Coordinator 確定卷號、CBETA 起訖、卷界與產出檔名。</span>
+        </div>
+        <div class="flow-step">
+          <strong>2. 切段</strong>
+          <span>Segmenter 只負責 Range、Source、段題與邊界 note。</span>
+        </div>
+        <div class="flow-step">
+          <strong>3. 分段初譯</strong>
+          <span>Translators 只填指定段落的白話與必要校註。</span>
+        </div>
+        <div class="flow-step">
+          <strong>4. 三路審核</strong>
+          <span>術語、義理、外部對照各自輸出建議，不直接覆蓋主檔。</span>
+        </div>
+        <div class="flow-step">
+          <strong>5. 合併發佈</strong>
+          <span>Coordinator 定稿，HTML QA 建置、檢查、commit、push。</span>
+        </div>
+      </div>
+
+      <div class="flow-lanes" aria-label="審核分流">
+        <article class="flow-lane">
+          <h3>術語線</h3>
+          <p>比對 glossary，處理同詞多譯、禁譯、首次雙軌顯示與跨卷延續。</p>
+        </article>
+        <article class="flow-lane">
+          <h3>義理線</h3>
+          <p>檢查修道次第與教義關係，例如伏斷、永害種子、近分、根本定。</p>
+        </article>
+        <article class="flow-lane">
+          <h3>外部對照線</h3>
+          <p>查梵文、巴利、英文或平行經論，只提交證據包與疑義判斷。</p>
+        </article>
+      </div>
+    </section>
+
+    <section>
       <h2>固定檔案</h2>
       <table class="doc-table">
         <thead>

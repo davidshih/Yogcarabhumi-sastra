@@ -66,13 +66,13 @@ def render(entries: list[Entry]) -> str:
         pairs.append(
             f"""    <section class="parallel-pair" id="{html.escape(source_start)}" data-source-start="{html.escape(source_start)}" data-source-end="{html.escape(source_end)}">
       <h2>{html.escape(entry.title)}</h2>
-      <div class="source-text">
-        <span class="line-range">{html.escape(entry.range_label)}</span>
-{render_text(entry.source)}
-      </div>
       <div class="translation-text">
         <span class="line-range">白話譯文</span>
 {render_text(entry.translation)}
+      </div>
+      <div class="source-text" aria-label="文言原文">
+        <span class="line-range">文言原文 / {html.escape(entry.range_label)}</span>
+{render_text(entry.source)}
       </div>{note_html}
     </section>"""
         )
@@ -84,7 +84,7 @@ def render(entries: list[Entry]) -> str:
   <title>瑜伽師地論卷第三十三白話對照</title>
   <link rel="stylesheet" href="../style.css">
 </head>
-<body>
+<body class="source-collapsed">
   <header class="site-header">
     <a href="../index.html">Index</a>
     <div class="kicker">CBETA T1579 / Juan 33</div>
@@ -96,11 +96,20 @@ def render(entries: list[Entry]) -> str:
       <a href="../../translations/glossary/T1579-terms.json">術語庫</a>
       <a href="../docs/translation-workflow.html">翻譯流程</a>
       <a href="https://cbdata.dila.edu.tw/stable/juans?work=T1579&amp;juan=33&amp;toc=1&amp;work_info=1">CBETA API</a>
+      <button class="source-toggle" type="button" id="sourceToggle" aria-pressed="false" aria-controls="parallelText">顯示文言原文</button>
     </nav>
   </header>
-  <main class="reader parallel-text">
+  <main class="reader parallel-text" id="parallelText">
 {chr(10).join(pairs)}
   </main>
+  <script>
+    const sourceToggle = document.getElementById("sourceToggle");
+    sourceToggle.addEventListener("click", () => {{
+      const collapsed = document.body.classList.toggle("source-collapsed");
+      sourceToggle.textContent = collapsed ? "顯示文言原文" : "隱藏文言原文";
+      sourceToggle.setAttribute("aria-pressed", collapsed ? "false" : "true");
+    }});
+  </script>
 </body>
 </html>
 """

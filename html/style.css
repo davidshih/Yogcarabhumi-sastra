@@ -56,6 +56,15 @@ a {
   text-decoration: none;
 }
 
+.source-toggle {
+  border: 1px solid #8a3f21;
+  padding: 0.25rem 0.65rem;
+  color: #fffdf7;
+  background: #8a3f21;
+  font: inherit;
+  cursor: pointer;
+}
+
 .parallel-text {
   max-width: 1280px;
 }
@@ -66,6 +75,10 @@ a {
   gap: clamp(1rem, 3vw, 2rem);
   padding: 1.2rem 0;
   border-bottom: 1px solid #eee2cc;
+}
+
+body.source-collapsed .parallel-pair {
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .parallel-pair h2 {
@@ -83,8 +96,16 @@ a {
   color: #4f463c;
 }
 
+body.source-collapsed .source-text {
+  display: none;
+}
+
 .translation-text {
   font-size: 1.05rem;
+}
+
+body.source-collapsed .translation-text {
+  grid-column: 1 / -1;
 }
 
 .line-range {
@@ -164,6 +185,61 @@ a {
 .doc-steps li,
 .doc-page li {
   margin: 0.35rem 0;
+}
+
+.flowchart {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.75rem;
+  align-items: stretch;
+  margin: 1rem 0;
+}
+
+.flow-step {
+  position: relative;
+  min-width: 0;
+  padding: 0.8rem;
+  border: 1px solid #d6c4a8;
+  background: #fffaf0;
+}
+
+.flow-step strong {
+  display: block;
+  color: #57331f;
+}
+
+.flow-step span {
+  display: block;
+  color: #5f564a;
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+.flow-step:not(:last-child)::after {
+  content: ">";
+  position: absolute;
+  top: 50%;
+  right: -0.58rem;
+  color: #8a3f21;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  transform: translateY(-50%);
+}
+
+.flow-lanes {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin: 1rem 0;
+}
+
+.flow-lane {
+  padding: 0.85rem;
+  border-left: 4px solid #8a3f21;
+  background: #fff8ea;
+}
+
+.flow-lane h3 {
+  margin-bottom: 0.4rem;
 }
 
 .reader p {
@@ -249,5 +325,18 @@ a {
 
   .parallel-pair {
     grid-template-columns: 1fr;
+  }
+
+  .flowchart,
+  .flow-lanes {
+    grid-template-columns: 1fr;
+  }
+
+  .flow-step:not(:last-child)::after {
+    content: "v";
+    top: auto;
+    right: 50%;
+    bottom: -0.72rem;
+    transform: translateX(50%);
   }
 }

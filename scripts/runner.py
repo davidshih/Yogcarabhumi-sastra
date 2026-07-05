@@ -40,10 +40,37 @@ from check_translation_coverage import parse_ranges, data_line_ids, check_ranges
 JOBS_DIR = ROOT / "jobs"
 LOCKS_DIR = ROOT / "locks"
 PROMPTS_DIR = ROOT / "prompts"
+WORKS_PATH = ROOT / "works.json"
 GLOSSARY_PATH = ROOT / "translations" / "glossary" / "T1579-terms.json"
 STATUS_JSON = ROOT / "docs" / "status.json"
 REVIEW_PASSES = ("review_terms", "review_doctrine", "review_parallel")
 POLL_SECONDS = 10
+
+# Cost-optimal default routing for --model mix: bulk translation on the cheap
+# GLM coding plan, hardest review line on claude, cross-vendor reviews so the
+# reviewer doesn't share the translator's blind spots.
+MIX_ROUTING = {
+    "segment": "claude",
+    "translate": "glm",
+    "review_terms": "codex",
+    "review_doctrine": "claude",
+    "review_parallel": "codex",
+}
+QUEUES = llm.MODELS + ("mix",) + llm.FAKE_MODELS
+
+
+def get_work(work_id: str) -> dict:
+    works = json.loads(WORKS_PATH.read_text(encoding="utf-8"))["works"]
+    match = next((w for w in works if w["id"] == work_id), None)
+    if match is None:
+        raise ValueError(f"未收錄的經典：{work_id}（先在 works.json 建檔）")
+    if not match.get("pipeline_ready"):
+        raise ValueError(f"{work_id} {match['title']} 已建檔，但 pipeline 尚未支援（排程任務後續處理）")
+    return match
+
+
+def stage_model(job: dict, stage: str) -> str:
+    return MIX_ROUTING.get(stage, "claude") if job["model"] == "mix" else job["model"]
 
 TRANSLATION_BLOCK_RE = re.compile(r"(Translation:\n<<<\n)(.*?)(\n?>>>)", re.DOTALL)
 NOTE_BLOCK_RE = re.compile(r"(Note:\n<<<\n)(.*?)(\n?>>>)", re.DOTALL)
@@ -205,12 +232,12 @@ def parse_llm_blocks(raw: str) -> tuple[str, str | None]:
 
 # ---------- pipeline steps ----------
 
-def llm_call(job: dict, prompt: str) -> str:
+def llm_call(job: dict, prompt: str, stage: str) -> str:
     def on_wait(resume_at):
         job["state"] = "waiting_limit"
         job["resume_at"] = resume_at.isoformat(timespec="seconds")
         save_job(job)
-    text = llm.call_with_limit_retry(job["model"], prompt, on_wait=on_wait,
+    text = llm.call_with_limit_retry(stage_model(job, stage), prompt, on_wait=on_wait,
                                      log=lambda m: log(job, m))
     if job["state"] == "waiting_limit":
         job["state"] = "running"
@@ -225,7 +252,7 @@ def llm_segment(job: dict, juan: int, lines: dict[str, str], tsv_path: Path) -> 
     prompt = prompt_text("segment", juan=juan, lines=lines_text)
     errors = ""
     for attempt in range(2):
-        raw = llm_call(job, prompt + errors)
+        raw = llm_call(job, prompt + errors, "segment")
         match = TSV_RE.search(raw)
         if match:
             # normalize each row to exactly 3 columns (LLMs drop the empty note column)
@@ -274,7 +301,7 @@ def translate_sections(job: dict, juan: int, md_path: Path, prog: dict,
         raw = llm_call(job, prompt_text(
             "translate", juan=juan, title=entry.title, note=entry.note or "（無）",
             source=entry.source, glossary=glossary_subset_json(glossary, entry.source),
-            extra=extra))
+            extra=extra), "translate")
         translation, note = parse_llm_blocks(raw)
         splice(md_path, idx, translation, note if note else None)
         prog["section"] = idx + 1
@@ -294,7 +321,7 @@ def review_pass(job: dict, juan: int, md_path: Path, pass_name: str, prog: dict)
                     translation=entry.translation, note=entry.note or "（無）")
         if pass_name != "review_parallel":
             vars["glossary"] = glossary_subset_json(glossary, entry.source)
-        raw = llm_call(job, prompt_text(pass_name, **vars))
+        raw = llm_call(job, prompt_text(pass_name, **vars), pass_name)
         new_terms = NEW_TERMS_RE.search(raw)
         if pass_name == "review_terms" and new_terms:
             append_new_terms(new_terms.group(1), job)
@@ -327,6 +354,8 @@ def build_html(job: dict, md_path: Path) -> None:
     output.write_text(bth.render(entries, md_path, juan, bth.infer_title(text, juan)),
                       encoding="utf-8")
     bsh.main()  # refresh section pages + index (includes new translation link)
+    import build_search_index
+    build_search_index.main()
 
 
 def git_commit_push(job: dict, juan: int) -> None:
@@ -494,11 +523,10 @@ def cmd_run() -> None:
         raise SystemExit("another runner is already active")
     pid_fh.write(str(os.getpid()))
     pid_fh.flush()
-    models = llm.MODELS + llm.FAKE_MODELS
-    threads = [threading.Thread(target=worker, args=(m,), daemon=True, name=m) for m in models]
+    threads = [threading.Thread(target=worker, args=(m,), daemon=True, name=m) for m in QUEUES]
     for t in threads:
         t.start()
-    print(f"{now_iso()} runner up (pid {os.getpid()}), workers: {', '.join(models)}", flush=True)
+    print(f"{now_iso()} runner up (pid {os.getpid()}), workers: {', '.join(QUEUES)}", flush=True)
     while True:
         time.sleep(3600)
 
@@ -533,9 +561,10 @@ def cmd_enqueue(args) -> None:
         work, link_juan = parse_link(args.link)
         if juans is None and link_juan:
             juans = [link_juan]
-    if work != "T1579":
-        raise SystemExit("only T1579 supported for now (scripts are work-specific); "
-                         "parametrization is planned")
+    try:
+        get_work(work)
+    except ValueError as err:
+        raise SystemExit(str(err))
     if not juans:
         raise SystemExit("specify --juans or a link with a juan number")
     JOBS_DIR.mkdir(exist_ok=True)
@@ -558,7 +587,7 @@ def main() -> int:
     enq.add_argument("--work", default="T1579")
     enq.add_argument("--link", help="CBETA link, e.g. https://cbetaonline.dila.edu.tw/zh/T1579_013")
     enq.add_argument("--juans", help="e.g. 13, 13-15, or 13,15")
-    enq.add_argument("--model", required=True, choices=llm.MODELS + llm.FAKE_MODELS)
+    enq.add_argument("--model", required=True, choices=QUEUES)
     enq.add_argument("--no-push", action="store_true")
     enq.add_argument("--summary", action="store_true", help="also build a summary page (not implemented)")
     sub.add_parser("run")

@@ -322,6 +322,10 @@ def render_index(entries: list[tuple[TocNode, str]]) -> str:
     <p><a href="docs/translation-workflow.html">白話翻譯工作流程與術語庫</a></p>
   </header>
   <main class="index-list">
+    <div class="site-search">
+      <input type="search" id="siteSearch" placeholder="搜尋經文、譯文、章節標題…" aria-label="全站搜尋">
+      <ol id="searchResults" hidden></ol>
+    </div>
 {translation_list}    <details class="index-disclosure">
       <summary>章節索引</summary>
 {juan_tabs}      <ol>
@@ -329,6 +333,27 @@ def render_index(entries: list[tuple[TocNode, str]]) -> str:
       </ol>
     </details>
   </main>
+  <script>
+    // 全站搜尋：首次輸入才載入 search.json，中文用 substring 比對即正確
+    const searchInput = document.getElementById("siteSearch");
+    const searchResults = document.getElementById("searchResults");
+    let searchIndex = null;
+    async function ensureIndex() {{
+      if (!searchIndex) searchIndex = await fetch("search.json").then(r => r.json()).catch(() => []);
+      return searchIndex;
+    }}
+    searchInput.addEventListener("input", async () => {{
+      const q = searchInput.value.trim();
+      if (q.length < 2) {{ searchResults.hidden = true; return; }}
+      const hits = (await ensureIndex()).filter(r => r.t.includes(q) || r.x.includes(q)).slice(0, 30);
+      searchResults.innerHTML = hits.map(r => {{
+        const pos = r.x.indexOf(q);
+        const excerpt = pos >= 0 ? r.x.slice(Math.max(0, pos - 20), pos + 40).replace(/\\n/g, " ") : "";
+        return `<li class='level-0'><a href='${{r.u}}'>${{r.t}}</a><span>卷${{r.j}}${{excerpt ? "・…" + excerpt + "…" : ""}}</span></li>`;
+      }}).join("") || "<li class='level-0'>沒有結果</li>";
+      searchResults.hidden = false;
+    }});
+  </script>
   <script>
     const juanTabs = Array.from(document.querySelectorAll(".juan-tab"));
     const juanItems = Array.from(document.querySelectorAll(".index-list ol > li"));

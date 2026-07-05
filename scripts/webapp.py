@@ -59,7 +59,8 @@ FORM_PAGE = """<!doctype html>
       </label>
       <label>模型
         <span class="models">
-          <label><input type="radio" name="model" value="claude" checked> claude</label>
+          <label><input type="radio" name="model" value="mix" checked> mix（省額度推薦）</label>
+          <label><input type="radio" name="model" value="claude"> claude</label>
           <label><input type="radio" name="model" value="codex"> codex</label>
           <label><input type="radio" name="model" value="glm"> glm</label>
         </span>
@@ -129,15 +130,14 @@ class Handler(SimpleHTTPRequestHandler):
         juans_spec = form.get("juans", [""])[0].strip()
         model = form.get("model", [""])[0]
         try:
-            if model not in llm.MODELS + llm.FAKE_MODELS:
+            if model not in runner.QUEUES:
                 raise ValueError(f"unknown model: {model}")
             if re.fullmatch(r"[A-Z]+\d+[a-z]?", link):
                 work, link_juan = link, None
             else:
                 work, link_juan = runner.parse_link(link)
             juans = runner.parse_juans(juans_spec) if juans_spec else ([link_juan] if link_juan else None)
-            if work != "T1579":
-                raise ValueError("目前僅支援 T1579（腳本尚未參數化）")
+            runner.get_work(work)
             if not juans:
                 raise ValueError("請給卷號範圍，或用帶卷號的連結")
         except ValueError as err:

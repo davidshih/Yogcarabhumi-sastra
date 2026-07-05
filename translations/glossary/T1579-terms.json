@@ -1367,6 +1367,476 @@
       ],
       "status": "stable",
       "rule": "不譯成薰香；是有漏與無漏相間入定以得自在。"
+    },
+    {
+      "id": "tongue-consciousness",
+      "xuanzang": "舌識",
+      "display": "舌識",
+      "plain": "舌的認識作用",
+      "english": [
+        "tongue consciousness"
+      ],
+      "sanskrit": [
+        "jihvā-vijñāna"
+      ],
+      "pali": [
+        "jivhā-viññāṇa"
+      ],
+      "source_terms": [
+        "舌識"
+      ],
+      "translation_patterns": [
+        "舌識（舌的認識作用）",
+        "舌識"
+      ],
+      "status": "review",
+      "rule": "玄奘詞保留，括號附白話解釋；前後一致。"
+    },
+    {
+      "id": "taste-object",
+      "xuanzang": "味",
+      "display": "味",
+      "plain": "味境（舌所緣的對象）",
+      "english": [
+        "taste",
+        "gustatory object"
+      ],
+      "sanskrit": [
+        "rasa"
+      ],
+      "pali": [
+        "rasa"
+      ],
+      "source_terms": [
+        "味"
+      ],
+      "translation_patterns": [
+        "味境"
+      ],
+      "status": "review",
+      "rule": "作所緣對象時譯「味境」以別於滋味泛稱，全篇一致。"
+    },
+    {
+      "id": "neutral-object-upeksa",
+      "xuanzang": "捨處所",
+      "display": "捨處所",
+      "plain": "中性、非可意非不可意之味",
+      "english": [
+        "neutral object",
+        "feeling of equanimity"
+      ],
+      "sanskrit": [
+        "upekṣā-sthāna"
+      ],
+      "pali": [
+        "upekkhā-ṭhāna"
+      ],
+      "source_terms": [
+        "捨處所",
+        "若捨處所"
+      ],
+      "translation_patterns": [
+        "捨處所（中性、非可意非不可意的）",
+        "捨處所"
+      ],
+      "status": "review",
+      "rule": "指非苦非樂之中庸味，對應捨受；保留玄奘詞並附白話。"
+    },
+    {
+      "id": "to-taste",
+      "xuanzang": "甞",
+      "display": "甞",
+      "plain": "品嘗",
+      "english": [
+        "to taste",
+        "to savour"
+      ],
+      "sanskrit": [
+        "āsvādana"
+      ],
+      "pali": [
+        "āsādana"
+      ],
+      "source_terms": [
+        "甞",
+        "所甞",
+        "應甞"
+      ],
+      "translation_patterns": [
+        "甞（品嘗）"
+      ],
+      "status": "review",
+      "rule": "玄奘原動詞保留，括號附白話；與吞、噉、飲、舐、吮各別其義。"
+    },
+    {
+      "id": "gandharva",
+      "xuanzang": "健達縛",
+      "display": "健達縛",
+      "plain": "尋香識／中有",
+      "english": [
+        "gandharva",
+        "intermediate-being"
+      ],
+      "sanskrit": [
+        "gandharva"
+      ],
+      "pali": [
+        "gandhabba"
+      ],
+      "source_terms": [
+        "健達縛"
+      ],
+      "translation_patterns": [
+        "健達縛（中有，即死後至受生之間的中陰身）",
+        "健達縛"
+      ],
+      "status": "review",
+      "rule": "玄奘音譯詞，首次出現須以「白話（玄奘詞）」雙軌標注等同中有／中陰身"
+    },
+    {
+      "id": "alaya-vijnana",
+      "xuanzang": "阿賴耶識",
+      "display": "一切種子識（阿賴耶識）",
+      "plain": "藏識／根本識",
+      "english": [
+        "storehouse consciousness",
+        "ālaya-vijñāna"
+      ],
+      "sanskrit": [
+        "ālaya-vijñāna"
+      ],
+      "pali": [],
+      "source_terms": [
+        "一切種子識",
+        "阿賴耶識"
+      ],
+      "translation_patterns": [
+        "一切種子識（阿賴耶識）",
+        "阿賴耶識"
+      ],
+      "status": "review",
+      "rule": "玄奘譯『阿賴耶識』，本論亦稱『一切種子識』，二者同體異名；白話首次出現時以『一切種子識（阿賴耶識）』雙軌標示，其後可徑用其一。"
+    },
+    {
+      "id": "svabhava-vedana",
+      "xuanzang": "自性受",
+      "display": "自性受（與生俱來的根本受）",
+      "plain": "本受／根本受",
+      "english": [
+        "intrinsic feeling",
+        "svabhāva-vedanā"
+      ],
+      "sanskrit": [
+        "svabhāva-vedanā"
+      ],
+      "pali": [],
+      "source_terms": [
+        "自性受"
+      ],
+      "translation_patterns": [
+        "自性受（與生俱來的根本受）",
+        "自性受"
+      ],
+      "status": "review",
+      "rule": "玄奘譯『自性受』，特指處胎時不苦不樂、依識增長之異熟所攝受；白話雙軌標示其義，不可與一般苦樂受混淆。"
+    },
+    {
+      "id": "vipaka",
+      "xuanzang": "異熟",
+      "display": "異熟",
+      "plain": "果報",
+      "english": [
+        "maturation",
+        "ripening",
+        "vipāka"
+      ],
+      "sanskrit": [
+        "vipāka"
+      ],
+      "pali": [
+        "vipāka"
+      ],
+      "source_terms": [
+        "異熟",
+        "異熟所攝",
+        "異熟所生"
+      ],
+      "translation_patterns": [
+        "異熟（果報）",
+        "異熟所攝",
+        "異熟所生"
+      ],
+      "status": "review",
+      "rule": "玄奘譯『異熟』，白話解為『果報』；『異熟所攝／所生／境界緣生』為本論判受之關鍵三分，須保留原術語並附白話。"
+    },
+    {
+      "id": "prapanca",
+      "xuanzang": "戲論",
+      "display": "戲論",
+      "plain": "虛妄分別",
+      "english": [
+        "conceptual proliferation",
+        "prapañca"
+      ],
+      "sanskrit": [
+        "prapañca"
+      ],
+      "pali": [
+        "papañca"
+      ],
+      "source_terms": [
+        "戲論",
+        "樂著戲論"
+      ],
+      "translation_patterns": [
+        "戲論（虛妄分別）",
+        "戲論"
+      ],
+      "status": "review",
+      "rule": "玄奘譯『戲論』，指無始虛妄分別名言；為感生自體之最勝因，不可意譯為『遊戲言論』。"
+    },
+    {
+      "id": "sumeru",
+      "xuanzang": "蘇迷盧",
+      "display": "蘇迷盧山（須彌山）",
+      "plain": "須彌山",
+      "english": [
+        "Mount Sumeru"
+      ],
+      "sanskrit": [
+        "sumeru"
+      ],
+      "pali": [
+        "sumeru"
+      ],
+      "source_terms": [
+        "蘇迷盧",
+        "須彌山"
+      ],
+      "translation_patterns": [
+        "蘇迷盧",
+        "須彌山"
+      ],
+      "status": "review",
+      "rule": "玄奘音譯「蘇迷盧」，白話作「須彌山」；雙軌標為「蘇迷盧山（須彌山）」。"
+    },
+    {
+      "id": "yojana",
+      "xuanzang": "踰繕那",
+      "display": "踰繕那（由旬）",
+      "plain": "由旬",
+      "english": [
+        "yojana"
+      ],
+      "sanskrit": [
+        "yojana"
+      ],
+      "pali": [
+        "yojana"
+      ],
+      "source_terms": [
+        "踰繕那",
+        "由旬",
+        "踰健那"
+      ],
+      "translation_patterns": [
+        "踰繕那",
+        "由旬"
+      ],
+      "status": "review",
+      "rule": "長度單位；玄奘音譯「踰繕那」，舊譯「由旬」，白話可作由旬並標註約數。"
+    },
+    {
+      "id": "naraka",
+      "xuanzang": "那洛迦",
+      "display": "那洛迦（地獄）",
+      "plain": "地獄",
+      "english": [
+        "hell",
+        "naraka"
+      ],
+      "sanskrit": [
+        "naraka"
+      ],
+      "pali": [
+        "naraka"
+      ],
+      "source_terms": [
+        "那洛迦",
+        "地獄",
+        "捺落迦"
+      ],
+      "translation_patterns": [
+        "那洛迦",
+        "地獄"
+      ],
+      "status": "review",
+      "rule": "玄奘音譯「那洛迦」即地獄；八大那洛迦、獨一、寒、近邊等為其分類，白話作地獄並標原音。"
+    },
+    {
+      "id": "asura",
+      "xuanzang": "非天",
+      "display": "非天（阿修羅）",
+      "plain": "阿修羅",
+      "english": [
+        "asura",
+        "demi-god"
+      ],
+      "sanskrit": [
+        "asura"
+      ],
+      "pali": [
+        "asura"
+      ],
+      "source_terms": [
+        "非天",
+        "阿修羅"
+      ],
+      "translation_patterns": [
+        "非天",
+        "阿修羅"
+      ],
+      "status": "review",
+      "rule": "玄奘意譯「非天」（有天之福無天之德），白話作阿修羅；雙軌標為「非天（阿修羅）」。"
+    },
+    {
+      "id": "garuda",
+      "xuanzang": "妙翅鳥",
+      "display": "妙翅鳥（金翅鳥）",
+      "plain": "金翅鳥",
+      "english": [
+        "garuḍa"
+      ],
+      "sanskrit": [
+        "garuḍa"
+      ],
+      "pali": [
+        "garuḷa"
+      ],
+      "source_terms": [
+        "妙翅鳥",
+        "金翅鳥",
+        "揭路荼"
+      ],
+      "translation_patterns": [
+        "妙翅鳥",
+        "金翅鳥"
+      ],
+      "status": "review",
+      "rule": "玄奘意譯「妙翅鳥」，舊譯「金翅鳥」；雙軌標為「妙翅鳥（金翅鳥）」。龍之天敵，卵胎濕化四生食龍。"
+    },
+    {
+      "id": "anavatapta",
+      "xuanzang": "無熱池",
+      "display": "無熱惱池（無熱大池）",
+      "plain": "無熱大池",
+      "english": [
+        "Lake Anavatapta",
+        "Anotatta"
+      ],
+      "sanskrit": [
+        "anavatapta"
+      ],
+      "pali": [
+        "anotatta"
+      ],
+      "source_terms": [
+        "無熱",
+        "無熱池",
+        "無熱大池",
+        "阿耨達池"
+      ],
+      "translation_patterns": [
+        "無熱池",
+        "無熱大池"
+      ],
+      "status": "review",
+      "rule": "玄奘意譯「無熱」（無熱惱），舊譯「阿耨達」；為贍部洲中心大池，四大河之源。"
+    },
+    {
+      "id": "four-rivers",
+      "xuanzang": "殑伽等四河",
+      "display": "四大河（殑伽、信度、私多、縛芻）",
+      "plain": "殑伽等四大河",
+      "english": [
+        "four great rivers"
+      ],
+      "sanskrit": [
+        "gaṅgā",
+        "sindhu",
+        "śītā",
+        "vakṣu"
+      ],
+      "pali": [
+        "gaṅgā",
+        "sindhu",
+        "sītā",
+        "vakṣu"
+      ],
+      "source_terms": [
+        "殑伽",
+        "信度",
+        "私多",
+        "縛芻"
+      ],
+      "translation_patterns": [
+        "殑伽",
+        "信度",
+        "私多",
+        "縛芻"
+      ],
+      "status": "review",
+      "rule": "玄奘音譯四河名：殑伽（Ganges，恆河）、信度（Sindhu，印度河）、私多（Śītā）、縛芻（Vakṣu，阿姆河）；音譯原稱保留，校註標註今名。"
+    },
+    {
+      "id": "krosa",
+      "xuanzang": "拘盧舍",
+      "display": "拘盧舍",
+      "plain": "拘盧舍（長度單位，約一由旬的四分之一）",
+      "english": [
+        "krosa"
+      ],
+      "sanskrit": [
+        "krośa"
+      ],
+      "pali": [
+        "kosa"
+      ],
+      "source_terms": [
+        "拘盧舍",
+        "俱盧舍"
+      ],
+      "translation_patterns": [
+        "拘盧舍"
+      ],
+      "status": "review",
+      "rule": "長度單位，一由旬的四分之一；玄奘音譯「拘盧舍」，全篇一致保留。"
+    },
+    {
+      "id": "sphatika",
+      "xuanzang": "頗胝",
+      "display": "頗胝（頗胝迦，寶石類）",
+      "plain": "頗胝（寶石）",
+      "english": [
+        "sphatika",
+        "crystal",
+        "beryl"
+      ],
+      "sanskrit": [
+        "sphaṭika"
+      ],
+      "pali": [
+        "phaṭika"
+      ],
+      "source_terms": [
+        "頗胝",
+        "頗胝迦"
+      ],
+      "translation_patterns": [
+        "頗胝"
+      ],
+      "status": "review",
+      "rule": "玄奘音譯「頗胝」即寶石/水晶類；火頗胝、水頚胝分指日輪、月輪材質，全篇一致保留音譯並標寶石。"
     }
   ]
 }

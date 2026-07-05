@@ -1,0 +1,26 @@
+{
+  "works": [
+    {
+      "id": "T1579",
+      "file_id": "T30n1579",
+      "title": "瑜伽師地論",
+      "subtitle": "彌勒菩薩說 / 玄奘譯",
+      "scope": "聲聞地",
+      "pipeline_ready": true
+    },
+    {
+      "id": "T1585",
+      "file_id": "T31n1585",
+      "title": "成唯識論",
+      "subtitle": "護法等菩薩造 / 玄奘譯",
+      "pipeline_ready": false
+    },
+    {
+      "id": "T1558",
+      "file_id": "T29n1558",
+      "title": "阿毘達磨俱舍論",
+      "subtitle": "世親菩薩造 / 玄奘譯",
+      "pipeline_ready": false
+    }
+  ]
+}

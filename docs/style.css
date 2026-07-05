@@ -785,3 +785,181 @@ code {
     gap: 0.5rem;
   }
 }
+
+/* ------------------------------------------------------------------ */
+/* Reader upgrades: modes, TOC sidebar, progress, term tooltips        */
+/* ------------------------------------------------------------------ */
+
+/* 原文-only mode (translation hidden) — mirrors source-collapsed rules */
+body.translation-collapsed .parallel-pair {
+  grid-template-columns: minmax(0, 1fr);
+}
+body.translation-collapsed .translation-text {
+  display: none;
+}
+body.translation-collapsed .source-text {
+  grid-column: 1 / -1;
+  padding-left: 0;
+  border-left: 0;
+  color: var(--ink);
+  font-size: 1.1rem;
+  line-height: 2;
+}
+
+.read-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 3px;
+  width: 0;
+  background: var(--accent);
+  z-index: 100;
+}
+
+.mode-switch {
+  display: inline-flex;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.mode-switch button {
+  border: 0;
+  padding: 0.35rem 0.9rem;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+.mode-switch button[aria-pressed="true"] {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+.juan-nav {
+  display: flex;
+  justify-content: space-between;
+  max-width: var(--measure);
+  margin: 0.8rem auto 0;
+}
+.juan-nav-link {
+  color: var(--accent);
+  text-decoration: none;
+  font-size: 0.95rem;
+}
+
+.page-with-toc {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0 2rem;
+  max-width: var(--measure-wide);
+  margin: 0 auto;
+  padding: 0 clamp(1rem, 4vw, 2.5rem);
+}
+.toc-side {
+  font-size: 0.9rem;
+}
+.toc-side summary {
+  cursor: pointer;
+  font-weight: 600;
+  padding: 0.5rem 0;
+}
+.toc-side ol {
+  margin: 0;
+  padding-left: 1.2rem;
+}
+.toc-side li {
+  margin: 0.35rem 0;
+}
+.toc-side a {
+  color: var(--ink-soft);
+  text-decoration: none;
+}
+.toc-side a:hover {
+  color: var(--accent);
+}
+@media (min-width: 1000px) {
+  .page-with-toc {
+    grid-template-columns: 220px minmax(0, 1fr);
+  }
+  .toc-side {
+    position: sticky;
+    top: calc(var(--topbar-h) + 16px);
+    align-self: start;
+    max-height: calc(100vh - var(--topbar-h) - 32px);
+    overflow-y: auto;
+  }
+  .toc-side summary {
+    pointer-events: none; /* always open on wide screens (JS keeps it open) */
+    list-style: none;
+  }
+  .page-with-toc .reader {
+    padding-left: 0;
+    padding-right: 0;
+  }
+}
+
+.section-nav {
+  position: fixed;
+  right: clamp(0.6rem, 2vw, 1.5rem);
+  bottom: clamp(1rem, 4vh, 2.5rem);
+  display: grid;
+  gap: 0.4rem;
+  z-index: 50;
+}
+.section-nav button {
+  width: 2.4rem;
+  height: 2.4rem;
+  border: 1px solid var(--rule);
+  border-radius: 50%;
+  background: var(--blur-bg);
+  backdrop-filter: blur(10px);
+  color: var(--ink);
+  font-size: 1rem;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+}
+
+.term {
+  position: relative;
+  border-bottom: 1px dotted var(--accent);
+  cursor: help;
+}
+.term:hover::after,
+.term:focus::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 0;
+  z-index: 60;
+  width: max-content;
+  max-width: min(20rem, 70vw);
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-sm);
+  background: var(--surface-raised);
+  color: var(--ink);
+  box-shadow: var(--shadow);
+  white-space: pre-line;
+  font-family: var(--sans);
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+.site-search {
+  margin-bottom: 1.2rem;
+}
+.site-search input {
+  width: 100%;
+  padding: 0.7rem 1rem;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+}
+.site-search ol {
+  margin: 0.6rem 0 0;
+  padding: 0;
+  list-style: none;
+}

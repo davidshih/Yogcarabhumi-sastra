@@ -8,32 +8,73 @@
   <script src="../../theme.js"></script>
 </head>
 <body class="source-collapsed">
+  <div class="read-progress" id="readProgress"></div>
   <div class="topbar">
     <a class="topbar-brand" href="../index.html">聲聞地</a>
-    <a class="topbar-link" href="../index.html">Index</a>
+    <a class="topbar-link" href="../../index.html">總目錄</a>
     <button class="theme-toggle" type="button" aria-label="切換深色或淺色模式"></button>
   </div>
   <header class="site-header">
     <div class="kicker">CBETA T1579 / Juan 67</div>
     <h1>瑜伽師地論卷第六十七白話對照</h1>
     <p>底本範圍：T30n1579_p0668b22 至 T30n1579_p0673c21。</p>
-    <p>譯例：核心術語採白話詞（玄奘詞）雙軌，疑難處以精簡校註標示。</p>
+    <p>譯例：核心術語採白話詞（玄奘詞）雙軌，疑難處以精簡校註標示；術語下有虛線者可懸停或點按看註解。</p>
     <nav class="translation-tools">
+      <div class="mode-switch" role="group" aria-label="閱讀模式">
+        <button type="button" data-mode="trans" aria-pressed="true">白話</button>
+        <button type="button" data-mode="both" aria-pressed="false">對照</button>
+        <button type="button" data-mode="source" aria-pressed="false">原文</button>
+      </div>
       <a href="https://github.com/davidshih/Yogcarabhumi-sastra/blob/main/translations/T1579-067-baihua.md">來源稿</a>
       <a href="https://github.com/davidshih/Yogcarabhumi-sastra/blob/main/translations/glossary/T1579-terms.json">術語庫</a>
       <a href="../docs/translation-workflow.html">翻譯流程</a>
       <a href="https://cbdata.dila.edu.tw/stable/juans?work=T1579&amp;juan=67&amp;toc=1&amp;work_info=1">CBETA API</a>
-      <button class="source-toggle" type="button" id="sourceToggle" aria-pressed="false" aria-controls="parallelText">顯示文言原文</button>
     </nav>
+    <nav class="juan-nav"><a class='juan-nav-link' href='T1579-034-baihua.html'>← 卷第34</a><a class='juan-nav-link' href='T1579-068-baihua.html'>卷第68 →</a></nav>
   </header>
-  <main class="reader parallel-text" id="parallelText">
+  <div class="page-with-toc">
+    <details class="toc-side" id="tocSide">
+      <summary>本卷目次</summary>
+      <ol>
+        <li><a href='#T30n1579_p0668b22'>01 卷題與修所成慧地總標</a></li>
+        <li><a href='#T30n1579_p0668c04'>02 聲聞乘相應作意修</a></li>
+        <li><a href='#T30n1579_p0668c09'>03 大乘相應作意修</a></li>
+        <li><a href='#T30n1579_p0668c17'>04 影像修</a></li>
+        <li><a href='#T30n1579_p0668c21'>05 事邊際與所作成辦修</a></li>
+        <li><a href='#T30n1579_p0668c28'>06 得修與習修</a></li>
+        <li><a href='#T30n1579_p0669a08'>07 除去修與對治修</a></li>
+        <li><a href='#T30n1579_p0669a22'>08 少分至有加行修</a></li>
+        <li><a href='#T30n1579_p0669a29'>09 成辦修與二類善法修</a></li>
+        <li><a href='#T30n1579_p0669b07'>10 聲聞地決擇分位與無性有情前四難</a></li>
+        <li><a href='#T30n1579_p0669c14'>11 無性有情金等譬難與現後生難</a></li>
+        <li><a href='#T30n1579_p0670a21'>12 十種聲聞</a></li>
+        <li><a href='#T30n1579_p0670c24'>13 遲速二類聲聞</a></li>
+        <li><a href='#T30n1579_p0670c28'>14 月喻經四種淨妙法</a></li>
+        <li><a href='#T30n1579_p0671a11'>15 往他家先斷三隨煩惱</a></li>
+        <li><a href='#T30n1579_p0671b14'>16 伐他迦經染淨三處</a></li>
+        <li><a href='#T30n1579_p0671c15'>17 人身所依三相</a></li>
+        <li><a href='#T30n1579_p0672a07'>18 名映一切與無我密意</a></li>
+        <li><a href='#T30n1579_p0672a22'>19 四諦總辨與諦攝</a></li>
+        <li><a href='#T30n1579_p0672b02'>20 無常苦空無我二相與苦義</a></li>
+        <li><a href='#T30n1579_p0672c16'>21 苦諦集諦與愛施設</a></li>
+        <li><a href='#T30n1579_p0673a15'>22 三愛料簡與受界四句</a></li>
+        <li><a href='#T30n1579_p0673b12'>23 妙欲與愛十五無義</a></li>
+      </ol>
+    </details>
+    <main class="reader parallel-text" id="parallelText">
     <section class="parallel-pair" id="T30n1579_p0668b22" data-source-start="T30n1579_p0668b22" data-source-end="T30n1579_p0668c03">
       <h2>01 卷題與修所成慧地總標</h2>
       <div class="translation-text">
         <span class="line-range">白話譯文</span>
 <p>《瑜伽師地論》卷第六十七。</p>
 <p>彌勒菩薩說，三藏法師玄奘奉詔翻譯。</p>
-<p>這裡是〈攝決擇分〉中對〈修所成慧地〉的抉擇。前面已經說完〈思所成慧地〉的抉擇；現在要說〈修所成慧地〉的抉擇。略說有十六種修：聲聞乘相應作意修、大乘相應作意修、影像修、事邊際修、所作成辦修、得修、習修、除去修、對治修、少分修、遍行修、動轉修、有加行修、已成辦修、非修所成法修、修所成法修。</p>
+<p>這裡是〈攝決擇分〉中對〈修所成慧地〉的抉擇。前面已經說完〈思所成慧地〉的抉擇；現在要說〈修所成慧地〉的抉擇。略說有十六種修：聲聞乘相應<span class="term" tabindex="0" data-tip="作意｜專注觀修
+梵 manaskara
+英 attention / mental engagement">作意</span>修、大乘相應<span class="term" tabindex="0" data-tip="作意｜專注觀修
+梵 manaskara
+英 attention / mental engagement">作意</span>修、影像修、事邊際修、所作成辦修、得修、習修、除去修、對治修、少分修、遍行修、動轉修、有<span class="term" tabindex="0" data-tip="加行｜加行
+梵 prayoga
+英 preparatory practice / application">加行</span>修、已成辦修、非修所成法修、修所成法修。</p>
       </div>
       <div class="source-text" aria-label="文言原文">
         <span class="line-range">文言原文 / T30n1579_p0668b22-p0668c03</span>
@@ -54,8 +95,20 @@
       <h2>02 聲聞乘相應作意修</h2>
       <div class="translation-text">
         <span class="line-range">白話譯文</span>
-<p>什麼是聲聞乘相應作意修？就是有一類人，是聲聞，安住於聲聞法性；或者尚未證入正性離生，或者已經證入正性離生而不入定。這樣的人，對自己與他人相續中的身等，觀察無常、苦等善想，並作意思惟。這樣的修，稱為聲聞乘相應作意修。</p>
-<p>此處的行相，是為了盡除貪愛，依厭、離欲、解脫而修，重點在離欲與自利。</p>
+<p>什麼是聲聞乘相應<span class="term" tabindex="0" data-tip="作意｜專注觀修
+梵 manaskara
+英 attention / mental engagement">作意</span>修？就是有一類人，是聲聞，安住於聲聞法性；或者尚未證入正性離生，或者已經證入正性離生而不入定。這樣的人，對自己與他人相續中的身等，觀察無常、苦等善想，並<span class="term" tabindex="0" data-tip="作意｜專注觀修
+梵 manaskara
+英 attention / mental engagement">作意</span>思惟。這樣的修，稱為聲聞乘相應<span class="term" tabindex="0" data-tip="作意｜專注觀修
+梵 manaskara
+英 attention / mental engagement">作意</span>修。</p>
+<p>此處的行相，是為了盡除貪愛，依厭、<span class="term" tabindex="0" data-tip="離欲｜離開欲貪
+梵 viveka / vairagya
+英 seclusion from sensuality / dispassion">離欲</span>、<span class="term" tabindex="0" data-tip="解脫｜定中解脫法門
+梵 vimoksha
+英 liberation / vimoksha">解脫</span>而修，重點在<span class="term" tabindex="0" data-tip="離欲｜離開欲貪
+梵 viveka / vairagya
+英 seclusion from sensuality / dispassion">離欲</span>與自利。</p>
       </div>
       <div class="source-text" aria-label="文言原文">
         <span class="line-range">文言原文 / T30n1579_p0668c04-p0668c08</span>
@@ -71,8 +124,19 @@
       <h2>03 大乘相應作意修</h2>
       <div class="translation-text">
         <span class="line-range">白話譯文</span>
-<p>什麼是大乘相應作意修？就是菩薩安住於菩薩法性，或者尚未證入大乘正性離生，或者已經證入而不入定。他對於自己與他人相續中的四種無色蘊，觀察補特伽羅無我；又對於自己的相續、他人的相續，以及非有情數的法，觀察法無我。這樣的作意思惟，稱為大乘相應作意修。</p>
-<p>這裡的作意以無量、無分別法為境，並以攝受有情利益與趣向無上足跡等行相而修；後文說十六行時，仍須依各行相判別。</p>
+<p>什麼是大乘相應<span class="term" tabindex="0" data-tip="作意｜專注觀修
+梵 manaskara
+英 attention / mental engagement">作意</span>修？就是菩薩安住於菩薩法性，或者尚未證入大乘正性離生，或者已經證入而不入定。他對於自己與他人相續中的四種無色蘊，觀察<span class="term" tabindex="0" data-tip="補特伽羅｜人
+梵 pudgala
+英 person / individual">補特伽羅</span>無我；又對於自己的相續、他人的相續，以及非有情數的法，觀察法無我。這樣的<span class="term" tabindex="0" data-tip="作意｜專注觀修
+梵 manaskara
+英 attention / mental engagement">作意</span>思惟，稱為大乘相應<span class="term" tabindex="0" data-tip="作意｜專注觀修
+梵 manaskara
+英 attention / mental engagement">作意</span>修。</p>
+<p>這裡的<span class="term" tabindex="0" data-tip="作意｜專注觀修
+梵 manaskara
+英 attention / mental engagement">作意</span>以無量、無分別法為境，並以攝受有情利益與趣向無上足跡等行相而修；後文說<span class="term" tabindex="0" data-tip="十六行｜十六種觀察行相
+英 sixteen aspects">十六行</span>時，仍須依各行相判別。</p>
       </div>
       <div class="source-text" aria-label="文言原文">
         <span class="line-range">文言原文 / T30n1579_p0668c09-p0668c16</span>
@@ -91,8 +155,14 @@
       <h2>04 影像修</h2>
       <div class="translation-text">
         <span class="line-range">白話譯文</span>
-<p>什麼是影像修？就是對三摩地所行的影像作意思惟。它有兩種：一種是有分別影像修，一種是無分別影像修。凡是依禪定影像所作的觀修，都攝在這裡。</p>
-<p>有分別影像偏於毘鉢舍那（觀），無分別影像偏於奢摩他（止）。</p>
+<p>什麼是影像修？就是對三摩地所行的影像<span class="term" tabindex="0" data-tip="作意｜專注觀修
+梵 manaskara
+英 attention / mental engagement">作意</span>思惟。它有兩種：一種是有分別影像修，一種是無分別影像修。凡是依禪定影像所作的觀修，都攝在這裡。</p>
+<p>有分別影像偏於<span class="term" tabindex="0" data-tip="毘鉢舍那｜觀
+梵 vipashyana / vipasyana
+英 insight / discernment">毘鉢舍那</span>（觀），無分別影像偏於<span class="term" tabindex="0" data-tip="奢摩他｜止
+梵 shamatha / samatha
+英 calm abiding / serenity">奢摩他</span>（止）。</p>
       </div>
       <div class="source-text" aria-label="文言原文">
         <span class="line-range">文言原文 / T30n1579_p0668c17-p0668c20</span>
@@ -107,9 +177,18 @@
       <h2>05 事邊際與所作成辦修</h2>
       <div class="translation-text">
         <span class="line-range">白話譯文</span>
-<p>什麼是事邊際修？就是對一切事的邊際作意思惟：一方面觀察盡所有性，另一方面觀察如所有性。</p>
-<p>什麼是所作成辦修？就是已經得到轉依，已經完成應作之事，再對這個成辦的事實作意思惟。</p>
-<p>所作成辦修還包括已證入根本靜慮、諸等至，乃至已辦應作而觀其成就。</p>
+<p>什麼是事邊際修？就是對一切事的邊際<span class="term" tabindex="0" data-tip="作意｜專注觀修
+梵 manaskara
+英 attention / mental engagement">作意</span>思惟：一方面觀察盡所有性，另一方面觀察如所有性。</p>
+<p>什麼是所作成辦修？就是已經得到轉依，已經完成應作之事，再對這個成辦的事實<span class="term" tabindex="0" data-tip="作意｜專注觀修
+梵 manaskara
+英 attention / mental engagement">作意</span>思惟。</p>
+<p>所作成辦修還包括已證入<span class="term" tabindex="0" data-tip="根本｜根本定
+英 root absorption / full absorption">根本</span><span class="term" tabindex="0" data-tip="靜慮｜靜慮定
+梵 dhyana
+英 meditative absorption / dhyana">靜慮</span>、諸<span class="term" tabindex="0" data-tip="等至｜入定成就
+梵 samapatti
+英 attainment / meditative attainment">等至</span>，乃至已辦應作而觀其成就。</p>
       </div>
       <div class="source-text" aria-label="文言原文">
         <span class="line-range">文言原文 / T30n1579_p0668c21-p0668c27</span>
@@ -128,8 +207,12 @@
       <div class="translation-text">
         <span class="line-range">白話譯文</span>
 <p>什麼是得修？譬如有人已經得到無常想，或乃至死想；其他尚未現前的善想，無論屬於自地、下地，或由它所引生的世間、出世間功德，都能修習，使它們增盛清淨，將來生起，並對它們獲得自在成就。這叫得修。</p>
-<p>什麼是習修？就是對無常等各種善想持續作意思惟；由於反覆習修，善法便能現前修習。這叫習修。</p>
-<p>得修所增盛的功德，也包含由靜慮等所引發的善法。</p>
+<p>什麼是習修？就是對無常等各種善想持續<span class="term" tabindex="0" data-tip="作意｜專注觀修
+梵 manaskara
+英 attention / mental engagement">作意</span>思惟；由於反覆習修，善法便能現前修習。這叫習修。</p>
+<p>得修所增盛的功德，也包含由<span class="term" tabindex="0" data-tip="靜慮｜靜慮定
+梵 dhyana
+英 meditative absorption / dhyana">靜慮</span>等所引發的善法。</p>
       </div>
       <div class="source-text" aria-label="文言原文">
         <span class="line-range">文言原文 / T30n1579_p0668c28-p0669a07</span>
@@ -149,9 +232,25 @@
       <h2>07 除去修與對治修</h2>
       <div class="translation-text">
         <span class="line-range">白話譯文</span>
-<p>什麼是除去修？就是依三摩地所行影像諸相作意，像用細楔拔出粗楔一樣，方便除遣、捨棄自性諸相；又以輕安身除去粗重身。這叫除去修。</p>
-<p>什麼是對治修？就是對厭患對治、斷對治、持對治、遠分對治作意思惟。世間善道多屬厭患對治；緣真如為境的作意是斷對治；後得的世出世道與解脫道是持對治；煩惱已斷後更修對治道，或多修上地之道，是遠分對治。也可以說：聞、思、修道是厭患對治，出世間道是斷對治，轉依之果是持對治，世間修道是遠分對治。</p>
-<p>其中厭患對治不包含無量與遊戲神通所引作意，神通在此只作差別說明。</p>
+<p>什麼是除去修？就是依三摩地所行影像諸相<span class="term" tabindex="0" data-tip="作意｜專注觀修
+梵 manaskara
+英 attention / mental engagement">作意</span>，像用細楔拔出粗楔一樣，方便除遣、捨棄自性諸相；又以<span class="term" tabindex="0" data-tip="輕安｜身心輕安
+梵 prashrabdhi
+英 pliancy / tranquility">輕安</span>身除去粗重身。這叫除去修。</p>
+<p>什麼是對治修？就是對厭患對治、斷對治、持對治、遠分對治<span class="term" tabindex="0" data-tip="作意｜專注觀修
+梵 manaskara
+英 attention / mental engagement">作意</span>思惟。世間善道多屬厭患對治；緣真如為境的<span class="term" tabindex="0" data-tip="作意｜專注觀修
+梵 manaskara
+英 attention / mental engagement">作意</span>是斷對治；後得的世出世道與<span class="term" tabindex="0" data-tip="解脫｜定中解脫法門
+梵 vimoksha
+英 liberation / vimoksha">解脫</span>道是持對治；煩惱已斷後更修對治道，或多修上地之道，是遠分對治。也可以說：聞、思、<span class="term" tabindex="0" data-tip="修道｜修道
+梵 bhavana-marga
+英 path of cultivation">修道</span>是厭患對治，出世間道是斷對治，轉依之果是持對治，世間<span class="term" tabindex="0" data-tip="修道｜修道
+梵 bhavana-marga
+英 path of cultivation">修道</span>是遠分對治。</p>
+<p>其中厭患對治不包含無量與遊戲神通所引<span class="term" tabindex="0" data-tip="作意｜專注觀修
+梵 manaskara
+英 attention / mental engagement">作意</span>，神通在此只作差別說明。</p>
       </div>
       <div class="source-text" aria-label="文言原文">
         <span class="line-range">文言原文 / T30n1579_p0669a08-p0669a21</span>
@@ -176,10 +275,18 @@
       <h2>08 少分至有加行修</h2>
       <div class="translation-text">
         <span class="line-range">白話譯文</span>
-<p>什麼是少分修？就是只對無常想等某一種善法作意思惟。</p>
-<p>什麼是遍行修？就是對一切法一味真如作意思惟。</p>
+<p>什麼是少分修？就是只對無常想等某一種善法<span class="term" tabindex="0" data-tip="作意｜專注觀修
+梵 manaskara
+英 attention / mental engagement">作意</span>思惟。</p>
+<p>什麼是遍行修？就是對一切法一味真如<span class="term" tabindex="0" data-tip="作意｜專注觀修
+梵 manaskara
+英 attention / mental engagement">作意</span>思惟。</p>
 <p>什麼是動轉修？就是修無相方便時，仍時時被有相間隔而修。</p>
-<p>什麼是有加行修？就是修方便時，仍被有加行相間隔而修。</p>
+<p>什麼是有<span class="term" tabindex="0" data-tip="加行｜加行
+梵 prayoga
+英 preparatory practice / application">加行</span>修？就是修方便時，仍被有<span class="term" tabindex="0" data-tip="加行｜加行
+梵 prayoga
+英 preparatory practice / application">加行</span>相間隔而修。</p>
       </div>
       <div class="source-text" aria-label="文言原文">
         <span class="line-range">文言原文 / T30n1579_p0669a22-p0669a29</span>
@@ -198,9 +305,13 @@
       <h2>09 成辦修與二類善法修</h2>
       <div class="translation-text">
         <span class="line-range">白話譯文</span>
-<p>什麼是成辦修？就是聲聞乘、獨覺乘或大乘行者，已經得到一切轉依，並且對一切法獲得自在；這樣的修叫成辦修。</p>
+<p>什麼是成辦修？就是聲聞乘、<span class="term" tabindex="0" data-tip="獨覺｜獨覺
+梵 pratyekabuddha
+英 solitary buddha / pratyekabuddha">獨覺</span>乘或大乘行者，已經得到一切轉依，並且對一切法獲得自在；這樣的修叫成辦修。</p>
 <p>什麼是非修所成法修？就是不定地中布施、持戒等善法的修。什麼是修所成法修？就是定地中諸善法的修。到這裡，〈修所成慧地〉中其他抉擇文不再出現。</p>
-<p>若從修行進程說，這是加行等修習成熟後，轉依與諸法自在已成辦的狀態。</p>
+<p>若從修行進程說，這是<span class="term" tabindex="0" data-tip="加行｜加行
+梵 prayoga
+英 preparatory practice / application">加行</span>等修習成熟後，轉依與諸法自在已成辦的狀態。</p>
       </div>
       <div class="source-text" aria-label="文言原文">
         <span class="line-range">文言原文 / T30n1579_p0669a29-p0669b06</span>
@@ -219,10 +330,20 @@
       <div class="translation-text">
         <span class="line-range">白話譯文</span>
 <p>這裡開始〈攝決擇分〉中〈聲聞地〉第一部分。前面已說完〈修所成慧地〉的抉擇；現在要說〈聲聞地〉的抉擇。</p>
-<p>如〈本地分〉所說，安住無種性的補特伽羅，稱為畢竟無般涅槃法。若有人疑惑：「怎麼會有畢竟不能般涅槃的人？」應當問他：有情是否有種種界性、無量界性、下劣界性、勝妙界性？若承認有，就不能否定畢竟無般涅槃法；若否定有，就違背經中所說有情有種種界性乃至勝妙界性。</p>
+<p>如〈本地分〉所說，安住無種性的<span class="term" tabindex="0" data-tip="補特伽羅｜人
+梵 pudgala
+英 person / individual">補特伽羅</span>，稱為畢竟無般涅槃法。若有人疑惑：「怎麼會有畢竟不能般涅槃的人？」應當問他：有情是否有種種界性、無量界性、下劣界性、勝妙界性？若承認有，就不能否定畢竟無般涅槃法；若否定有，就違背經中所說有情有種種界性乃至勝妙界性。</p>
 <p>若又難說：「有情雖有種種界性，卻沒有無根有情；為何不能同樣說沒有無般涅槃法？」應反問：無根者是有情還是非有情？若是有情，外在無根物也應成有情；若非有情，又說『無根有情』，便不合理。</p>
-<p>若又以四姓與天、地獄等轉變為例，主張無般涅槃法也可以轉成有般涅槃法，應問：四姓乃至諸天、地獄，是具有一切界，還是只有一界？若具有一切界，譬喻不相似；若只有一界，則從剎帝利轉作戍陀羅、從地獄轉作天也不合理。</p>
-<p>若又說無般涅槃法何以不能具有有般涅槃法界，應問：這兩種界互相違背，還是不相違背？若互相違背，不能說無般涅槃法也有有般涅槃法界；若不相違背，同一補特伽羅既是無般涅槃法又是有般涅槃法，也不合理。</p>
+<p>若又以四姓與天、<span class="term" tabindex="0" data-tip="那洛迦｜地獄
+梵 naraka
+英 hell / naraka">地獄</span>等轉變為例，主張無般涅槃法也可以轉成有般涅槃法，應問：四姓乃至諸天、<span class="term" tabindex="0" data-tip="那洛迦｜地獄
+梵 naraka
+英 hell / naraka">地獄</span>，是具有一切界，還是只有一界？若具有一切界，譬喻不相似；若只有一界，則從剎帝利轉作戍陀羅、從<span class="term" tabindex="0" data-tip="那洛迦｜地獄
+梵 naraka
+英 hell / naraka">地獄</span>轉作天也不合理。</p>
+<p>若又說無般涅槃法何以不能具有有般涅槃法界，應問：這兩種界互相違背，還是不相違背？若互相違背，不能說無般涅槃法也有有般涅槃法界；若不相違背，同一<span class="term" tabindex="0" data-tip="補特伽羅｜人
+梵 pudgala
+英 person / individual">補特伽羅</span>既是無般涅槃法又是有般涅槃法，也不合理。</p>
       </div>
       <div class="source-text" aria-label="文言原文">
         <span class="line-range">文言原文 / T30n1579_p0669b07-p0669c13</span>
@@ -269,8 +390,12 @@
       <h2>11 無性有情金等譬難與現後生難</h2>
       <div class="translation-text">
         <span class="line-range">白話譯文</span>
-<p>若又以土地有時無金種性、有時有金種性，或無末尼、真珠、琉璃、鹽等種性為喻，主張無般涅槃法種性也可轉成有般涅槃法種性，應反問：聲聞定種性、大乘定種性，是否也可先有後無、先無後有？若可以，順解脫分善根就會空無果用，定種性的建立也不成立；若不可以，這個地方種性的譬喻就不能成立。</p>
-<p>又應追問：無般涅槃法的下劣界，是在此生轉成般涅槃法，還是在後生？若說此生，遇佛法僧後能不能生起順解脫分善根？說能，便不該名無般涅槃法；說不能，又不該說此生可轉成。若說後生才成，則要問他是否先已積集善根。若已積集，今生遇佛法僧也應能起善根；若未積集，前後同樣未積集，說後生才成也沒有道理。</p>
+<p>若又以土地有時無金種性、有時有金種性，或無末尼、真珠、琉璃、鹽等種性為喻，主張無般涅槃法種性也可轉成有般涅槃法種性，應反問：聲聞定種性、大乘定種性，是否也可先有後無、先無後有？若可以，順<span class="term" tabindex="0" data-tip="解脫｜定中解脫法門
+梵 vimoksha
+英 liberation / vimoksha">解脫</span>分善根就會空無果用，定種性的建立也不成立；若不可以，這個地方種性的譬喻就不能成立。</p>
+<p>又應追問：無般涅槃法的下劣界，是在此生轉成般涅槃法，還是在後生？若說此生，遇佛法僧後能不能生起順<span class="term" tabindex="0" data-tip="解脫｜定中解脫法門
+梵 vimoksha
+英 liberation / vimoksha">解脫</span>分善根？說能，便不該名無般涅槃法；說不能，又不該說此生可轉成。若說後生才成，則要問他是否先已積集善根。若已積集，今生遇佛法僧也應能起善根；若未積集，前後同樣未積集，說後生才成也沒有道理。</p>
       </div>
       <div class="source-text" aria-label="文言原文">
         <span class="line-range">文言原文 / T30n1579_p0669c14-p0670a20</span>
@@ -320,7 +445,11 @@
 <p>略說有十種聲聞：清淨界聲聞、已遇緣聲聞、雜染界生聲聞、清淨界生聲聞、末法時生聲聞、賢善時生聲聞、未得眼聲聞、已得眼聲聞、清淨眼聲聞、極清淨眼聲聞。</p>
 <p>安住聲聞種性者，是第一種；已入法者，是第二種。若生在多苦、五濁可得的世界，是雜染界生聲聞；與此相反，是清淨界生聲聞。</p>
 <p>末法時生聲聞的相貌，是多貪著利養恭敬、違背妙法，貪瞋癡與不正法增盛，被慳嫉等隨煩惱纏擾，處慳、家慳、利慳、敬慳、譽慳、法慳具足，諂誑矯詐現前；乃至為活命而出家，不為涅槃。他們掉動輕躁、懈怠失念、根性闇劣，樂於眾會與村落臥具，棄捨空閑；於空性、緣起等甚深經典棄捨，反而歡喜世間綺飾文章；於似法作法想，於正法作非法想，甚至誹謗正法與毘奈耶。又多犯尸羅，內實腐敗、外現賢善，重罪尚故意毀犯，犯後不如法發露，與在家人結好，營辦無義事業，依邪命互相謀略鬥訟，貪蓄資具，度人出家也多為供事。這類人身壞命終多墮惡趣。</p>
-<p>與這些雜染相反，成就不染污法者，是賢善時生聲聞；多在如來初出世、大師現前或聖教未壞時出現，命終多生善趣。異生聲聞名未得眼；預流、一來、不還等名已得眼；慧解脫阿羅漢名清淨眼；具三明、俱分解脫者名極清淨眼。</p>
+<p>與這些雜染相反，成就不染污法者，是賢善時生聲聞；多在如來初出世、大師現前或聖教未壞時出現，命終多生善趣。異生聲聞名未得眼；預流、一來、不還等名已得眼；慧<span class="term" tabindex="0" data-tip="解脫｜定中解脫法門
+梵 vimoksha
+英 liberation / vimoksha">解脫</span>阿羅漢名清淨眼；具三明、俱分<span class="term" tabindex="0" data-tip="解脫｜定中解脫法門
+梵 vimoksha
+英 liberation / vimoksha">解脫</span>者名極清淨眼。</p>
       </div>
       <div class="source-text" aria-label="文言原文">
         <span class="line-range">文言原文 / T30n1579_p0670a21-p0670c23</span>
@@ -392,7 +521,9 @@
       <h2>13 遲速二類聲聞</h2>
       <div class="translation-text">
         <span class="line-range">白話譯文</span>
-<p>又有聲聞雖依所應勇猛精進，但現法中不能證得勝過人法；也有聲聞現法中有能力證得勝過人法、沙門果證，卻因放逸而不能證得。這是以遲速與放逸不放逸來分別聲聞。</p>
+<p>又有聲聞雖依所應勇猛精進，但現法中不能證得勝過人法；也有聲聞現法中有能力證得勝過人法、<span class="term" tabindex="0" data-tip="沙門果｜沙門果
+梵 shramanya-phala
+英 fruition of recluseship">沙門果</span>證，卻因放逸而不能證得。這是以遲速與放逸不放逸來分別聲聞。</p>
       </div>
       <div class="source-text" aria-label="文言原文">
         <span class="line-range">文言原文 / T30n1579_p0670c24-p0670c27</span>
@@ -408,7 +539,9 @@
       <div class="translation-text">
         <span class="line-range">白話譯文</span>
 <p>接著解釋《月喻經》中具戒、具德、柔和、善法等句的差別。聲聞中略有四種清淨美妙之法，能令眾生見到時由身語意生起無量福。</p>
-<p>第一，是安住具足尸羅、守護別解脫律儀等。第二，是少欲喜足，乃至證得諸漏永盡而受讚歎。第三，是柔和易共住，不惱害有智同梵行者，令苾芻樂於同住，並成就四種證淨。第四，是不貪利養、不著恭敬，憐愍他人，覆藏己善、發露己惡；雖有種種功德，卻不求他人知道自己成就功德。</p>
+<p>第一，是安住具足尸羅、守護別<span class="term" tabindex="0" data-tip="解脫｜定中解脫法門
+梵 vimoksha
+英 liberation / vimoksha">解脫</span>律儀等。第二，是少欲喜足，乃至證得諸漏永盡而受讚歎。第三，是柔和易共住，不惱害有智同梵行者，令苾芻樂於同住，並成就四種證淨。第四，是不貪利養、不著恭敬，憐愍他人，覆藏己善、發露己惡；雖有種種功德，卻不求他人知道自己成就功德。</p>
       </div>
       <div class="source-text" aria-label="文言原文">
         <span class="line-range">文言原文 / T30n1579_p0670c28-p0671a10</span>
@@ -477,11 +610,21 @@
       <h2>16 伐他迦經染淨三處</h2>
       <div class="translation-text">
         <span class="line-range">白話譯文</span>
-<p>接著解釋《伐他迦經》。若聲聞想善巧於染淨方便，略應遍知三處：雜染與清淨的所依、雜染本身、清淨本身。</p>
+<p>接著解釋《伐他迦經》。若聲聞想<span class="term" tabindex="0" data-tip="善巧｜善於通達
+梵 kaushalya
+英 skill / expertise">善巧</span>於染淨方便，略應遍知三處：雜染與清淨的所依、雜染本身、清淨本身。</p>
 <p>雜染與清淨所依，就是這個有色、粗重的身體。對無智慧而趣向無明的凡夫，它是雜染所依；對聰慧而趣向明的人，它也是清淨所依。</p>
 <p>雜染，是愚夫先尋思欲作淨不淨業，後以身語造作淨不淨業，由此在五趣生死中感得可愛或不可愛、有惱或無惱的自體。清淨，則以二種學最為殊勝：一是真如智為依止而能有所作，二是煩惱都得離繫。</p>
 <p>清淨又由五因顯示：正說者、正行者、正行、增上心學所治隨煩惱斷、增上慧學所治隨煩惱斷。如來是正說者，根熟聲聞是正行者，諦智所攝是正行。五種增上心學所治隨煩惱，與三種增上慧所治隨煩惱永斷，便證得最善清淨的增上心學、增上慧學阿羅漢果。</p>
-<p>這裡也連到順決擇分與修道所攝慧：前者為趣入現觀的善根階段，後者對治有學修道中應斷的我慢等煩惱。</p>
+<p>這裡也連到<span class="term" tabindex="0" data-tip="順決擇分｜順向抉擇分善根
+梵 nirvedha-bhagiya
+英 aids to penetration">順決擇分</span>與<span class="term" tabindex="0" data-tip="修道｜修道
+梵 bhavana-marga
+英 path of cultivation">修道</span>所攝慧：前者為趣入<span class="term" tabindex="0" data-tip="現觀｜直接現證
+梵 abhisamaya
+英 direct realization / manifest insight">現觀</span>的善根階段，後者對治有學<span class="term" tabindex="0" data-tip="修道｜修道
+梵 bhavana-marga
+英 path of cultivation">修道</span>中應斷的我慢等煩惱。</p>
       </div>
       <div class="source-text" aria-label="文言原文">
         <span class="line-range">文言原文 / T30n1579_p0671b14-p0671c14</span>
@@ -555,8 +698,14 @@
       <h2>18 名映一切與無我密意</h2>
       <div class="translation-text">
         <span class="line-range">白話譯文</span>
-<p>又依思所緣而說：「名映於一切，無有過名者；由此名一法，皆隨自在行。」這是什麼意思？略說，是為了觀清淨因、觀自相、觀雜染因，並顯示補特伽羅無我與法無我。</p>
-<p>若遍了知補特伽羅無我中的四無色蘊，就能斷一切自境界相，名為映蔽一切。若遍了知法無我中遍計所執自性的世俗言名，就能除一切彼所依相，也名映蔽一切。離開四無色蘊，我相事不可得；離開世俗言名，遍計所執自性相事也不可得。若這兩種都不了知，就會對一切境相發起雜染相續。因此，世尊依此密意說偈：因執法有自性，所以執我性而轉；覺知法無我，便覺知補特伽羅無我；由覺知故，執著還滅。</p>
+<p>又依思所緣而說：「名映於一切，無有過名者；由此名一法，皆隨自在行。」這是什麼意思？略說，是為了觀清淨因、觀自相、觀雜染因，並顯示<span class="term" tabindex="0" data-tip="補特伽羅｜人
+梵 pudgala
+英 person / individual">補特伽羅</span>無我與法無我。</p>
+<p>若遍了知<span class="term" tabindex="0" data-tip="補特伽羅｜人
+梵 pudgala
+英 person / individual">補特伽羅</span>無我中的四無色蘊，就能斷一切自境界相，名為映蔽一切。若遍了知法無我中遍計所執自性的世俗言名，就能除一切彼所依相，也名映蔽一切。離開四無色蘊，我相事不可得；離開世俗言名，遍計所執自性相事也不可得。若這兩種都不了知，就會對一切境相發起雜染相續。因此，世尊依此密意說偈：因執法有自性，所以執我性而轉；覺知法無我，便覺知<span class="term" tabindex="0" data-tip="補特伽羅｜人
+梵 pudgala
+英 person / individual">補特伽羅</span>無我；由覺知故，執著還滅。</p>
       </div>
       <div class="source-text" aria-label="文言原文">
         <span class="line-range">文言原文 / T30n1579_p0672a07-p0672a21</span>
@@ -582,8 +731,12 @@
       <h2>19 四諦總辨與諦攝</h2>
       <div class="translation-text">
         <span class="line-range">白話譯文</span>
-<p>世尊為聲聞說四聖諦，作為清淨煩惱的所緣境界，也就是苦諦等，如前已說。</p>
-<p>問：若真實無顛倒相才是諦相，外道見、邪勝解、邪論等既非真實、又是顛倒，為何攝於諦？若不攝於諦，它們就不應感得未來後有，也不應是苦因。</p>
+<p>世尊為聲聞說<span class="term" tabindex="0" data-tip="四聖諦｜四種聖者所證真理
+梵 catvari aryasatyani
+英 four noble truths">四聖諦</span>，作為清淨煩惱的所緣境界，也就是苦諦等，如前已說。</p>
+<p>問：若真實無顛倒相才是諦相，外道見、邪<span class="term" tabindex="0" data-tip="勝解｜決定勝解
+梵 adhimoksha
+英 resolution / determinate understanding">勝解</span>、邪論等既非真實、又是顛倒，為何攝於諦？若不攝於諦，它們就不應感得未來後有，也不應是苦因。</p>
 <p>答：它們雖非真實、也是顛倒，仍說攝於苦、集二諦。因為它們雖屬邪性，但這個邪性相本身是真實不顛倒的：它是苦性，也是苦因。</p>
       </div>
       <div class="source-text" aria-label="文言原文">
@@ -604,10 +757,16 @@
       <h2>20 無常苦空無我二相與苦義</h2>
       <div class="translation-text">
         <span class="line-range">白話譯文</span>
-<p>無常義由二相顯示：依大乘道理，是非有義；依聲聞乘道理，是相滅壞義。苦義由二相顯示：非有執習氣粗重義，以及三受所隨生等八苦相轉義。空義由二相顯示：遠離補特伽羅自性相，以及遠離諸法自性相。無我義也由大乘與聲聞乘兩種道理顯示：補特伽羅自性無我與諸法自性無我。</p>
+<p>無常義由二相顯示：依大乘道理，是非有義；依聲聞乘道理，是相滅壞義。苦義由二相顯示：非有執習氣粗重義，以及三受所隨生等八苦相轉義。空義由二相顯示：遠離<span class="term" tabindex="0" data-tip="補特伽羅｜人
+梵 pudgala
+英 person / individual">補特伽羅</span>自性相，以及遠離諸法自性相。無我義也由大乘與聲聞乘兩種道理顯示：<span class="term" tabindex="0" data-tip="補特伽羅｜人
+梵 pudgala
+英 person / individual">補特伽羅</span>自性無我與諸法自性無我。</p>
 <p>又有無常教與無始教兩種教，有為界通達與無為界通達兩種通達。由五因緣，凡無常即是苦：被粗重攝受、是生等苦法性、三苦常隨逐、是增長行的因、是顛倒執著所緣。由五因緣，凡苦即無我：離苦行不可得我、苦行依眾緣、無主宰作用、剎那生而相續轉、展轉相依。</p>
 <p>凡不可愛、不可樂、是苦、損惱、違害者，都攝於苦諦；但有些苦諦所攝，不一定是苦苦，如壞苦、行苦所攝諸行。八苦中，前五顯苦苦性，中二顯壞苦性，最後總略五取蘊苦顯行苦性。</p>
-<p>諸苦皆無常；但有無常而非苦者，就是道諦。因為道不是苦受等所攝，不是苦苦；道不會變壞而生壞苦；道能解脫雜染品粗重、違逆生相續，所以也非行苦。諸無常苦皆空無我；但有空無我而非無常苦者，即滅諦。苦、集諦具四行相，道諦有三，滅諦有二，非無常、非苦。</p>
+<p>諸苦皆無常；但有無常而非苦者，就是道諦。因為道不是苦受等所攝，不是苦苦；道不會變壞而生壞苦；道能<span class="term" tabindex="0" data-tip="解脫｜定中解脫法門
+梵 vimoksha
+英 liberation / vimoksha">解脫</span>雜染品粗重、違逆生相續，所以也非行苦。諸無常苦皆空無我；但有空無我而非無常苦者，即滅諦。苦、集諦具四行相，道諦有三，滅諦有二，非無常、非苦。</p>
       </div>
       <div class="source-text" aria-label="文言原文">
         <span class="line-range">文言原文 / T30n1579_p0672b02-p0672c15</span>
@@ -661,7 +820,9 @@
       <h2>21 苦諦集諦與愛施設</h2>
       <div class="translation-text">
         <span class="line-range">白話譯文</span>
-<p>凡是集諦，都是苦諦；但有些是苦諦而不是集諦，例如阿羅漢清淨相續中的善、無記世間法，異生身中果異熟所攝無記法，以及現在士用所生與苦、樂、不苦不樂俱行的無記諸行。</p>
+<p>凡是集諦，都是苦諦；但有些是苦諦而不是集諦，例如阿羅漢清淨相續中的善、無記世間法，異生身中果<span class="term" tabindex="0" data-tip="異熟｜果報
+梵 vipāka
+英 maturation / ripening / vipāka">異熟</span>所攝無記法，以及現在士用所生與苦、樂、不苦不樂俱行的無記諸行。</p>
 <p>問：厭患後有、背離後有，能引出世道的世間諸法，為何攝於集諦？答：它們自性雖厭背後有，卻能隨順後有的身語意妙行，所以也攝於集諦。</p>
 <p>問：若一切後有業與煩惱，以相來說都攝於集諦，為何世尊只施設愛？答：因為愛能起取、能發業、遍於諸事，而且愛生起時，普遍能發起十五種無義利。順後有愛有兩種：緣後有境，以及作為後有之因。喜貪俱行愛，是對已得可意境或正在受用中不願相離、久住的愛。彼彼喜樂愛，是對未得所求境，想和合、不離或增益的愛。以愛與三種愛相互分別，應作四句。</p>
       </div>
@@ -704,7 +865,9 @@
         <span class="line-range">白話譯文</span>
 <p>喜貪俱行愛都屬順後有愛；但順後有愛不一定是喜貪俱行愛，例如與染污憂俱行的愛、別離愛、不和合愛。彼彼喜樂愛也都屬順後有愛；但順後有愛不一定是彼彼喜樂愛，例如緣後有境愛與喜貪俱行愛。</p>
 <p>喜貪俱行愛與彼彼喜樂愛互望，應作四句：對已得可愛境或正在受用中的愛，是喜貪俱行而非彼彼喜樂；對未來可愛境未決定將得的愛，是彼彼喜樂而非喜貪俱行；對未來可愛境已決定將得的愛，兩者俱是；其餘則俱非。</p>
-<p>欲界繫受與色界繫受互望，也作四句：生欲界未得色界對治，成就欲界繫受而非色界；生色界，成就色界而非欲界；生欲界已得色界對治，二者俱成就；生無色界，或住出世道及滅盡定，二者俱不成就。欲界繫望無色界繫、望不繫，乃至無色界繫望不繫，也都隨應作四句。</p>
+<p>欲界繫受與色界繫受互望，也作四句：生欲界未得色界對治，成就欲界繫受而非色界；生色界，成就色界而非欲界；生欲界已得色界對治，二者俱成就；生無色界，或住出世道及<span class="term" tabindex="0" data-tip="滅盡定｜滅盡定
+梵 nirodha-samapatti
+英 attainment of cessation">滅盡定</span>，二者俱不成就。欲界繫望無色界繫、望不繫，乃至無色界繫望不繫，也都隨應作四句。</p>
       </div>
       <div class="source-text" aria-label="文言原文">
         <span class="line-range">文言原文 / T30n1579_p0673a15-p0673b11</span>
@@ -743,8 +906,12 @@
         <span class="line-range">白話譯文</span>
 <p>妙欲與過患過失相應欲互望，也作四句：若色聲香味觸能不染污現行，不費力而無罪安樂住，能攝受梵行，是妙欲而非過患欲；若境界一向不可愛不可樂，或是煩惱欲，是過患欲而非妙欲；若可愛境不能不染污現行，則既是妙欲也是過患欲；色無色界繫煩惱及事，則俱非。世尊依妙欲與過患欲說：妄分別貪，是士夫的欲。</p>
 <p>愛略有兩種：有愛與受用愛。受用愛又依已得、未得所受用處而分。依界差別，又有欲愛、色愛、無色愛。依常見、斷見，又建立有愛與無有愛，所以說愛遍諸事。</p>
-<p>愛生起時普遍能發起十五種無義：令隨眠堅固；以纏染惱心心所；令心相續對所緣顛倒而轉；發起取所攝其他煩惱；安立同類相續；隨順未生惡不善法生起；令已生惡不善法增廣；障礙未生善法；障礙已生善法住、不忘、增長、廣大；由惡行集諸惡趣苦；由求後有集生老病死等苦；令有情怖畏涅槃；令有情愛樂生死、邪執生死功德；對境界也如對生死一樣貪著；並令有情思惟自害、害他，乃至生起受愛所生的種種憂苦。</p>
-<p>色愛、無色愛中所說已得與未得，也包括對色界、無色界等至的喜愛與欣求。</p>
+<p>愛生起時普遍能發起十五種無義：令<span class="term" tabindex="0" data-tip="隨眠｜潛伏煩惱
+梵 anushaya
+英 underlying tendency / latent tendency">隨眠</span>堅固；以纏染惱心心所；令心相續對所緣顛倒而轉；發起取所攝其他煩惱；安立同類相續；隨順未生惡不善法生起；令已生惡不善法增廣；障礙未生善法；障礙已生善法住、不忘、增長、廣大；由惡行集諸惡趣苦；由求後有集生老病死等苦；令有情怖畏涅槃；令有情愛樂生死、邪執生死功德；對境界也如對生死一樣貪著；並令有情思惟自害、害他，乃至生起受愛所生的種種憂苦。</p>
+<p>色愛、無色愛中所說已得與未得，也包括對色界、無色界<span class="term" tabindex="0" data-tip="等至｜入定成就
+梵 samapatti
+英 attainment / meditative attainment">等至</span>的喜愛與欣求。</p>
       </div>
       <div class="source-text" aria-label="文言原文">
         <span class="line-range">文言原文 / T30n1579_p0673b12-p0673c21</span>
@@ -790,14 +957,51 @@
       </div>
       <p class="translation-note">辨妙欲與過患欲四句，說愛的二種、三界差別與十五種無義；保留卷末題。</p>
     </section>
-  </main>
+    </main>
+  </div>
+  <nav class="section-nav" aria-label="段落導航">
+    <button type="button" id="prevSection" aria-label="上一段">↑</button>
+    <button type="button" id="nextSection" aria-label="下一段">↓</button>
+  </nav>
   <script>
-    const sourceToggle = document.getElementById("sourceToggle");
-    sourceToggle.addEventListener("click", () => {
-      const collapsed = document.body.classList.toggle("source-collapsed");
-      sourceToggle.textContent = collapsed ? "顯示文言原文" : "隱藏文言原文";
-      sourceToggle.setAttribute("aria-pressed", collapsed ? "false" : "true");
-    });
+    // 閱讀模式：白話（預設）/ 對照 / 原文，記憶於 localStorage
+    const MODE_CLASS = {trans: "source-collapsed", both: "", source: "translation-collapsed"};
+    const buttons = Array.from(document.querySelectorAll(".mode-switch button"));
+    function setMode(mode) {
+      document.body.classList.remove("source-collapsed", "translation-collapsed");
+      if (MODE_CLASS[mode]) document.body.classList.add(MODE_CLASS[mode]);
+      buttons.forEach(b => b.setAttribute("aria-pressed", String(b.dataset.mode === mode)));
+      try { localStorage.setItem("readmode", mode); } catch (e) {}
+    }
+    buttons.forEach(b => b.addEventListener("click", () => setMode(b.dataset.mode)));
+    try { setMode(localStorage.getItem("readmode") in MODE_CLASS ? localStorage.getItem("readmode") : "trans"); }
+    catch (e) { setMode("trans"); }
+
+    // 閱讀進度條
+    const progress = document.getElementById("readProgress");
+    addEventListener("scroll", () => {
+      const h = document.documentElement;
+      progress.style.width = (h.scrollTop / (h.scrollHeight - h.clientHeight) * 100) + "%";
+    }, {passive: true});
+
+    // 上一段／下一段
+    const sections = Array.from(document.querySelectorAll(".parallel-pair"));
+    function jump(dir) {
+      const y = scrollY + 80;
+      const idx = sections.findIndex(s => s.offsetTop > y + 4);
+      const current = idx === -1 ? sections.length - 1 : Math.max(idx - 1, 0);
+      const target = sections[Math.min(Math.max(current + dir, 0), sections.length - 1)];
+      target.scrollIntoView({behavior: "smooth"});
+    }
+    document.getElementById("prevSection").addEventListener("click", () => jump(-1));
+    document.getElementById("nextSection").addEventListener("click", () => jump(1));
+
+    // 寬螢幕自動展開側欄目次
+    const toc = document.getElementById("tocSide");
+    const wide = matchMedia("(min-width: 1000px)");
+    function syncToc() { toc.open = wide.matches; }
+    syncToc();
+    wide.addEventListener("change", syncToc);
   </script>
 </body>
 </html>

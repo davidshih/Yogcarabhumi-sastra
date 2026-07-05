@@ -8,25 +8,58 @@
   <script src="../../theme.js"></script>
 </head>
 <body class="source-collapsed">
+  <div class="read-progress" id="readProgress"></div>
   <div class="topbar">
     <a class="topbar-brand" href="../index.html">聲聞地</a>
-    <a class="topbar-link" href="../index.html">Index</a>
+    <a class="topbar-link" href="../../index.html">總目錄</a>
     <button class="theme-toggle" type="button" aria-label="切換深色或淺色模式"></button>
   </div>
   <header class="site-header">
     <div class="kicker">CBETA T1579 / Juan 34</div>
     <h1>瑜伽師地論卷第三十四白話對照</h1>
     <p>底本範圍：T30n1579_p0470c08 至 T30n1579_p0478b01。</p>
-    <p>譯例：核心術語採白話詞（玄奘詞）雙軌，疑難處以精簡校註標示。</p>
+    <p>譯例：核心術語採白話詞（玄奘詞）雙軌，疑難處以精簡校註標示；術語下有虛線者可懸停或點按看註解。</p>
     <nav class="translation-tools">
+      <div class="mode-switch" role="group" aria-label="閱讀模式">
+        <button type="button" data-mode="trans" aria-pressed="true">白話</button>
+        <button type="button" data-mode="both" aria-pressed="false">對照</button>
+        <button type="button" data-mode="source" aria-pressed="false">原文</button>
+      </div>
       <a href="https://github.com/davidshih/Yogcarabhumi-sastra/blob/main/translations/T1579-034-baihua.md">來源稿</a>
       <a href="https://github.com/davidshih/Yogcarabhumi-sastra/blob/main/translations/glossary/T1579-terms.json">術語庫</a>
       <a href="../docs/translation-workflow.html">翻譯流程</a>
       <a href="https://cbdata.dila.edu.tw/stable/juans?work=T1579&amp;juan=34&amp;toc=1&amp;work_info=1">CBETA API</a>
-      <button class="source-toggle" type="button" id="sourceToggle" aria-pressed="false" aria-controls="parallelText">顯示文言原文</button>
     </nav>
+    <nav class="juan-nav"><a class='juan-nav-link' href='T1579-033-baihua.html'>← 卷第33</a><a class='juan-nav-link' href='T1579-067-baihua.html'>卷第67 →</a></nav>
   </header>
-  <main class="reader parallel-text" id="parallelText">
+  <div class="page-with-toc">
+    <details class="toc-side" id="tocSide">
+      <summary>本卷目次</summary>
+      <ol>
+        <li><a href='#T30n1579_p0470c08'>01 卷題與分位</a></li>
+        <li><a href='#T30n1579_p0470c13'>02 出世間道七作意總標</a></li>
+        <li><a href='#T30n1579_p0470c16'>03 了相作意：四諦十六行略標</a></li>
+        <li><a href='#T30n1579_p0470c23'>04 苦諦十行：無常行與三種增上作意</a></li>
+        <li><a href='#T30n1579_p0473c21'>05 苦諦十行：別離、法性、合會與苦空無我</a></li>
+        <li><a href='#T30n1579_p0474b25'>06 集滅道三諦與法智類智種子</a></li>
+        <li><a href='#T30n1579_p0475a06'>07 勝解作意：十六行決定與無邊際勝解</a></li>
+        <li><a href='#T30n1579_p0475b19'>08 勝解作意：觀心入諦與煗頂忍</a></li>
+        <li><a href='#T30n1579_p0475c21'>09 遠離作意：世第一法、現觀與見道斷惑</a></li>
+        <li><a href='#T30n1579_p0476b03'>10 觀察作意：修所斷惑與十一種修</a></li>
+        <li><a href='#T30n1579_p0476c25'>11 攝樂作意</a></li>
+        <li><a href='#T30n1579_p0476c28'>12 加行究竟作意：金剛喻三摩地</a></li>
+        <li><a href='#T30n1579_p0477a09'>13 加行究竟果作意：阿羅漢果與無學相</a></li>
+        <li><a href='#T30n1579_p0477b27'>14 聲聞地總結</a></li>
+        <li><a href='#T30n1579_p0477c02'>15 獨覺地總標與五相</a></li>
+        <li><a href='#T30n1579_p0477c06'>16 獨覺種姓</a></li>
+        <li><a href='#T30n1579_p0477c15'>17 獨覺道</a></li>
+        <li><a href='#T30n1579_p0478a05'>18 獨覺習</a></li>
+        <li><a href='#T30n1579_p0478a16'>19 獨覺住</a></li>
+        <li><a href='#T30n1579_p0478a21'>20 獨覺行</a></li>
+        <li><a href='#T30n1579_p0478b01'>21 卷末</a></li>
+      </ol>
+    </details>
+    <main class="reader parallel-text" id="parallelText">
     <section class="parallel-pair" id="T30n1579_p0470c08" data-source-start="T30n1579_p0470c08" data-source-end="T30n1579_p0470c12">
       <h2>01 卷題與分位</h2>
       <div class="translation-text">
@@ -49,7 +82,19 @@
       <div class="translation-text">
         <span class="line-range">白話譯文</span>
 <p>像這樣，前面已經辨明趣向世間道。</p>
-<p>如果樂於趣向出世間道，應當依止四聖諦境，漸次生起七種專注觀修（七作意）：也就是最初的了相作意，乃至最後的加行究竟果作意，直到證得阿羅漢果。</p>
+<p>如果樂於趣向出世間道，應當依止<span class="term" tabindex="0" data-tip="四聖諦｜四種聖者所證真理
+梵 catvari aryasatyani
+英 four noble truths">四聖諦</span>境，漸次生起七種<span class="term" tabindex="0" data-tip="作意｜專注觀修
+梵 manaskara
+英 attention / mental engagement">專注觀修</span>（七<span class="term" tabindex="0" data-tip="作意｜專注觀修
+梵 manaskara
+英 attention / mental engagement">作意</span>）：也就是最初的了相<span class="term" tabindex="0" data-tip="作意｜專注觀修
+梵 manaskara
+英 attention / mental engagement">作意</span>，乃至最後的<span class="term" tabindex="0" data-tip="加行｜加行
+梵 prayoga
+英 preparatory practice / application">加行</span>究竟果<span class="term" tabindex="0" data-tip="作意｜專注觀修
+梵 manaskara
+英 attention / mental engagement">作意</span>，直到證得阿羅漢果。</p>
       </div>
       <div class="source-text" aria-label="文言原文">
         <span class="line-range">文言原文 / T30n1579_p0470c13-p0470c16</span>
@@ -67,8 +112,18 @@
       <div class="translation-text">
         <span class="line-range">白話譯文</span>
 <p>乃至證得阿羅漢果。</p>
-<p>修瑜伽師對四聖諦的略標、廣辨等增上教法，已經聽聞受持；或者對作意已經善修習；或者已得到根本禪定（根本靜慮）與無色定。</p>
-<p>他由四種觀察行相（四行）了知苦諦相，也就是無常行、苦行、空行、無我行；由四行了知集諦相，也就是因行、集行、起行、緣行；由四行了知滅諦相，也就是滅行、靜行、妙行、離行；由四行了知道諦相，也就是道行、如行、行行、出行。這就名為了相作意。</p>
+<p>修瑜伽師對<span class="term" tabindex="0" data-tip="四聖諦｜四種聖者所證真理
+梵 catvari aryasatyani
+英 four noble truths">四聖諦</span>的略標、廣辨等增上教法，已經聽聞受持；或者對<span class="term" tabindex="0" data-tip="作意｜專注觀修
+梵 manaskara
+英 attention / mental engagement">作意</span>已經善修習；或者已得到<span class="term" tabindex="0" data-tip="根本｜根本定
+英 root absorption / full absorption">根本</span>禪定（<span class="term" tabindex="0" data-tip="根本｜根本定
+英 root absorption / full absorption">根本</span><span class="term" tabindex="0" data-tip="靜慮｜靜慮定
+梵 dhyana
+英 meditative absorption / dhyana">靜慮</span>）與無色定。</p>
+<p>他由四種觀察行相（四行）了知苦諦相，也就是無常行、苦行、空行、無我行；由四行了知集諦相，也就是因行、集行、起行、緣行；由四行了知滅諦相，也就是滅行、靜行、妙行、離行；由四行了知道諦相，也就是道行、如行、行行、出行。這就名為了相<span class="term" tabindex="0" data-tip="作意｜專注觀修
+梵 manaskara
+英 attention / mental engagement">作意</span>。</p>
       </div>
       <div class="source-text" aria-label="文言原文">
         <span class="line-range">文言原文 / T30n1579_p0470c16-p0470c23</span>
@@ -90,9 +145,21 @@
       <div class="translation-text">
         <span class="line-range">白話譯文</span>
 <p>用十種觀察行相（行）觀察苦諦，就能隨順悟入苦諦的四種行相。哪十種？一、變異行；二、滅壞行；三、別離行；四、法性行；五、合會行；六、結縛行；七、不可愛行；八、不安穩行（不安隱行）；九、無所得行；十、不自在行。這十種行相，能依成立正理（證成道理）來正確觀察。這裡先依聖教量的道理（至教量理）說，如世尊說：「一切有為行（諸行）無常。」</p>
-<p>這些有為行大略有二類：一是有情世間，二是器世間。世尊依有情世間說：「苾芻當知！我以超越常人的清淨天眼，觀見諸有情死時、生時，乃至身壞命終以後，生到善趣天世界中。」由這一法門可知，世尊以清淨天眼現見一切有情世間都是無常性。世尊又說：「苾芻當知！這器世間長久安住；過此以後，漸次乃至七個日輪出現，如《七日經》廣說。所有大地、諸山、大海、蘇迷盧大寶山王，乃至梵世的諸器世界，都被焚燒；災火滅後，灰燼不現，連餘影也不可得。」由這一法門可知，世尊顯示諸器世間都是無常性。</p>
-<p>如此，修觀行者先依聖教量的道理，憑清淨信心所增上的專注觀修（淨信增上作意）之力，對一切行的無常性獲得決定。得決定後，又依這淨信增上作意之力，反覆尋思觀察一切法的無常性；此無常性與現前所見不相違，也不是依靠他人引導才知道。</p>
-<p>怎樣反覆尋思觀察？先安立內、外二類事物。內事，是六處等；外事有十六種：地事，如城邑、聚落、房舍、市廛等；園事，如藥草、叢林等；山事，如種種山的安布差別；水事，如江、河、陂、湖、眾流、池、沼；作業事；庫藏事；食事；飲事；乘事；衣事；莊嚴具事；舞歌樂事；香鬘塗飾事；資生具事；各種光明事；男女承奉事。安立這些內外事後，再依現前所見所增上的專注觀修（現見增上作意）之力，以變異行來尋思觀察無常性。</p>
+<p>這些有為行大略有二類：一是有情世間，二是器世間。世尊依有情世間說：「苾芻當知！我以超越常人的清淨天眼，觀見諸有情死時、生時，乃至身壞命終以後，生到善趣天世界中。」由這一法門可知，世尊以清淨天眼現見一切有情世間都是無常性。世尊又說：「苾芻當知！這器世間長久安住；過此以後，漸次乃至七個日輪出現，如《七日經》廣說。所有大地、諸山、大海、<span class="term" tabindex="0" data-tip="蘇迷盧｜須彌山
+梵 sumeru
+英 Mount Sumeru">蘇迷盧</span>大寶山王，乃至梵世的諸器世界，都被焚燒；災火滅後，灰燼不現，連餘影也不可得。」由這一法門可知，世尊顯示諸器世間都是無常性。</p>
+<p>如此，修觀行者先依聖教量的道理，憑清淨信心所增上的<span class="term" tabindex="0" data-tip="作意｜專注觀修
+梵 manaskara
+英 attention / mental engagement">專注觀修</span>（淨信增上<span class="term" tabindex="0" data-tip="作意｜專注觀修
+梵 manaskara
+英 attention / mental engagement">作意</span>）之力，對一切行的無常性獲得決定。得決定後，又依這淨信增上<span class="term" tabindex="0" data-tip="作意｜專注觀修
+梵 manaskara
+英 attention / mental engagement">作意</span>之力，反覆尋思觀察一切法的無常性；此無常性與現前所見不相違，也不是依靠他人引導才知道。</p>
+<p>怎樣反覆尋思觀察？先安立內、外二類事物。內事，是六處等；外事有十六種：地事，如城邑、聚落、房舍、市廛等；園事，如藥草、叢林等；山事，如種種山的安布差別；水事，如江、河、陂、湖、眾流、池、沼；作業事；庫藏事；食事；飲事；乘事；衣事；莊嚴具事；舞歌樂事；香鬘塗飾事；資生具事；各種光明事；男女承奉事。安立這些內外事後，再依現前所見所增上的<span class="term" tabindex="0" data-tip="作意｜專注觀修
+梵 manaskara
+英 attention / mental engagement">專注觀修</span>（現見增上<span class="term" tabindex="0" data-tip="作意｜專注觀修
+梵 manaskara
+英 attention / mental engagement">作意</span>）之力，以變異行來尋思觀察無常性。</p>
 <p>內事有十五種所作變異，又有八種變異因緣。十五種所作變異是：分位所作變異、顯色所作變異、形色所作變異、興衰所作變異、支節具不具所作變異、劬勞所作變異、他所損害所作變異、寒熱所作變異、威儀所作變異、觸對所作變異、雜染所作變異、疾病所作變異、終沒所作變異、青瘀等所作變異、一切不現盡滅所作變異。八種變異因緣是：積時貯畜、他所損害、受用虧損、時節變異、火所焚燒、水所漂爛、風所鼓燥、異緣會遇。</p>
 <p>所謂積時貯畜，是有色諸法雖放在好地方安置守護，但經久以後自然敗壞，可見其色相衰損變異。所謂他所損害，是種種色法若被他者捶打、損壞，就發生種種形色變異。所謂受用虧損，是各自屬主的種種色物，因受用者使用的力量而減損變異。所謂時節變異，是秋冬時叢林、藥草、花葉、果實萎黃零落；春夏時枝葉花果青翠繁茂。所謂火所焚燒，是大火縱逸，焚燒村邑、國城、王都，全部成為灰燼。所謂水所漂爛，是大水洪漫，漂蕩村邑、國城、王都，使其全部淪沒。所謂風所鼓燥，是大風吹扇，使濕衣、濕地、稼穡、叢林乾燥枯槁。</p>
 <p>所謂異緣會遇，是緣順樂受的觸而受樂受時，遇到順苦受的觸；緣順苦受的觸而受苦受時，遇到順樂受的觸；緣不苦不樂受的觸而受不苦不樂受時，遇到順樂受或順苦受的觸。又如有貪者遇到瞋的緣，貪纏止息而瞋纏生起；有瞋、有癡者遇到不同類煩惱生起的緣，也應如此了知。又如眼識正現在前時，遇到聲、香、味、觸等其他境界與因緣，便生起不同類的識；其餘一切，也應依理類推。這就是八種變異因緣。一切有色法與無色法所有變異，都由這八種因緣而有，除此之外沒有更多或另外的因緣。</p>
@@ -103,16 +170,38 @@
 <p>觸對所作變異，是由接觸順樂受的觸、領受由樂觸緣所生的樂時，自己能了別樂受的分位；如能了別樂受分位，也同樣了別苦受、不苦不樂受的分位。由了別諸受前後變異，是一再新起，不是舊法延續；或增或減，暫時而有，忽然現前，很快變壞。知道這件事後，便了知諸行無常。</p>
 <p>雜染所作變異，是能了知先前生起的心，或有貪、或離貪，或有瞋、或離瞋，或有癡、或離癡；又能了知被任一隨煩惱染污的心，也能了知不被任一隨煩惱染污的心；又能了知此心相續，因煩惱及隨煩惱，在前後位中趣入變壞或不變壞。見此後，便了知諸行無常，因為心由雜染所作的變異現前可得。</p>
 <p>疾病所作變異，是觀見自己或他人先前無病，安樂強盛；後來遭遇重病苦，觸對猛利身苦受，如前廣說；之後又見無病、安樂強盛，因此了知諸行無常。終沒所作變異，是觀見現在存活、安住、支持生命；後來死沒，只剩屍骸，空無心識，因此了知諸行無常。青瘀等所作變異，是觀見死後屍骸，有時到青瘀位，有時到膿爛位，乃至到骨鎖位，因此了知諸行無常。一切不現盡滅所作變異，是觀見後來連骨鎖位也不再顯現，全部敗壞、離散、磨滅，任何形態都不再為眼所見；因此了知諸行無常，因為這些色相反覆改轉，前後變異現前可得。</p>
-<p>如此，先由現見增上作意之力，以十五種行相觀察內事的種種變異無常性。觀察後，再觀察十六外事的種種變異無常性。地事的變異無常，是觀見某一地方先前未造立道場、天寺、宅舍、市廛、城牆等，後來新造且善作善飾；之後又見它們朽舊、圮裂、零落、頹毀、穿缺，或被火焚燒、水漂蕩，因此了知諸行無常，因為色相前後轉變現前可得。</p>
+<p>如此，先由現見增上<span class="term" tabindex="0" data-tip="作意｜專注觀修
+梵 manaskara
+英 attention / mental engagement">作意</span>之力，以十五種行相觀察內事的種種變異無常性。觀察後，再觀察十六外事的種種變異無常性。地事的變異無常，是觀見某一地方先前未造立道場、天寺、宅舍、市廛、城牆等，後來新造且善作善飾；之後又見它們朽舊、圮裂、零落、頹毀、穿缺，或被火焚燒、水漂蕩，因此了知諸行無常，因為色相前後轉變現前可得。</p>
 <p>園事的變異無常，是先見園苑中藥草、叢林、花果、枝葉茂盛，青翠鮮明，很可愛樂；後來見其枯槁，沒有花果，枝葉零落，或被火焚燒、水漂蕩，因此了知諸行無常。山事的變異無常，是一時見山中叢林蓊鬱、聳石巉巖；另一時見叢林、巉巖、聳石凋殘頹毀，高下參差，或被火焚燒、水漂蕩，因此了知諸行無常。水事的變異無常，是先見河瀆、池泉、井等濤波湧溢、水量盈滿；後來見它們枯涸乾竭，因此了知諸行無常。</p>
 <p>作業事的變異無常，是先見逐利營生、畜牧、農作、工巧、論議、航運等種種事業興盛；後來見事業衰損，因此了知諸行無常。庫藏的變異無常，是觀見種種庫藏一時盈滿、一時滅盡，因此了知諸行無常。飲食的變異無常，是觀見種種飲食，一時未辦，一時已辦，一時入口，由牙齒咀嚼、和雜涎唾、細細吞咽；一時入腹，漸漸消化；一時變成屎尿流出，因此了知諸行無常。乘事的變異無常，是一時見種種車乘新妙莊嚴，很可愛樂；後來見其朽舊，失去裝飾，因此了知諸行無常。</p>
 <p>衣事的變異無常，是見種種衣服一時新成、一時故壞，一時鮮潔、一時垢膩，因此了知諸行無常。莊嚴具的變異無常，是見諸莊嚴具一時未成、一時已成，一時堅固、一時破壞，因此了知諸行無常。舞歌樂事的變異無常，是見舞歌伎樂現在有種種音曲差別，此起彼謝，因此了知諸行無常。香鬘塗飾的變異無常，是先見種種香鬘鮮榮芬馥，後來見其萎悴臭爛，因此了知諸行無常。資具的變異無常，是見它未造、已造、成滿、破壞，前後變異，因此了知諸行無常。光明的變異無常，是見種種明暗生滅變異，因此了知諸行無常。男女承奉的變異無常，是見其或衰或盛，不能久住堅固，因此了知諸行無常。</p>
-<p>這一切外事諸行，前六種是所攝受事，後十種是身資具事。總之，應知它們的性質都是無常，因為形相轉變現前可得。由如前所說種種變異行，以及現見增上作意之力，於內外事中，如其所應，以變異行觀察一切都是無常性。由此因緣，對種種變異的無常性，能現前見到而不相違，不依他緣，不由他人引導，隨念觀察，審諦決定；這就名為現見增上作意。</p>
-<p>再由這現見增上作意之力，觀察變異無常性後，應知那些色行雖然現有剎那生滅、滅壞無常，但因為極微細，不能由現見取得，所以應依現見增上作意而正確推度（比度）。怎樣推度？那些諸行必須有剎那生滅、剎那滅壞，才可能有前後變異；若保持原樣而住，就不可能有變異。因此，諸行必定有剎那生滅。由各各眾緣和合而有，所以各各諸行得以生起；生起以後，不必等待滅壞因緣，自然滅壞。所有變異因緣，是使諸行轉變生起的因緣，不是諸行滅壞的因緣。</p>
-<p>為什麼？因為那些諸行與世間現見的滅壞因緣俱時滅壞以後，後來可見不相似的法生起，並非一切都完全不生起。也有諸行滅壞後，一切生起完全不可得；如煎水等，最後一切消盡；又如災火焚燒器世間後，全無灰燼，連餘影也不可得。這也是由於因緣後後展轉漸減至盡，最後一切都無所有，不是由火本身作成這件事。因此，變異是由前述八種因緣令變異生起，而諸行自身自然滅壞。由這樣的推度作意之力，依滅壞行，對諸行剎那生滅、滅壞無常獲得決定。</p>
+<p>這一切外事諸行，前六種是所攝受事，後十種是身資具事。總之，應知它們的性質都是無常，因為形相轉變現前可得。由如前所說種種變異行，以及現見增上<span class="term" tabindex="0" data-tip="作意｜專注觀修
+梵 manaskara
+英 attention / mental engagement">作意</span>之力，於內外事中，如其所應，以變異行觀察一切都是無常性。由此因緣，對種種變異的無常性，能現前見到而不相違，不依他緣，不由他人引導，隨念觀察，審諦決定；這就名為現見增上<span class="term" tabindex="0" data-tip="作意｜專注觀修
+梵 manaskara
+英 attention / mental engagement">作意</span>。</p>
+<p>再由這現見增上<span class="term" tabindex="0" data-tip="作意｜專注觀修
+梵 manaskara
+英 attention / mental engagement">作意</span>之力，觀察變異無常性後，應知那些色行雖然現有剎那生滅、滅壞無常，但因為極微細，不能由現見取得，所以應依現見增上<span class="term" tabindex="0" data-tip="作意｜專注觀修
+梵 manaskara
+英 attention / mental engagement">作意</span>而正確推度（比度）。怎樣推度？那些諸行必須有剎那生滅、剎那滅壞，才可能有前後變異；若保持原樣而住，就不可能有變異。因此，諸行必定有剎那生滅。由各各眾緣和合而有，所以各各諸行得以生起；生起以後，不必等待滅壞因緣，自然滅壞。所有變異因緣，是使諸行轉變生起的因緣，不是諸行滅壞的因緣。</p>
+<p>為什麼？因為那些諸行與世間現見的滅壞因緣俱時滅壞以後，後來可見不相似的法生起，並非一切都完全不生起。也有諸行滅壞後，一切生起完全不可得；如煎水等，最後一切消盡；又如災火焚燒器世間後，全無灰燼，連餘影也不可得。這也是由於因緣後後展轉漸減至盡，最後一切都無所有，不是由火本身作成這件事。因此，變異是由前述八種因緣令變異生起，而諸行自身自然滅壞。由這樣的推度<span class="term" tabindex="0" data-tip="作意｜專注觀修
+梵 manaskara
+英 attention / mental engagement">作意</span>之力，依滅壞行，對諸行剎那生滅、滅壞無常獲得決定。</p>
 <p>對這件事得決定後，還應正確推度他世中非現見的諸行生起。怎樣推度？現見諸有情有種種差別：或形色美好，或形色醜惡；或族姓高貴，或族姓卑下；或出身富族，或出身貧族；或宗族顯大，或宗族微小；或壽命長，或壽命短；或威儀嚴肅，或不嚴肅；或性利根，或性鈍根。這一切有情差別，必定由所作業有差別才能成立，不是沒有作業。這些有情色類差別，必定由先世善、不善業的造作增長及其種種品類所成；由那些因緣，今生自體差別才生起，不應以自在者變化（自在變化）為因。</p>
 <p>為什麼？若說自在變化為因，能生諸行，那麼所生諸行是只用自在為緣，還是要等待其他緣，自在才有能力變化？若只用自在為緣，則諸行應與自在同時本有，何須再生？若說先有自在體性，然後諸行才生，則諸行並非唯以自在為緣而生起。若說自在隨其所欲、功用、祈願，才能造化，那也就是以欲為因緣，並非唯有自在。若如此，此欲是有因，還是無因？若說有因，而且以自在為因，便同前述過失，不合道理。若說此欲另有其他因，則如欲一樣，功用、祈願也都以自在以外的其他法為因；如此，一切諸行也都應以其他法為因，何必妄計一個無用的自在。</p>
-<p>由這些推度增上作意之力，對有他世諸行生起獲得決定。如此略說，依三種增上作意之力，尋思觀察內外諸行都是無常性：一、淨信增上作意之力；二、現見增上作意之力；三、比度增上作意之力。</p>
+<p>由這些推度增上<span class="term" tabindex="0" data-tip="作意｜專注觀修
+梵 manaskara
+英 attention / mental engagement">作意</span>之力，對有他世諸行生起獲得決定。如此略說，依三種增上<span class="term" tabindex="0" data-tip="作意｜專注觀修
+梵 manaskara
+英 attention / mental engagement">作意</span>之力，尋思觀察內外諸行都是無常性：一、淨信增上<span class="term" tabindex="0" data-tip="作意｜專注觀修
+梵 manaskara
+英 attention / mental engagement">作意</span>之力；二、現見增上<span class="term" tabindex="0" data-tip="作意｜專注觀修
+梵 manaskara
+英 attention / mental engagement">作意</span>之力；三、比度增上<span class="term" tabindex="0" data-tip="作意｜專注觀修
+梵 manaskara
+英 attention / mental engagement">作意</span>之力。</p>
       </div>
       <div class="source-text" aria-label="文言原文">
         <span class="line-range">文言原文 / T30n1579_p0470c23-p0473c20</span>
@@ -437,13 +526,23 @@
         <span class="line-range">白話譯文</span>
 <p>修無常五行時，前面已說明變異行、滅壞行這二行。</p>
 <p>什麼是由別離行觀察無常性？就是依內、外二種別離，了知諸行是無常。依內在的別離無常來說：譬如有人本來是主人，不是奴僕、差役，能自己受用財物，也能役使他人辦事；後來失去主人的身分，也失去「不是奴僕差役」的身分，反而成為別人的奴僕與差役。像這樣從主人等身分分離，就名為別離無常性。</p>
-<p>依外在的別離無常來說：眼前所有資生財寶，本來還未變異，也尚未因別離而無常滅壞；後來卻被國王、盜賊、不可愛的人，或共有財物的關係等所劫奪，或因錯誤作為、錯誤加行而失壞，或雖用方法追求卻不能得到。這些就名為由別離行了知無常性。</p>
+<p>依外在的別離無常來說：眼前所有資生財寶，本來還未變異，也尚未因別離而無常滅壞；後來卻被國王、盜賊、不可愛的人，或共有財物的關係等所劫奪，或因錯誤作為、錯誤<span class="term" tabindex="0" data-tip="加行｜加行
+梵 prayoga
+英 preparatory practice / application">加行</span>而失壞，或雖用方法追求卻不能得到。這些就名為由別離行了知無常性。</p>
 <p>什麼是由法性行觀察無常性？就是那些變異無常、滅壞無常、別離無常，雖然現在還沒有合會現前，但在未來世必定有這樣的法性。能如實通達諸行在未來世必定有這樣的法性，就名為通達法性無常。</p>
-<p>什麼是由合會行觀察無常性？就是這些變異無常、滅壞無常、別離無常，已在現在世合會現前。能如實通達諸行在現在世已經現前合會，就名為通達合會無常。修行者對這些內外諸行的五種無常性，依其所應，以五種行作意修習、多多修習，因此獲得決定。</p>
+<p>什麼是由合會行觀察無常性？就是這些變異無常、滅壞無常、別離無常，已在現在世合會現前。能如實通達諸行在現在世已經現前合會，就名為通達合會無常。修行者對這些內外諸行的五種無常性，依其所應，以五種行<span class="term" tabindex="0" data-tip="作意｜專注觀修
+梵 manaskara
+英 attention / mental engagement">作意</span>修習、多多修習，因此獲得決定。</p>
 <p>這樣，由證成道理以及修習增上的力量，對無常行獲得決定之後，接著無間趣入苦行。他這樣思惟：這一切諸行都是無常；既然無常，必定具有生起的法性；既然是會生起的法，就有生苦；既有生苦，應知也有老苦、病苦、死苦、怨憎會苦、愛別離苦、求不得苦。這是先由不可愛行趣入苦行。</p>
 <p>又，對於一切有漏、有取、能隨順樂受的蘊，由結縛行趣入苦行。為什麼？因為在愛等結的所依處會生起愛等結，在貪等縛的所依處會生起貪等縛；因此能招集生、老、病、死、愁、悲、憂、苦，以及一切擾惱，成為純粹巨大的苦蘊。</p>
-<p>又，對於一切有漏、有取、隨順非苦非樂受的蘊，由不安隱行趣入苦行。為什麼？因為有漏、有取、隨順非苦非樂受的一切蘊，與粗重同行，又被苦、樂種子所隨逐，不能解脫苦苦、壞苦，所以一切都是無常、會滅的法。這樣，修行者對隨順樂受的諸行以及樂受，由結縛行趣入壞苦；對隨順苦受的諸行以及苦受，由不可愛行趣入苦苦；對隨順不苦不樂受的諸行以及不苦不樂受，由不安隱行趣入行苦。由結縛行、不可愛行、不安隱行的增上力，於三受中說：「所有一切受，全都是苦。」這就名為以無常行的作意為前導，趣入苦行。</p>
-<p>又這樣想：現在這裡，唯有諸根，唯有境界，唯有從根境所生的諸受，唯有其心，唯有假名安立的我、我所法，唯有其見，唯有假立；在這裡能得到的只是這些，除此之外，沒有更多、沒有超出者。也就是說，唯有諸蘊可得。在諸蘊中，沒有常恆、堅住、主宰，可以說為我，或說為有情，或在此說為生者、老者、病者、死者，或說他能造諸業、能受種種果及異熟。因為諸行全都是空，沒有我，所以名為由無所得行趣入空行。</p>
+<p>又，對於一切有漏、有取、隨順非苦非樂受的蘊，由不安隱行趣入苦行。為什麼？因為有漏、有取、隨順非苦非樂受的一切蘊，與粗重同行，又被苦、樂種子所隨逐，不能<span class="term" tabindex="0" data-tip="解脫｜定中解脫法門
+梵 vimoksha
+英 liberation / vimoksha">解脫</span>苦苦、壞苦，所以一切都是無常、會滅的法。這樣，修行者對隨順樂受的諸行以及樂受，由結縛行趣入壞苦；對隨順苦受的諸行以及苦受，由不可愛行趣入苦苦；對隨順不苦不樂受的諸行以及不苦不樂受，由不安隱行趣入行苦。由結縛行、不可愛行、不安隱行的增上力，於三受中說：「所有一切受，全都是苦。」這就名為以無常行的<span class="term" tabindex="0" data-tip="作意｜專注觀修
+梵 manaskara
+英 attention / mental engagement">作意</span>為前導，趣入苦行。</p>
+<p>又這樣想：現在這裡，唯有諸根，唯有境界，唯有從根境所生的諸受，唯有其心，唯有假名安立的我、我所法，唯有其見，唯有假立；在這裡能得到的只是這些，除此之外，沒有更多、沒有超出者。也就是說，唯有諸蘊可得。在諸蘊中，沒有常恆、堅住、主宰，可以說為我，或說為有情，或在此說為生者、老者、病者、死者，或說他能造諸業、能受種種果及<span class="term" tabindex="0" data-tip="異熟｜果報
+梵 vipāka
+英 maturation / ripening / vipāka">異熟</span>。因為諸行全都是空，沒有我，所以名為由無所得行趣入空行。</p>
 <p>又這樣想：所有諸行，都與各自的自相，以及無常相、苦相相應。它們也全都是從緣所生，所以不得自在；因為不得自在，所以都不是我。這就名為由不自在行趣入無我行。</p>
 <p>這樣，修行者以十行攝入四行，又以四行了知苦諦相。也就是：無常行由五行所攝：一、變異行，二、滅壞行，三、別離行，四、法性行，五、合會行。苦行由三行所攝：一、結縛行，二、不可愛行，三、不安隱行。空行由一行所攝，就是無所得行。無我行由一行所攝，就是不自在行。</p>
       </div>
@@ -537,12 +636,26 @@
 <p>他由十行悟入四行，又由四行，對苦諦相正確覺了之後，接著再觀察這個苦諦：它以什麼為因？以什麼為集？以什麼而起？以什麼為緣？由於斷除那些因、集、起、緣，苦也就隨之斷除。這樣，就是以集諦四行了知集諦相。</p>
 <p>也就是說，了知愛能引生苦，所以名為因；愛既然已引生苦，又能招集使苦生起，所以名為集；苦既已生起，愛又使它現起，所以名為起；又因為愛能攝受未來諸苦的種子，次第招引諸苦聚集，所以名為緣。</p>
 <p>又有另一種差別說法：了知愛是取的因，又能招集以取為因的有；又能生起以有為上首的未來生；又能引發以生為緣的老、病、死等諸苦法。隨其所應，應知說名為因、集、起、緣。</p>
-<p>又有另一種差別說法：正確了知煩惱隨眠附屬於所依，愛隨眠等是未來世後有生起的因；又正確了知從它所生的纏，隨其所應，是集、起、緣。也就是說，後有愛能招引後有，所以就是集；這個後有愛，又能發起與喜貪俱行的愛；這個與喜貪俱行的愛，又能作為多種各別喜愛的緣。這樣，依止愛隨眠等以及三種纏，能生後有，也能發起諸愛的差別，所以說名為因、集、起、緣。這樣，修行者由四種行了知集諦相。</p>
+<p>又有另一種差別說法：正確了知煩惱<span class="term" tabindex="0" data-tip="隨眠｜潛伏煩惱
+梵 anushaya
+英 underlying tendency / latent tendency">隨眠</span>附屬於所依，愛<span class="term" tabindex="0" data-tip="隨眠｜潛伏煩惱
+梵 anushaya
+英 underlying tendency / latent tendency">隨眠</span>等是未來世後有生起的因；又正確了知從它所生的纏，隨其所應，是集、起、緣。也就是說，後有愛能招引後有，所以就是集；這個後有愛，又能發起與喜貪俱行的愛；這個與喜貪俱行的愛，又能作為多種各別喜愛的緣。這樣，依止愛<span class="term" tabindex="0" data-tip="隨眠｜潛伏煩惱
+梵 anushaya
+英 underlying tendency / latent tendency">隨眠</span>等以及三種纏，能生後有，也能發起諸愛的差別，所以說名為因、集、起、緣。這樣，修行者由四種行了知集諦相。</p>
 <p>對集諦相正確覺了之後，又正確覺了：這個集諦無餘息滅，所以名為滅；一切苦諦無餘寂靜，所以名為靜；這個滅、靜，是第一、最勝、無上，所以名為妙；因為常住、永遠出離，所以名為離。這樣，修行者由四種行了知滅諦相。</p>
 <p>對滅諦相正確覺了之後，又正確覺了真實的對治道：它對所知境能普遍尋求義理，所以名為道；能如實尋求義理，所以名為如；能依四門隨順運轉，所以名為行；一向能趣向涅槃，所以名為出。這樣，修行者由四種行了知道諦相。</p>
-<p>這就名為對四聖諦，在自己內心現觀中的了相作意。</p>
+<p>這就名為對<span class="term" tabindex="0" data-tip="四聖諦｜四種聖者所證真理
+梵 catvari aryasatyani
+英 four noble truths">四聖諦</span>，在自己內心<span class="term" tabindex="0" data-tip="現觀｜直接現證
+梵 abhisamaya
+英 direct realization / manifest insight">現觀</span>中的了相<span class="term" tabindex="0" data-tip="作意｜專注觀修
+梵 manaskara
+英 attention / mental engagement">作意</span>。</p>
 <p>他既然這樣在自己內心現見諸蘊，依諸諦道理，無顛倒地尋思並正確觀察之後，又對其餘不同類界中未現見的蘊，以比度方式觀察。也就是：凡是那裡所有有為、有漏的法，遍於一切處、遍於一切種類、遍於一切時，都有這樣的法，都落在這樣的道理中，都有這樣的性質。它們所有的滅，都永遠寂靜、常住安樂；它們所有的道，都能永斷，究竟出離。</p>
-<p>應知在這裡，對現見諸蘊的諦智，以及對其餘不同類界、未現見境的比度諦智，就是能生法智、類智種子的依處。又，這樣的了相作意，應知仍然是與聞、思間雜的。</p>
+<p>應知在這裡，對現見諸蘊的諦智，以及對其餘不同類界、未現見境的比度諦智，就是能生法智、類智種子的依處。又，這樣的了相<span class="term" tabindex="0" data-tip="作意｜專注觀修
+梵 manaskara
+英 attention / mental engagement">作意</span>，應知仍然是與聞、思間雜的。</p>
       </div>
       <div class="source-text" aria-label="文言原文">
         <span class="line-range">文言原文 / T30n1579_p0474b25-p0475a05</span>
@@ -600,9 +713,50 @@
       <h2>07 勝解作意：十六行決定與無邊際勝解</h2>
       <div class="translation-text">
         <span class="line-range">白話譯文</span>
-<p>若修觀行的人，在諸聖諦中這樣一次又一次正確觀察，由十六行對四聖諦的成立道理已得決定；又對諸諦的全部面向與如實面向，超越聞、思夾雜的作意，一向發起修行上的勝解，這就叫勝解作意。這種作意只緣聖諦境，一向在定中。由於修習、多修習，對苦諦、集諦境得到無邊際智；由此了知無常，發起無常的無邊際勝解。又同樣了知苦等，發起苦、空、無我、惡行、往惡趣、興衰，以及老病死、愁悲憂苦、一切擾惱的無邊際勝解。這裡所說「無邊際」，就是生死流轉。這些法無邊無際，只要生死流轉不斷，就常有上述諸法；唯有生死無餘息滅，這些才可息滅，此外沒有其他息滅方便。於是他就在這些有、趣、死生法中，以無願行、無所依行、深厭逆行發起勝解，精勤修習勝解作意。</p>
-<p>又對這些有、生起深切厭怖的增上意樂，並對涅槃隨一行相生起深心願樂。可是他長夜以來，內心愛樂世間色聲香味觸等，並被這些色聲香味觸滋長、積集；因此雖然深心願樂涅槃，卻仍不能趣入、不能證淨、不能安住、不能勝解，心還會退轉。因為對寂靜界尚未深心希仰，又有疑慮，所以他的心屢屢厭離、驚怖。雖然對一切苦、集二諦一再深心厭離、驚怖，也對涅槃一再發起深心願樂，仍還不能深心趣入。為什麼？因為他還有能障礙現觀的粗品我慢，滲入作意，或間斷、或無間地活動，這樣思惟：「我在生死中曾長久流轉；我在生死中還將流轉；我將能趣入涅槃；我為涅槃修諸善法；我能觀苦真實是苦，我能觀集真實是集，我能觀滅真實是滅，我能觀道真實是道；我能觀空真實是空，我觀無願真是無願，我觀無相真是無相；這些法都是我所有。」由此因緣，雖然深心願樂涅槃，心卻不能趣入。</p>
-<p>他既已了知這樣的我慢是障礙，便能迅速以慧通達，棄捨任運隨轉的作意，制伏一切外所知境，趣入作意。隨作意而行，專精無間觀察聖諦；隨著前一念心謝滅，下一念心無間生起，作意觀察，方便相續流注，沒有間斷。他既然這樣以心緣心，專精不替，便能使那種滲入作意、障礙現觀的粗品我慢，沒有機會生起。</p>
+<p>若修觀行的人，在諸聖諦中這樣一次又一次正確觀察，由<span class="term" tabindex="0" data-tip="十六行｜十六種觀察行相
+英 sixteen aspects">十六行</span>對<span class="term" tabindex="0" data-tip="四聖諦｜四種聖者所證真理
+梵 catvari aryasatyani
+英 four noble truths">四聖諦</span>的成立道理已得決定；又對諸諦的全部面向與如實面向，超越聞、思夾雜的<span class="term" tabindex="0" data-tip="作意｜專注觀修
+梵 manaskara
+英 attention / mental engagement">作意</span>，一向發起修行上的<span class="term" tabindex="0" data-tip="勝解｜決定勝解
+梵 adhimoksha
+英 resolution / determinate understanding">勝解</span>，這就叫<span class="term" tabindex="0" data-tip="勝解｜決定勝解
+梵 adhimoksha
+英 resolution / determinate understanding">勝解</span><span class="term" tabindex="0" data-tip="作意｜專注觀修
+梵 manaskara
+英 attention / mental engagement">作意</span>。這種<span class="term" tabindex="0" data-tip="作意｜專注觀修
+梵 manaskara
+英 attention / mental engagement">作意</span>只緣聖諦境，一向在定中。由於修習、多修習，對苦諦、集諦境得到無邊際智；由此了知無常，發起無常的無邊際<span class="term" tabindex="0" data-tip="勝解｜決定勝解
+梵 adhimoksha
+英 resolution / determinate understanding">勝解</span>。又同樣了知苦等，發起苦、空、無我、惡行、往惡趣、興衰，以及老病死、愁悲憂苦、一切擾惱的無邊際<span class="term" tabindex="0" data-tip="勝解｜決定勝解
+梵 adhimoksha
+英 resolution / determinate understanding">勝解</span>。這裡所說「無邊際」，就是生死流轉。這些法無邊無際，只要生死流轉不斷，就常有上述諸法；唯有生死無餘息滅，這些才可息滅，此外沒有其他息滅方便。於是他就在這些有、趣、死生法中，以無願行、無所依行、深厭逆行發起<span class="term" tabindex="0" data-tip="勝解｜決定勝解
+梵 adhimoksha
+英 resolution / determinate understanding">勝解</span>，精勤修習<span class="term" tabindex="0" data-tip="勝解｜決定勝解
+梵 adhimoksha
+英 resolution / determinate understanding">勝解</span><span class="term" tabindex="0" data-tip="作意｜專注觀修
+梵 manaskara
+英 attention / mental engagement">作意</span>。</p>
+<p>又對這些有、生起深切厭怖的增上意樂，並對涅槃隨一行相生起深心願樂。可是他長夜以來，內心愛樂世間色聲香味觸等，並被這些色聲香味觸滋長、積集；因此雖然深心願樂涅槃，卻仍不能趣入、不能證淨、不能安住、不能<span class="term" tabindex="0" data-tip="勝解｜決定勝解
+梵 adhimoksha
+英 resolution / determinate understanding">勝解</span>，心還會退轉。因為對寂靜界尚未深心希仰，又有疑慮，所以他的心屢屢厭離、驚怖。雖然對一切苦、集二諦一再深心厭離、驚怖，也對涅槃一再發起深心願樂，仍還不能深心趣入。為什麼？因為他還有能障礙<span class="term" tabindex="0" data-tip="現觀｜直接現證
+梵 abhisamaya
+英 direct realization / manifest insight">現觀</span>的粗品我慢，滲入<span class="term" tabindex="0" data-tip="作意｜專注觀修
+梵 manaskara
+英 attention / mental engagement">作意</span>，或間斷、或無間地活動，這樣思惟：「我在生死中曾長久流轉；我在生死中還將流轉；我將能趣入涅槃；我為涅槃修諸善法；我能觀苦真實是苦，我能觀集真實是集，我能觀滅真實是滅，我能觀道真實是道；我能觀空真實是空，我觀無願真是無願，我觀無相真是無相；這些法都是我所有。」由此因緣，雖然深心願樂涅槃，心卻不能趣入。</p>
+<p>他既已了知這樣的我慢是障礙，便能迅速以慧通達，棄捨任運隨轉的<span class="term" tabindex="0" data-tip="作意｜專注觀修
+梵 manaskara
+英 attention / mental engagement">作意</span>，制伏一切外所知境，趣入<span class="term" tabindex="0" data-tip="作意｜專注觀修
+梵 manaskara
+英 attention / mental engagement">作意</span>。隨<span class="term" tabindex="0" data-tip="作意｜專注觀修
+梵 manaskara
+英 attention / mental engagement">作意</span>而行，專精無間觀察聖諦；隨著前一念心謝滅，下一念心無間生起，<span class="term" tabindex="0" data-tip="作意｜專注觀修
+梵 manaskara
+英 attention / mental engagement">作意</span>觀察，方便相續流注，沒有間斷。他既然這樣以心緣心，專精不替，便能使那種滲入<span class="term" tabindex="0" data-tip="作意｜專注觀修
+梵 manaskara
+英 attention / mental engagement">作意</span>、障礙<span class="term" tabindex="0" data-tip="現觀｜直接現證
+梵 abhisamaya
+英 direct realization / manifest insight">現觀</span>的粗品我慢，沒有機會生起。</p>
       </div>
       <div class="source-text" aria-label="文言原文">
         <span class="line-range">文言原文 / T30n1579_p0475a06-p0475b18</span>
@@ -658,10 +812,28 @@
       <div class="translation-text">
         <span class="line-range">白話譯文</span>
 <p>這位勤修瑜伽行者觀察心的相續：它前後輾轉差別，新新而生，或增或減，暫時而有，忽然現前，前後變易，所以是無常性。觀察心的相續屬於取蘊所攝，所以是苦性。觀察心的相續離第二法，所以是空性。觀察心的相續從眾緣生，不得自在，所以是無我性。這就叫悟入苦諦。</p>
-<p>接著又觀察這心相續：以愛為因、以愛為集、以愛為起、以愛為緣。這就叫悟入集諦。接著又觀察這心相續所有擇滅：是永滅性、永靜性、永妙性、永離性。這就叫悟入滅諦。接著又觀察這心相續的究竟對治、趣向滅的道路：是真道性、真如性、真行性、真出性。這就叫悟入道諦。</p>
-<p>像這樣，先前未能善巧觀察的，現在以善作意方便觀察，以微妙慧對四聖諦能正確悟入。由於親近、修習、多修習這種慧，能緣與所緣平等平等的正智便得生起。由此智生起，所以能斷除障礙愛樂涅槃的粗品現行我慢；又對涅槃深心願樂，迅速能趣入，心不退轉，離諸怖畏，攝受增上意樂的適悅。</p>
-<p>這樣的行者，對諸聖諦，下忍所攝的能緣、所緣平等平等智生起，名為煗；中忍所攝的能緣、所緣平等平等智生起，名為頂；上忍所攝的能緣、所緣平等平等智生起，名為諦順忍。他既這樣斷除能障礙的粗品我慢，又於涅槃攝受增上意樂的適悅，便能捨離後續觀心的一切加行，住於無加行、無分別心。那時，他的心似乎滅了，但不是真滅；似乎沒有所緣，但不是無緣。那時，他的心寂靜，雖似遠離，但不是真正遠離。那時也不是被美睡眠覆蓋，只有分明、無高無下的奢摩他行。</p>
-<p>另有一類昏昧愚癡的人，被美睡眠覆蓋，在心似滅而非實滅的狀態中，生起增上慢，以為那就是現觀。這裡所說並不是那樣。既已得到這種趣向現觀的心，不久就會入正性離生。</p>
+<p>接著又觀察這心相續：以愛為因、以愛為集、以愛為起、以愛為緣。這就叫悟入集諦。接著又觀察這心相續所有擇滅：是永滅性、永<span class="term" tabindex="0" data-tip="靜性｜寂靜性
+梵 shanta
+英 peacefulness / tranquility">靜性</span>、永妙性、永離性。這就叫悟入滅諦。接著又觀察這心相續的究竟對治、趣向滅的道路：是真道性、真如性、真行性、真出性。這就叫悟入道諦。</p>
+<p>像這樣，先前未能<span class="term" tabindex="0" data-tip="善巧｜善於通達
+梵 kaushalya
+英 skill / expertise">善巧</span>觀察的，現在以善<span class="term" tabindex="0" data-tip="作意｜專注觀修
+梵 manaskara
+英 attention / mental engagement">作意</span>方便觀察，以微妙慧對<span class="term" tabindex="0" data-tip="四聖諦｜四種聖者所證真理
+梵 catvari aryasatyani
+英 four noble truths">四聖諦</span>能正確悟入。由於親近、修習、多修習這種慧，能緣與所緣平等平等的正智便得生起。由此智生起，所以能斷除障礙愛樂涅槃的粗品現行我慢；又對涅槃深心願樂，迅速能趣入，心不退轉，離諸怖畏，攝受增上意樂的適悅。</p>
+<p>這樣的行者，對諸聖諦，下忍所攝的能緣、所緣平等平等智生起，名為煗；中忍所攝的能緣、所緣平等平等智生起，名為頂；上忍所攝的能緣、所緣平等平等智生起，名為諦順忍。他既這樣斷除能障礙的粗品我慢，又於涅槃攝受增上意樂的適悅，便能捨離後續觀心的一切<span class="term" tabindex="0" data-tip="加行｜加行
+梵 prayoga
+英 preparatory practice / application">加行</span>，住於無<span class="term" tabindex="0" data-tip="加行｜加行
+梵 prayoga
+英 preparatory practice / application">加行</span>、無分別心。那時，他的心似乎滅了，但不是真滅；似乎沒有所緣，但不是無緣。那時，他的心寂靜，雖似遠離，但不是真正遠離。那時也不是被美睡眠覆蓋，只有分明、無高無下的<span class="term" tabindex="0" data-tip="奢摩他｜止
+梵 shamatha / samatha
+英 calm abiding / serenity">奢摩他</span>行。</p>
+<p>另有一類昏昧愚癡的人，被美睡眠覆蓋，在心似滅而非實滅的狀態中，生起增上慢，以為那就是<span class="term" tabindex="0" data-tip="現觀｜直接現證
+梵 abhisamaya
+英 direct realization / manifest insight">現觀</span>。這裡所說並不是那樣。既已得到這種趣向<span class="term" tabindex="0" data-tip="現觀｜直接現證
+梵 abhisamaya
+英 direct realization / manifest insight">現觀</span>的心，不久就會入正性離生。</p>
       </div>
       <div class="source-text" aria-label="文言原文">
         <span class="line-range">文言原文 / T30n1579_p0475b19-p0475c21</span>
@@ -708,10 +880,52 @@
       <h2>09 遠離作意：世第一法、現觀與見道斷惑</h2>
       <div class="translation-text">
         <span class="line-range">白話譯文</span>
-<p>就在這樣寂靜的觀心位中，最後一念無分別心之後，無間地，對先前所觀諸聖諦理生起內作意，這就名為世第一法。從此以後，出世心生起，不再是世間心。這是世間諸行最後的界畔邊際，所以名為世第一法。</p>
-<p>從此無間，對先前所觀諸聖諦理生起內作意；作意之後無間，隨著先前次第所觀諸諦，於現見或非現見的諸聖諦中，依其次第，有無分別決定智、現見智生起。由此智生起，三界所繫、見道所斷、附屬於所依的各類煩惱之一切粗重，全都永斷。因為永斷，所以若先前已離欲界貪的人，現在入這樣的諦現觀後，得不還果。他與前面所說離欲者的相狀，應知沒有差別；但此處略有差別，就是將受化生，並在彼處般涅槃，不再還來生於此世間。若先前已倍離欲界貪的人，現在入這樣的諦現觀後，得一來果。若先前未離欲界貪的人，現在入這樣的諦現觀後，粗重永息，得預流果。</p>
-<p>因為能知的智與所知的境和合無違，現前觀照，所以名為現觀。譬如剎帝利與剎帝利和合無違、現前相見，名為現觀；婆羅門等也應知如此。這也成就眾多相狀：由於證得這樣的諦現觀，所以獲得四智，也就是在一切行、住諸作意中，善能推求，得唯法智、非斷智、非常智、緣生行如幻事智。若在行於境界時，因失念而生起猛利煩惱纏，只要暫時作意，就能迅速除遣；又能畢竟不墮惡趣；終究不故意違越所學，乃至對傍生也不害命；終究不退轉、棄捨所學；不再能造五無間業；決定知道苦樂不是自作、不是他作、不是自他共作，也不是非自非他、無因而生；終究不請求外道為師，也不對外道生起福田想；對其他沙門、婆羅門等，終究不仰觀其口與顏面；只由自己見法、得法、知法、證得法的源底，越度疑惑，不由他緣；於大師教，不被他人牽引；於諸法中得無所畏；終究不妄計世間祥瑞吉相為清淨；終究不再受第八有生；具足成就四種證淨。</p>
-<p>這樣的行者，直到世第一法以前，名為勝解作意；於諸聖諦現觀以後，直到永斷見道所斷一切煩惱，名為遠離作意。</p>
+<p>就在這樣寂靜的觀心位中，最後一念無分別心之後，無間地，對先前所觀諸聖諦理生起內<span class="term" tabindex="0" data-tip="作意｜專注觀修
+梵 manaskara
+英 attention / mental engagement">作意</span>，這就名為世第一法。從此以後，出世心生起，不再是世間心。這是世間諸行最後的界畔邊際，所以名為世第一法。</p>
+<p>從此無間，對先前所觀諸聖諦理生起內<span class="term" tabindex="0" data-tip="作意｜專注觀修
+梵 manaskara
+英 attention / mental engagement">作意</span>；<span class="term" tabindex="0" data-tip="作意｜專注觀修
+梵 manaskara
+英 attention / mental engagement">作意</span>之後無間，隨著先前次第所觀諸諦，於現見或非現見的諸聖諦中，依其次第，有無分別決定智、現見智生起。由此智生起，三界所繫、<span class="term" tabindex="0" data-tip="見道｜見道
+梵 darshana-marga
+英 path of seeing">見道</span>所斷、附屬於所依的各類煩惱之一切粗重，全都永斷。因為永斷，所以若先前已<span class="term" tabindex="0" data-tip="離欲｜離開欲貪
+梵 viveka / vairagya
+英 seclusion from sensuality / dispassion">離欲</span>界貪的人，現在入這樣的諦<span class="term" tabindex="0" data-tip="現觀｜直接現證
+梵 abhisamaya
+英 direct realization / manifest insight">現觀</span>後，得不還果。他與前面所說<span class="term" tabindex="0" data-tip="離欲｜離開欲貪
+梵 viveka / vairagya
+英 seclusion from sensuality / dispassion">離欲</span>者的相狀，應知沒有差別；但此處略有差別，就是將受化生，並在彼處般涅槃，不再還來生於此世間。若先前已倍<span class="term" tabindex="0" data-tip="離欲｜離開欲貪
+梵 viveka / vairagya
+英 seclusion from sensuality / dispassion">離欲</span>界貪的人，現在入這樣的諦<span class="term" tabindex="0" data-tip="現觀｜直接現證
+梵 abhisamaya
+英 direct realization / manifest insight">現觀</span>後，得一來果。若先前未<span class="term" tabindex="0" data-tip="離欲｜離開欲貪
+梵 viveka / vairagya
+英 seclusion from sensuality / dispassion">離欲</span>界貪的人，現在入這樣的諦<span class="term" tabindex="0" data-tip="現觀｜直接現證
+梵 abhisamaya
+英 direct realization / manifest insight">現觀</span>後，粗重永息，得預流果。</p>
+<p>因為能知的智與所知的境和合無違，現前觀照，所以名為<span class="term" tabindex="0" data-tip="現觀｜直接現證
+梵 abhisamaya
+英 direct realization / manifest insight">現觀</span>。譬如剎帝利與剎帝利和合無違、現前相見，名為<span class="term" tabindex="0" data-tip="現觀｜直接現證
+梵 abhisamaya
+英 direct realization / manifest insight">現觀</span>；婆羅門等也應知如此。這也成就眾多相狀：由於證得這樣的諦<span class="term" tabindex="0" data-tip="現觀｜直接現證
+梵 abhisamaya
+英 direct realization / manifest insight">現觀</span>，所以獲得四智，也就是在一切行、住諸<span class="term" tabindex="0" data-tip="作意｜專注觀修
+梵 manaskara
+英 attention / mental engagement">作意</span>中，善能推求，得唯法智、非斷智、非常智、緣生行如幻事智。若在行於境界時，因失念而生起猛利煩惱纏，只要暫時<span class="term" tabindex="0" data-tip="作意｜專注觀修
+梵 manaskara
+英 attention / mental engagement">作意</span>，就能迅速除遣；又能畢竟不墮惡趣；終究不故意違越所學，乃至對傍生也不害命；終究不退轉、棄捨所學；不再能造五無間業；決定知道苦樂不是自作、不是他作、不是自他共作，也不是非自非他、無因而生；終究不請求外道為師，也不對外道生起福田想；對其他沙門、婆羅門等，終究不仰觀其口與顏面；只由自己見法、得法、知法、證得法的源底，越度疑惑，不由他緣；於大師教，不被他人牽引；於諸法中得無所畏；終究不妄計世間祥瑞吉相為清淨；終究不再受第八有生；具足成就四種證淨。</p>
+<p>這樣的行者，直到世第一法以前，名為<span class="term" tabindex="0" data-tip="勝解｜決定勝解
+梵 adhimoksha
+英 resolution / determinate understanding">勝解</span><span class="term" tabindex="0" data-tip="作意｜專注觀修
+梵 manaskara
+英 attention / mental engagement">作意</span>；於諸聖諦<span class="term" tabindex="0" data-tip="現觀｜直接現證
+梵 abhisamaya
+英 direct realization / manifest insight">現觀</span>以後，直到永斷<span class="term" tabindex="0" data-tip="見道｜見道
+梵 darshana-marga
+英 path of seeing">見道</span>所斷一切煩惱，名為遠離<span class="term" tabindex="0" data-tip="作意｜專注觀修
+梵 manaskara
+英 attention / mental engagement">作意</span>。</p>
       </div>
       <div class="source-text" aria-label="文言原文">
         <span class="line-range">文言原文 / T30n1579_p0475c21-p0476b02</span>
@@ -765,13 +979,49 @@
       <h2>10 觀察作意：修所斷惑與十一種修</h2>
       <div class="translation-text">
         <span class="line-range">白話譯文</span>
-<p>從這以後，為了更進一步斷除修所斷惑，修行者依所得之道，再三修習。永斷欲界上品、中品諸煩惱後，得一來果。預流果所有諸相，在這裡也應知道同樣如此；但略有差別：若行於境界，在能隨順上品猛利煩惱纏的處所，由失念故，暫時生起微劣煩惱纏，隨即能作意，迅速除遣。此人只一度來生此世間，就能究竟作苦的邊際。得不還果及不還相，如前已說。</p>
-<p>應知在這裡，由觀察作意，對一切修道，數數觀察已斷、未斷，依所得之道而正修習。</p>
-<p>又在這裡，什麼叫修的自性？什麼叫修的業用？什麼叫修的品類差別？所謂修的自性，就是由定地作意，對世間、出世間的善有為法修習增長，無間地作、殷重地作，使心相續契合那些法的體性。</p>
+<p>從這以後，為了更進一步斷除修所斷惑，修行者依所得之道，再三修習。永斷欲界上品、中品諸煩惱後，得一來果。預流果所有諸相，在這裡也應知道同樣如此；但略有差別：若行於境界，在能隨順上品猛利煩惱纏的處所，由失念故，暫時生起微劣煩惱纏，隨即能<span class="term" tabindex="0" data-tip="作意｜專注觀修
+梵 manaskara
+英 attention / mental engagement">作意</span>，迅速除遣。此人只一度來生此世間，就能究竟作苦的邊際。得不還果及不還相，如前已說。</p>
+<p>應知在這裡，由觀察<span class="term" tabindex="0" data-tip="作意｜專注觀修
+梵 manaskara
+英 attention / mental engagement">作意</span>，對一切<span class="term" tabindex="0" data-tip="修道｜修道
+梵 bhavana-marga
+英 path of cultivation">修道</span>，數數觀察已斷、未斷，依所得之道而正修習。</p>
+<p>又在這裡，什麼叫修的自性？什麼叫修的業用？什麼叫修的品類差別？所謂修的自性，就是由定地<span class="term" tabindex="0" data-tip="作意｜專注觀修
+梵 manaskara
+英 attention / mental engagement">作意</span>，對世間、出世間的善有為法修習增長，無間地作、殷重地作，使心相續契合那些法的體性。</p>
 <p>應知修的業用略有八種：一、有一類法由修而得；二、有一類法由修而習；三、有一類法由修而淨；四、有一類法由修而遣；五、有一類法由修而知；六、有一類法由修而斷；七、有一類法由修而證；八、有一類法由修而遠。</p>
-<p>若先前未得殊勝善法，由修習令它得到，名為由修而得。若先前已得，令它轉為現前，名為由修而習。若先前已得而未令現前，只由修習同類法，將使它現前，令它轉成清淨鮮白而生起，名為由修而淨。若失念而有染污法現行，由修善法的力量令心不忍受它，斷除、吐棄它，名為由修而遣。若所應斷法尚未生起，由修善法的力量，了知它如病，深心厭壞；了知它如癰、如箭，障礙無常、苦、空、無我，深心厭壞，名為由修而知。像這樣了知以後，由於數數修習，無間道生起，斷諸煩惱，名為由修而斷。煩惱斷後，證得解脫，名為由修而證。隨著趣向上地善法，就使下地已斷諸法越轉越遠，乃至究竟，名為由修而遠。應知這就是八種修業。</p>
-<p>應知修的品類差別有十一種：一、奢摩他修；二、毘鉢舍那修；三、世間道修；四、出世道修；五、下品道修；六、中品道修；七、上品道修；八、加行道修；九、無間道修；十、解脫道修；十一、勝進道修。</p>
-<p>奢摩他修，是以九種行令心安住，如前已說。毘鉢舍那修，也如前已說。世間道修，是於諸下地見粗重相（麁相），於諸上地見寂靜相（靜相），乃至能趣向無所有處的一切離欲。出世道修，是正思惟苦真是苦、集真是集、滅真是滅、道真是道；由正見等無漏聖道，乃至能趣向非想非非想處的一切離欲。下品道修，是由此能斷最粗重的上品煩惱。中品道修，是由此能斷所有中品煩惱。上品道修，是由此能斷所有最後所斷的下品煩惱。加行道修，是由此為斷煩惱而發起加行。無間道修，是由此正斷煩惱。解脫道修，是由此在斷除無間後證得解脫。勝進道修，是由此從此以後修勝善法，直到尚未生起其餘地煩惱的能治加行，或尚未生起趣向究竟位為止。應知這就是十一種修的品類差別。</p>
+<p>若先前未得殊勝善法，由修習令它得到，名為由修而得。若先前已得，令它轉為現前，名為由修而習。若先前已得而未令現前，只由修習同類法，將使它現前，令它轉成清淨鮮白而生起，名為由修而淨。若失念而有染污法現行，由修善法的力量令心不忍受它，斷除、吐棄它，名為由修而遣。若所應斷法尚未生起，由修善法的力量，了知它如病，深心厭壞；了知它如癰、如箭，障礙無常、苦、空、無我，深心厭壞，名為由修而知。像這樣了知以後，由於數數修習，無間道生起，斷諸煩惱，名為由修而斷。煩惱斷後，證得<span class="term" tabindex="0" data-tip="解脫｜定中解脫法門
+梵 vimoksha
+英 liberation / vimoksha">解脫</span>，名為由修而證。隨著趣向上地善法，就使下地已斷諸法越轉越遠，乃至究竟，名為由修而遠。應知這就是八種修業。</p>
+<p>應知修的品類差別有十一種：一、<span class="term" tabindex="0" data-tip="奢摩他｜止
+梵 shamatha / samatha
+英 calm abiding / serenity">奢摩他</span>修；二、<span class="term" tabindex="0" data-tip="毘鉢舍那｜觀
+梵 vipashyana / vipasyana
+英 insight / discernment">毘鉢舍那</span>修；三、世間道修；四、出世道修；五、下品道修；六、中品道修；七、上品道修；八、<span class="term" tabindex="0" data-tip="加行｜加行
+梵 prayoga
+英 preparatory practice / application">加行</span>道修；九、無間道修；十、<span class="term" tabindex="0" data-tip="解脫｜定中解脫法門
+梵 vimoksha
+英 liberation / vimoksha">解脫</span>道修；十一、勝進道修。</p>
+<p><span class="term" tabindex="0" data-tip="奢摩他｜止
+梵 shamatha / samatha
+英 calm abiding / serenity">奢摩他</span>修，是以九種行令心安住，如前已說。<span class="term" tabindex="0" data-tip="毘鉢舍那｜觀
+梵 vipashyana / vipasyana
+英 insight / discernment">毘鉢舍那</span>修，也如前已說。世間道修，是於諸下地見粗重相（麁相），於諸上地見寂靜相（靜相），乃至能趣向無所有處的一切<span class="term" tabindex="0" data-tip="離欲｜離開欲貪
+梵 viveka / vairagya
+英 seclusion from sensuality / dispassion">離欲</span>。出世道修，是正思惟苦真是苦、集真是集、滅真是滅、道真是道；由正見等無漏聖道，乃至能趣向非想非非想處的一切<span class="term" tabindex="0" data-tip="離欲｜離開欲貪
+梵 viveka / vairagya
+英 seclusion from sensuality / dispassion">離欲</span>。下品道修，是由此能斷最粗重的上品煩惱。中品道修，是由此能斷所有中品煩惱。上品道修，是由此能斷所有最後所斷的下品煩惱。<span class="term" tabindex="0" data-tip="加行｜加行
+梵 prayoga
+英 preparatory practice / application">加行</span>道修，是由此為斷煩惱而發起<span class="term" tabindex="0" data-tip="加行｜加行
+梵 prayoga
+英 preparatory practice / application">加行</span>。無間道修，是由此正斷煩惱。<span class="term" tabindex="0" data-tip="解脫｜定中解脫法門
+梵 vimoksha
+英 liberation / vimoksha">解脫</span>道修，是由此在斷除無間後證得<span class="term" tabindex="0" data-tip="解脫｜定中解脫法門
+梵 vimoksha
+英 liberation / vimoksha">解脫</span>。勝進道修，是由此從此以後修勝善法，直到尚未生起其餘地煩惱的能治<span class="term" tabindex="0" data-tip="加行｜加行
+梵 prayoga
+英 preparatory practice / application">加行</span>，或尚未生起趣向究竟位為止。應知這就是十一種修的品類差別。</p>
 <p>像這樣勤於修習的人，應當時時正確觀察所有煩惱已斷、未斷。</p>
       </div>
       <div class="source-text" aria-label="文言原文">
@@ -842,7 +1092,9 @@
       <h2>11 攝樂作意</h2>
       <div class="translation-text">
         <span class="line-range">白話譯文</span>
-<p>他時時對可厭的法深心厭離，時時對可欣的法深心欣慕；這就名為攝樂作意。</p>
+<p>他時時對可厭的法深心厭離，時時對可欣的法深心欣慕；這就名為攝樂<span class="term" tabindex="0" data-tip="作意｜專注觀修
+梵 manaskara
+英 attention / mental engagement">作意</span>。</p>
       </div>
       <div class="source-text" aria-label="文言原文">
         <span class="line-range">文言原文 / T30n1579_p0476c25-p0476c28</span>
@@ -859,7 +1111,13 @@
       <h2>12 加行究竟作意：金剛喻三摩地</h2>
       <div class="translation-text">
         <span class="line-range">白話譯文</span>
-<p>他親近、修習、多修習這攝樂作意，因此能生起最後有學位中的三摩地，譬如金剛，能無餘永斷修道所斷煩惱。由這三摩地生起，就能永斷修道所斷的一切煩惱。</p>
+<p>他親近、修習、多修習這攝樂<span class="term" tabindex="0" data-tip="作意｜專注觀修
+梵 manaskara
+英 attention / mental engagement">作意</span>，因此能生起最後有學位中的三摩地，譬如金剛，能無餘永斷<span class="term" tabindex="0" data-tip="修道｜修道
+梵 bhavana-marga
+英 path of cultivation">修道</span>所斷煩惱。由這三摩地生起，就能永斷<span class="term" tabindex="0" data-tip="修道｜修道
+梵 bhavana-marga
+英 path of cultivation">修道</span>所斷的一切煩惱。</p>
 <p>問：為什麼這三摩地名為金剛喻？</p>
 <p>答：譬如金剛，相對於一切摩尼、真珠、琉璃、螺貝、璧玉、珊瑚等珍寶，最為堅固；它能穿透、能破壞其他寶物，而其他寶物不能穿壞它。像這樣，這三摩地在諸有學三摩地中，是最上、最勝、最堅固；能破壞一切煩惱，不被更上的煩惱遮蔽制伏。因此這三摩地名為金剛喻。</p>
       </div>
@@ -888,12 +1146,44 @@
       <h2>13 加行究竟果作意：阿羅漢果與無學相</h2>
       <div class="translation-text">
         <span class="line-range">白話譯文</span>
-<p>從金剛喻三摩地之後，立即永遠斷除一切煩惱品類的粗重種子，心對這些煩惱得到究竟解脫，證得種姓的究竟清淨。對於一切煩惱究竟滅盡，生起盡智；因已滅盡，所以未來苦果畢竟不再生起，於此又生起無生智。這時他成為阿羅漢，諸漏已盡，所應作的已經完成，不再有應作之事，證得自己的究竟利益，斷盡一切有結；已正確奉行如來聖教，心得善解脫，具足成就十種無學法，也就是無學正見、無學正思惟，乃至無學正解脫、無學正智。對於各種住與作意，都能隨自己心意自在運轉；想安住於聖住、天住或梵住，便能安住。想思惟能引發世間或出世間善利的正法，也能如願思惟。</p>
-<p>所謂聖住，是空住、無願住、無相住、滅盡定住。所謂天住，是各種靜慮與各種無色住。所謂梵住，是慈住、悲住、喜住、捨住。</p>
-<p>又在這時，他已達到最究竟，畢竟無垢，畢竟證得梵行邊際；離開一切關礙，已出深坑，已越深塹；已能摧伏伊師迦，是真正的聖者，摧滅高幢；已斷五支，成就六支；一向守護四種所依；最極遠離，唯一諦實，捨棄希求，思惟無濁，身行止息；心善解脫，慧善解脫；獨一無伴，正行已立，可說已親近無上丈夫。又具足成就六恒住法：眼見色後，無喜無憂，安住上捨，正念正知；耳聞聲、鼻嗅香、舌嘗味、身覺觸、意了法後，也都無喜無憂，安住上捨，正念正知。</p>
-<p>他在這時親證貪欲無餘永盡，親證瞋恚無餘永盡，親證愚癡無餘永盡。因為貪、瞋、癡都已永盡，所以不造諸惡，親近諸善；其心如虛空、淨水，又如妙香檀，普受一切天帝、天王恭敬供養。他安住於有餘依般涅槃界，已渡過生死大海，到達彼岸，也名為任持最後有身。等到由過去業與煩惱所引生的諸蘊自然滅盡，因沒有其餘取著、不再相續，便於無餘依般涅槃界而般涅槃。此中其實沒有一個般涅槃者，就像生死中也沒有一個流轉者；只有眾苦永遠滅盡、寂靜、清涼、滅沒。只有這裡最為寂靜，也就是捨棄一切所依，愛盡、離欲、永滅、涅槃。</p>
+<p>從<span class="term" tabindex="0" data-tip="金剛喻三摩地｜如金剛般摧破煩惱的定
+梵 vajropama-samadhi
+英 vajra-like concentration">金剛喻三摩地</span>之後，立即永遠斷除一切煩惱品類的粗重種子，心對這些煩惱得到究竟<span class="term" tabindex="0" data-tip="解脫｜定中解脫法門
+梵 vimoksha
+英 liberation / vimoksha">解脫</span>，證得種姓的究竟清淨。對於一切煩惱究竟滅盡，生起盡智；因已滅盡，所以未來苦果畢竟不再生起，於此又生起無生智。這時他成為阿羅漢，諸漏已盡，所應作的已經完成，不再有應作之事，證得自己的究竟利益，斷盡一切有結；已正確奉行如來聖教，心得善<span class="term" tabindex="0" data-tip="解脫｜定中解脫法門
+梵 vimoksha
+英 liberation / vimoksha">解脫</span>，具足成就十種無學法，也就是無學正見、無學正思惟，乃至無學正<span class="term" tabindex="0" data-tip="解脫｜定中解脫法門
+梵 vimoksha
+英 liberation / vimoksha">解脫</span>、無學正智。對於各種住與<span class="term" tabindex="0" data-tip="作意｜專注觀修
+梵 manaskara
+英 attention / mental engagement">作意</span>，都能隨自己心意自在運轉；想安住於聖住、天住或梵住，便能安住。想思惟能引發世間或出世間善利的正法，也能如願思惟。</p>
+<p>所謂聖住，是空住、無願住、無相住、<span class="term" tabindex="0" data-tip="滅盡定｜滅盡定
+梵 nirodha-samapatti
+英 attainment of cessation">滅盡定</span>住。所謂天住，是各種<span class="term" tabindex="0" data-tip="靜慮｜靜慮定
+梵 dhyana
+英 meditative absorption / dhyana">靜慮</span>與各種無色住。所謂梵住，是慈住、悲住、喜住、捨住。</p>
+<p>又在這時，他已達到最究竟，畢竟無垢，畢竟證得梵行邊際；離開一切關礙，已出深坑，已越深塹；已能摧伏伊師迦，是真正的聖者，摧滅高幢；已斷五支，成就六支；一向守護四種所依；最極遠離，唯一諦實，捨棄希求，思惟無濁，身行止息；心善<span class="term" tabindex="0" data-tip="解脫｜定中解脫法門
+梵 vimoksha
+英 liberation / vimoksha">解脫</span>，慧善<span class="term" tabindex="0" data-tip="解脫｜定中解脫法門
+梵 vimoksha
+英 liberation / vimoksha">解脫</span>；獨一無伴，正行已立，可說已親近無上丈夫。又具足成就六恒住法：眼見色後，無喜無憂，安住上捨，正念正知；耳聞聲、鼻嗅香、舌嘗味、身覺觸、意了法後，也都無喜無憂，安住上捨，正念正知。</p>
+<p>他在這時親證貪欲無餘永盡，親證瞋恚無餘永盡，親證愚癡無餘永盡。因為貪、瞋、癡都已永盡，所以不造諸惡，親近諸善；其心如虛空、淨水，又如妙香檀，普受一切天帝、天王恭敬供養。他安住於有餘依般涅槃界，已渡過生死大海，到達彼岸，也名為任持最後有身。等到由過去業與煩惱所引生的諸蘊自然滅盡，因沒有其餘取著、不再相續，便於無餘依般涅槃界而般涅槃。此中其實沒有一個般涅槃者，就像生死中也沒有一個流轉者；只有眾苦永遠滅盡、寂靜、清涼、滅沒。只有這裡最為寂靜，也就是捨棄一切所依，愛盡、<span class="term" tabindex="0" data-tip="離欲｜離開欲貪
+梵 viveka / vairagya
+英 seclusion from sensuality / dispassion">離欲</span>、永滅、涅槃。</p>
 <p>應知此中有這些相貌：諸漏永盡的阿羅漢苾芻，不可能親近五種處所：一、不可能故意殺害眾生命；二、不可能不與而取；三、不可能行非梵行、習行婬欲法；四、不可能明知而妄語；五、不可能貯藏受用各種欲樂資具。也不可能妄計苦樂是自作、他作、自他共作，或非自非他作而無因生。又不可能對一切不應記別之事心生怖畏；也不可能在雲、雷電、霹靂、災雹，以及見到種種可怖之事後，深生驚恐。</p>
-<p>應知此中，金剛喻定所攝的作意，名為加行究竟作意；最上阿羅漢果所攝的作意，名為加行究竟果作意。</p>
+<p>應知此中，金剛喻定所攝的<span class="term" tabindex="0" data-tip="作意｜專注觀修
+梵 manaskara
+英 attention / mental engagement">作意</span>，名為<span class="term" tabindex="0" data-tip="加行｜加行
+梵 prayoga
+英 preparatory practice / application">加行</span>究竟<span class="term" tabindex="0" data-tip="作意｜專注觀修
+梵 manaskara
+英 attention / mental engagement">作意</span>；最上阿羅漢果所攝的<span class="term" tabindex="0" data-tip="作意｜專注觀修
+梵 manaskara
+英 attention / mental engagement">作意</span>，名為<span class="term" tabindex="0" data-tip="加行｜加行
+梵 prayoga
+英 preparatory practice / application">加行</span>究竟果<span class="term" tabindex="0" data-tip="作意｜專注觀修
+梵 manaskara
+英 attention / mental engagement">作意</span>。</p>
       </div>
       <div class="source-text" aria-label="文言原文">
         <span class="line-range">文言原文 / T30n1579_p0477a09-p0477b26</span>
@@ -957,8 +1247,12 @@
       <h2>14 聲聞地總結</h2>
       <div class="translation-text">
         <span class="line-range">白話譯文</span>
-<p>由像這樣的多種作意，依出世道證得究竟。</p>
-<p>以上這一切，名為聲聞地。這是一切正等覺者所說一切與聲聞相應教法的根本；就像一切名身、句身、文身，是製造文章、呪術與異論的根本。</p>
+<p>由像這樣的多種<span class="term" tabindex="0" data-tip="作意｜專注觀修
+梵 manaskara
+英 attention / mental engagement">作意</span>，依出世道證得究竟。</p>
+<p>以上這一切，名為聲聞地。這是一切正等覺者所說一切與聲聞相應教法的<span class="term" tabindex="0" data-tip="根本｜根本定
+英 root absorption / full absorption">根本</span>；就像一切名身、句身、文身，是製造文章、呪術與異論的<span class="term" tabindex="0" data-tip="根本｜根本定
+英 root absorption / full absorption">根本</span>。</p>
       </div>
       <div class="source-text" aria-label="文言原文">
         <span class="line-range">文言原文 / T30n1579_p0477b27-p0477c01</span>
@@ -973,8 +1267,12 @@
       <h2>15 獨覺地總標與五相</h2>
       <div class="translation-text">
         <span class="line-range">白話譯文</span>
-<p>〈本地分〉中，〈獨覺地〉第十四。</p>
-<p>如上已說聲聞地。什麼是獨覺地？應知此地有五種相：一、種姓；二、道；三、習；四、住；五、行。</p>
+<p>〈本地分〉中，〈<span class="term" tabindex="0" data-tip="獨覺｜獨覺
+梵 pratyekabuddha
+英 solitary buddha / pratyekabuddha">獨覺</span>地〉第十四。</p>
+<p>如上已說聲聞地。什麼是<span class="term" tabindex="0" data-tip="獨覺｜獨覺
+梵 pratyekabuddha
+英 solitary buddha / pratyekabuddha">獨覺</span>地？應知此地有五種相：一、種姓；二、道；三、習；四、住；五、行。</p>
       </div>
       <div class="source-text" aria-label="文言原文">
         <span class="line-range">文言原文 / T30n1579_p0477c02-p0477c05</span>
@@ -989,10 +1287,24 @@
       <h2>16 獨覺種姓</h2>
       <div class="translation-text">
         <span class="line-range">白話譯文</span>
-<p>什麼是獨覺種姓？應由三種相正確了知。</p>
-<p>第一，本性為獨覺的人，在尚未證得獨覺菩提時，具有塵垢淡薄的種姓；因此，他對喧鬧處內心不喜愛，對寂靜處則深心喜愛。</p>
-<p>第二，本性為獨覺的人，在尚未證得獨覺菩提時，具有悲心淡薄的種姓；因此，他對宣說正法、利益有情之事，內心不喜愛；對少事少務、寂靜安住，則深心喜愛。</p>
-<p>第三，本性為獨覺的人，在尚未證得獨覺菩提時，具有中根種姓，屬於慢行一類；因此，他深心希望無師、無敵而證得菩提。</p>
+<p>什麼是<span class="term" tabindex="0" data-tip="獨覺｜獨覺
+梵 pratyekabuddha
+英 solitary buddha / pratyekabuddha">獨覺</span>種姓？應由三種相正確了知。</p>
+<p>第一，本性為<span class="term" tabindex="0" data-tip="獨覺｜獨覺
+梵 pratyekabuddha
+英 solitary buddha / pratyekabuddha">獨覺</span>的人，在尚未證得<span class="term" tabindex="0" data-tip="獨覺｜獨覺
+梵 pratyekabuddha
+英 solitary buddha / pratyekabuddha">獨覺</span>菩提時，具有塵垢淡薄的種姓；因此，他對喧鬧處內心不喜愛，對寂靜處則深心喜愛。</p>
+<p>第二，本性為<span class="term" tabindex="0" data-tip="獨覺｜獨覺
+梵 pratyekabuddha
+英 solitary buddha / pratyekabuddha">獨覺</span>的人，在尚未證得<span class="term" tabindex="0" data-tip="獨覺｜獨覺
+梵 pratyekabuddha
+英 solitary buddha / pratyekabuddha">獨覺</span>菩提時，具有悲心淡薄的種姓；因此，他對宣說正法、利益有情之事，內心不喜愛；對少事少務、寂靜安住，則深心喜愛。</p>
+<p>第三，本性為<span class="term" tabindex="0" data-tip="獨覺｜獨覺
+梵 pratyekabuddha
+英 solitary buddha / pratyekabuddha">獨覺</span>的人，在尚未證得<span class="term" tabindex="0" data-tip="獨覺｜獨覺
+梵 pratyekabuddha
+英 solitary buddha / pratyekabuddha">獨覺</span>菩提時，具有中根種姓，屬於慢行一類；因此，他深心希望無師、無敵而證得菩提。</p>
       </div>
       <div class="source-text" aria-label="文言原文">
         <span class="line-range">文言原文 / T30n1579_p0477c06-p0477c14</span>
@@ -1012,10 +1324,78 @@
       <h2>17 獨覺道</h2>
       <div class="translation-text">
         <span class="line-range">白話譯文</span>
-<p>什麼是獨覺道？應由三種相正確了知。</p>
-<p>有一類人安住於獨覺種姓，經過百劫，遇佛出世，親近承事，使自己的相續成熟，專心求證獨覺菩提；又勤修學蘊善巧、處善巧、界善巧、緣起善巧、處非處善巧、諦善巧，所以在未來世能迅速證得獨覺菩提。這名為第一獨覺道。</p>
-<p>又有一類人，遇佛出世，親近善士，聽聞正法，如理作意，對於過去未曾生起的順決擇分善根，引發令其生起，也就是煗、頂、忍；但他沒有能力就在此生證得法現觀、得沙門果。由於又修蘊善巧、處善巧、界善巧、緣起善巧、處非處善巧、諦善巧，所以在未來世能證得法現觀，得沙門果。這名為第二獨覺道。</p>
-<p>又有一類人，遇佛出世，親近善士，聽聞正法，如理作意，證得法現觀，得沙門果；但他沒有能力在一切方面達到最究竟、畢竟離垢、畢竟證得梵行邊際的阿羅漢果。由於又修蘊善巧、處善巧、界善巧、緣起善巧、處非處善巧、諦善巧，依出世道，在未來世達到最究竟、畢竟離垢、畢竟證得梵行邊際的阿羅漢果。這名為第三獨覺道。</p>
+<p>什麼是<span class="term" tabindex="0" data-tip="獨覺｜獨覺
+梵 pratyekabuddha
+英 solitary buddha / pratyekabuddha">獨覺</span>道？應由三種相正確了知。</p>
+<p>有一類人安住於<span class="term" tabindex="0" data-tip="獨覺｜獨覺
+梵 pratyekabuddha
+英 solitary buddha / pratyekabuddha">獨覺</span>種姓，經過百劫，遇佛出世，親近承事，使自己的相續成熟，專心求證<span class="term" tabindex="0" data-tip="獨覺｜獨覺
+梵 pratyekabuddha
+英 solitary buddha / pratyekabuddha">獨覺</span>菩提；又勤修學蘊<span class="term" tabindex="0" data-tip="善巧｜善於通達
+梵 kaushalya
+英 skill / expertise">善巧</span>、處<span class="term" tabindex="0" data-tip="善巧｜善於通達
+梵 kaushalya
+英 skill / expertise">善巧</span>、界<span class="term" tabindex="0" data-tip="善巧｜善於通達
+梵 kaushalya
+英 skill / expertise">善巧</span>、緣起<span class="term" tabindex="0" data-tip="善巧｜善於通達
+梵 kaushalya
+英 skill / expertise">善巧</span>、處非處<span class="term" tabindex="0" data-tip="善巧｜善於通達
+梵 kaushalya
+英 skill / expertise">善巧</span>、諦<span class="term" tabindex="0" data-tip="善巧｜善於通達
+梵 kaushalya
+英 skill / expertise">善巧</span>，所以在未來世能迅速證得<span class="term" tabindex="0" data-tip="獨覺｜獨覺
+梵 pratyekabuddha
+英 solitary buddha / pratyekabuddha">獨覺</span>菩提。這名為第一<span class="term" tabindex="0" data-tip="獨覺｜獨覺
+梵 pratyekabuddha
+英 solitary buddha / pratyekabuddha">獨覺</span>道。</p>
+<p>又有一類人，遇佛出世，親近善士，聽聞正法，如理<span class="term" tabindex="0" data-tip="作意｜專注觀修
+梵 manaskara
+英 attention / mental engagement">作意</span>，對於過去未曾生起的<span class="term" tabindex="0" data-tip="順決擇分｜順向抉擇分善根
+梵 nirvedha-bhagiya
+英 aids to penetration">順決擇分</span>善根，引發令其生起，也就是煗、頂、忍；但他沒有能力就在此生證得法<span class="term" tabindex="0" data-tip="現觀｜直接現證
+梵 abhisamaya
+英 direct realization / manifest insight">現觀</span>、得<span class="term" tabindex="0" data-tip="沙門果｜沙門果
+梵 shramanya-phala
+英 fruition of recluseship">沙門果</span>。由於又修蘊<span class="term" tabindex="0" data-tip="善巧｜善於通達
+梵 kaushalya
+英 skill / expertise">善巧</span>、處<span class="term" tabindex="0" data-tip="善巧｜善於通達
+梵 kaushalya
+英 skill / expertise">善巧</span>、界<span class="term" tabindex="0" data-tip="善巧｜善於通達
+梵 kaushalya
+英 skill / expertise">善巧</span>、緣起<span class="term" tabindex="0" data-tip="善巧｜善於通達
+梵 kaushalya
+英 skill / expertise">善巧</span>、處非處<span class="term" tabindex="0" data-tip="善巧｜善於通達
+梵 kaushalya
+英 skill / expertise">善巧</span>、諦<span class="term" tabindex="0" data-tip="善巧｜善於通達
+梵 kaushalya
+英 skill / expertise">善巧</span>，所以在未來世能證得法<span class="term" tabindex="0" data-tip="現觀｜直接現證
+梵 abhisamaya
+英 direct realization / manifest insight">現觀</span>，得<span class="term" tabindex="0" data-tip="沙門果｜沙門果
+梵 shramanya-phala
+英 fruition of recluseship">沙門果</span>。這名為第二<span class="term" tabindex="0" data-tip="獨覺｜獨覺
+梵 pratyekabuddha
+英 solitary buddha / pratyekabuddha">獨覺</span>道。</p>
+<p>又有一類人，遇佛出世，親近善士，聽聞正法，如理<span class="term" tabindex="0" data-tip="作意｜專注觀修
+梵 manaskara
+英 attention / mental engagement">作意</span>，證得法<span class="term" tabindex="0" data-tip="現觀｜直接現證
+梵 abhisamaya
+英 direct realization / manifest insight">現觀</span>，得<span class="term" tabindex="0" data-tip="沙門果｜沙門果
+梵 shramanya-phala
+英 fruition of recluseship">沙門果</span>；但他沒有能力在一切方面達到最究竟、畢竟離垢、畢竟證得梵行邊際的阿羅漢果。由於又修蘊<span class="term" tabindex="0" data-tip="善巧｜善於通達
+梵 kaushalya
+英 skill / expertise">善巧</span>、處<span class="term" tabindex="0" data-tip="善巧｜善於通達
+梵 kaushalya
+英 skill / expertise">善巧</span>、界<span class="term" tabindex="0" data-tip="善巧｜善於通達
+梵 kaushalya
+英 skill / expertise">善巧</span>、緣起<span class="term" tabindex="0" data-tip="善巧｜善於通達
+梵 kaushalya
+英 skill / expertise">善巧</span>、處非處<span class="term" tabindex="0" data-tip="善巧｜善於通達
+梵 kaushalya
+英 skill / expertise">善巧</span>、諦<span class="term" tabindex="0" data-tip="善巧｜善於通達
+梵 kaushalya
+英 skill / expertise">善巧</span>，依出世道，在未來世達到最究竟、畢竟離垢、畢竟證得梵行邊際的阿羅漢果。這名為第三<span class="term" tabindex="0" data-tip="獨覺｜獨覺
+梵 pratyekabuddha
+英 solitary buddha / pratyekabuddha">獨覺</span>道。</p>
       </div>
       <div class="source-text" aria-label="文言原文">
         <span class="line-range">文言原文 / T30n1579_p0477c15-p0478a05</span>
@@ -1047,9 +1427,28 @@
       <h2>18 獨覺習</h2>
       <div class="translation-text">
         <span class="line-range">白話譯文</span>
-<p>什麼是獨覺習？有一類人依第一獨覺道，經滿百劫修集資糧；過百劫後，生於無佛之世，無師而能自修三十七菩提分法，證得法現觀，得獨覺菩提果，永斷一切煩惱，成為阿羅漢。</p>
-<p>又有一類人，或依第二獨覺道，或依第三獨覺道；由此因緣，生於無佛之世，無師而能自修三十七菩提分法，或證得法現觀乃至得阿羅漢果，或得沙門果，達到最究竟、畢竟離垢、畢竟證得梵行邊際，證得最上阿羅漢果。</p>
-<p>應知此中，依第一種習而成為獨覺者，名為麟角喻；依第二、第三種習而成就者，名為部行喻。</p>
+<p>什麼是<span class="term" tabindex="0" data-tip="獨覺｜獨覺
+梵 pratyekabuddha
+英 solitary buddha / pratyekabuddha">獨覺</span>習？有一類人依第一<span class="term" tabindex="0" data-tip="獨覺｜獨覺
+梵 pratyekabuddha
+英 solitary buddha / pratyekabuddha">獨覺</span>道，經滿百劫修集資糧；過百劫後，生於無佛之世，無師而能自修三十七菩提分法，證得法<span class="term" tabindex="0" data-tip="現觀｜直接現證
+梵 abhisamaya
+英 direct realization / manifest insight">現觀</span>，得<span class="term" tabindex="0" data-tip="獨覺｜獨覺
+梵 pratyekabuddha
+英 solitary buddha / pratyekabuddha">獨覺</span>菩提果，永斷一切煩惱，成為阿羅漢。</p>
+<p>又有一類人，或依第二<span class="term" tabindex="0" data-tip="獨覺｜獨覺
+梵 pratyekabuddha
+英 solitary buddha / pratyekabuddha">獨覺</span>道，或依第三<span class="term" tabindex="0" data-tip="獨覺｜獨覺
+梵 pratyekabuddha
+英 solitary buddha / pratyekabuddha">獨覺</span>道；由此因緣，生於無佛之世，無師而能自修三十七菩提分法，或證得法<span class="term" tabindex="0" data-tip="現觀｜直接現證
+梵 abhisamaya
+英 direct realization / manifest insight">現觀</span>乃至得阿羅漢果，或得<span class="term" tabindex="0" data-tip="沙門果｜沙門果
+梵 shramanya-phala
+英 fruition of recluseship">沙門果</span>，達到最究竟、畢竟離垢、畢竟證得梵行邊際，證得最上阿羅漢果。</p>
+<p>應知此中，依第一種習而成為<span class="term" tabindex="0" data-tip="獨覺｜獨覺
+梵 pratyekabuddha
+英 solitary buddha / pratyekabuddha">獨覺</span>者，名為<span class="term" tabindex="0" data-tip="麟角喻｜如犀角般獨行者
+英 rhinoceros-like">麟角喻</span>；依第二、第三種習而成就者，名為部行喻。</p>
       </div>
       <div class="source-text" aria-label="文言原文">
         <span class="line-range">文言原文 / T30n1579_p0478a05-p0478a16</span>
@@ -1074,7 +1473,19 @@
       <h2>19 獨覺住</h2>
       <div class="translation-text">
         <span class="line-range">白話譯文</span>
-<p>什麼是獨覺住？依第一種習而成的麟角喻獨覺，喜歡住在孤林，喜歡獨居，喜歡甚深勝解，喜歡觀察甚深緣起道理，喜歡安住於最極的空、無願、無相作意。若是依第二、第三種習而成的部行喻獨覺，不一定一向喜歡住在孤林、喜歡獨居，也喜歡與部眾共同雜住。其餘住相，則如麟角喻。</p>
+<p>什麼是<span class="term" tabindex="0" data-tip="獨覺｜獨覺
+梵 pratyekabuddha
+英 solitary buddha / pratyekabuddha">獨覺</span>住？依第一種習而成的<span class="term" tabindex="0" data-tip="麟角喻｜如犀角般獨行者
+英 rhinoceros-like">麟角喻</span><span class="term" tabindex="0" data-tip="獨覺｜獨覺
+梵 pratyekabuddha
+英 solitary buddha / pratyekabuddha">獨覺</span>，喜歡住在孤林，喜歡獨居，喜歡甚深<span class="term" tabindex="0" data-tip="勝解｜決定勝解
+梵 adhimoksha
+英 resolution / determinate understanding">勝解</span>，喜歡觀察甚深緣起道理，喜歡安住於最極的空、無願、無相<span class="term" tabindex="0" data-tip="作意｜專注觀修
+梵 manaskara
+英 attention / mental engagement">作意</span>。若是依第二、第三種習而成的部行喻<span class="term" tabindex="0" data-tip="獨覺｜獨覺
+梵 pratyekabuddha
+英 solitary buddha / pratyekabuddha">獨覺</span>，不一定一向喜歡住在孤林、喜歡獨居，也喜歡與部眾共同雜住。其餘住相，則如<span class="term" tabindex="0" data-tip="麟角喻｜如犀角般獨行者
+英 rhinoceros-like">麟角喻</span>。</p>
       </div>
       <div class="source-text" aria-label="文言原文">
         <span class="line-range">文言原文 / T30n1579_p0478a16-p0478a21</span>
@@ -1093,8 +1504,15 @@
       <h2>20 獨覺行</h2>
       <div class="translation-text">
         <span class="line-range">白話譯文</span>
-<p>其餘住相，則如麟角喻。</p>
-<p>什麼是獨覺行？一切獨覺，隨其所依止的村邑聚落而住，善護其身，善守諸根，善住正念；隨入各個村邑聚落，或為乞食，或濟度其他下劣愚昧者。他們以身濟度，不以語言。為什麼？因為只是示現身相為那些人說法，而不發言。又示現種種神通境界，乃至為了使心懷誹謗的人生起歸向。又應知，這一切獨覺本來都是一向趣向寂滅。</p>
+<p>其餘住相，則如<span class="term" tabindex="0" data-tip="麟角喻｜如犀角般獨行者
+英 rhinoceros-like">麟角喻</span>。</p>
+<p>什麼是<span class="term" tabindex="0" data-tip="獨覺｜獨覺
+梵 pratyekabuddha
+英 solitary buddha / pratyekabuddha">獨覺</span>行？一切<span class="term" tabindex="0" data-tip="獨覺｜獨覺
+梵 pratyekabuddha
+英 solitary buddha / pratyekabuddha">獨覺</span>，隨其所依止的村邑聚落而住，善護其身，善守諸根，善住正念；隨入各個村邑聚落，或為乞食，或濟度其他下劣愚昧者。他們以身濟度，不以語言。為什麼？因為只是示現身相為那些人說法，而不發言。又示現種種神通境界，乃至為了使心懷誹謗的人生起歸向。又應知，這一切<span class="term" tabindex="0" data-tip="獨覺｜獨覺
+梵 pratyekabuddha
+英 solitary buddha / pratyekabuddha">獨覺</span>本來都是一向趣向寂滅。</p>
       </div>
       <div class="source-text" aria-label="文言原文">
         <span class="line-range">文言原文 / T30n1579_p0478a21-p0478a28</span>
@@ -1122,14 +1540,51 @@
       </div>
       <p class="translation-note">`0478b01` 是卷末題；後續校勘與版權資訊不納入本段 Source。</p>
     </section>
-  </main>
+    </main>
+  </div>
+  <nav class="section-nav" aria-label="段落導航">
+    <button type="button" id="prevSection" aria-label="上一段">↑</button>
+    <button type="button" id="nextSection" aria-label="下一段">↓</button>
+  </nav>
   <script>
-    const sourceToggle = document.getElementById("sourceToggle");
-    sourceToggle.addEventListener("click", () => {
-      const collapsed = document.body.classList.toggle("source-collapsed");
-      sourceToggle.textContent = collapsed ? "顯示文言原文" : "隱藏文言原文";
-      sourceToggle.setAttribute("aria-pressed", collapsed ? "false" : "true");
-    });
+    // 閱讀模式：白話（預設）/ 對照 / 原文，記憶於 localStorage
+    const MODE_CLASS = {trans: "source-collapsed", both: "", source: "translation-collapsed"};
+    const buttons = Array.from(document.querySelectorAll(".mode-switch button"));
+    function setMode(mode) {
+      document.body.classList.remove("source-collapsed", "translation-collapsed");
+      if (MODE_CLASS[mode]) document.body.classList.add(MODE_CLASS[mode]);
+      buttons.forEach(b => b.setAttribute("aria-pressed", String(b.dataset.mode === mode)));
+      try { localStorage.setItem("readmode", mode); } catch (e) {}
+    }
+    buttons.forEach(b => b.addEventListener("click", () => setMode(b.dataset.mode)));
+    try { setMode(localStorage.getItem("readmode") in MODE_CLASS ? localStorage.getItem("readmode") : "trans"); }
+    catch (e) { setMode("trans"); }
+
+    // 閱讀進度條
+    const progress = document.getElementById("readProgress");
+    addEventListener("scroll", () => {
+      const h = document.documentElement;
+      progress.style.width = (h.scrollTop / (h.scrollHeight - h.clientHeight) * 100) + "%";
+    }, {passive: true});
+
+    // 上一段／下一段
+    const sections = Array.from(document.querySelectorAll(".parallel-pair"));
+    function jump(dir) {
+      const y = scrollY + 80;
+      const idx = sections.findIndex(s => s.offsetTop > y + 4);
+      const current = idx === -1 ? sections.length - 1 : Math.max(idx - 1, 0);
+      const target = sections[Math.min(Math.max(current + dir, 0), sections.length - 1)];
+      target.scrollIntoView({behavior: "smooth"});
+    }
+    document.getElementById("prevSection").addEventListener("click", () => jump(-1));
+    document.getElementById("nextSection").addEventListener("click", () => jump(1));
+
+    // 寬螢幕自動展開側欄目次
+    const toc = document.getElementById("tocSide");
+    const wide = matchMedia("(min-width: 1000px)");
+    function syncToc() { toc.open = wide.matches; }
+    syncToc();
+    wide.addEventListener("change", syncToc);
   </script>
 </body>
 </html>

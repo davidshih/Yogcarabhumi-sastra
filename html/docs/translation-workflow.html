@@ -109,6 +109,10 @@
             <td><code>scripts/check_translation_coverage.py</code></td>
             <td>檢查來源稿 range 單調性、起訖行號與 CBETA data line id 是否一致。</td>
           </tr>
+          <tr>
+            <td><code>scripts/check_html_links.py</code></td>
+            <td>檢查 <code>html/</code> 下所有相對 href/src 連結是否指向存在的檔案。</td>
+          </tr>
         </tbody>
       </table>
     </section>
@@ -134,7 +138,7 @@ Note:
 校勘、段落歸屬或譯語判斷。
 &gt;&gt;&gt;</code></pre>
       <p><code>Range</code> 和 <code>Source</code> 只由切段 agent 或 coordinator 修改。翻譯 agent 若發現範圍問題，只在交接清單提出，不直接改邊界。</p>
-      <p>建立新卷骨架時使用下列指令；譯文填入後不要再用同一路徑重跑，以免覆蓋定稿。</p>
+      <p>建立新卷骨架時使用下列指令。骨架工具預設拒絕覆蓋已存在的來源稿；真的要重建定稿才加 <code>--force</code>。</p>
       <pre class="doc-code"><code>python3 scripts/make_translation_skeleton.py --juan XXX --data data/T1579-XXX.json --segments translations/segments/T1579-XXX.tsv --output translations/T1579-XXX-baihua.md --start T30n1579_p... --end T30n1579_p...</code></pre>
     </section>
 
@@ -222,8 +226,9 @@ Note:
       <pre class="doc-code"><code>python3 scripts/build_shengwen_di_html.py
 python3 scripts/build_translation_html.py --translation translations/T1579-XXX-baihua.md
 python3 scripts/check_translation_terms.py --translation translations/T1579-XXX-baihua.md
-python3 scripts/check_translation_coverage.py --translation translations/T1579-XXX-baihua.md --data data/T1579-XXX.json --start T30n1579_p... --end T30n1579_p...</code></pre>
-      <p>完成新卷時，還要跑 HTML 相對連結檢查。確認 <code>index.html</code>、<code>sections/</code>、<code>translations/</code>、<code>docs/</code> 沒有缺檔連結。</p>
+python3 scripts/check_translation_coverage.py --translation translations/T1579-XXX-baihua.md --data data/T1579-XXX.json --start T30n1579_p... --end T30n1579_p...
+python3 scripts/check_html_links.py</code></pre>
+      <p><code>check_html_links.py</code> 會走訪 <code>html/</code> 下所有頁面，確認 <code>index.html</code>、<code>sections/</code>、<code>translations/</code>、<code>docs/</code> 沒有缺檔連結。</p>
     </section>
 
     <section>

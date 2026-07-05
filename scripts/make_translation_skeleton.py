@@ -175,11 +175,15 @@ def main() -> int:
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--start", required=True)
     parser.add_argument("--end", required=True)
+    parser.add_argument("--force", action="store_true", help="overwrite output even if it already exists")
     args = parser.parse_args()
 
     data = args.data if args.data.is_absolute() else ROOT / args.data
     segment_path = args.segments if args.segments.is_absolute() else ROOT / args.segments
     output = args.output if args.output.is_absolute() else ROOT / args.output
+
+    if output.exists() and not args.force:
+        raise SystemExit(f"refusing to overwrite existing {output}; pass --force to replace a finalized draft")
 
     lines = extract_lines(data)
     segments = read_segments(segment_path)

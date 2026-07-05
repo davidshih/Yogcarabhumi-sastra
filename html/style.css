@@ -1,0 +1,125 @@
+body {
+  margin: 0;
+  color: #1f2933;
+  background: #f7f3ea;
+  font-family: "Noto Serif CJK TC", "Songti TC", "PMingLiU", serif;
+  line-height: 1.9;
+}
+
+a {
+  color: #8a3f21;
+}
+
+.site-header {
+  padding: 28px clamp(18px, 5vw, 56px);
+  border-bottom: 1px solid #ddd1bd;
+  background: #fffaf0;
+}
+
+.site-header h1 {
+  margin: 4px 0 8px;
+  font-size: 2rem;
+  letter-spacing: 0;
+}
+
+.site-header p {
+  margin: 4px 0;
+  color: #5a5145;
+}
+
+.kicker {
+  color: #805b2f;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.85rem;
+}
+
+.reader,
+.notes,
+.index-list {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 28px clamp(18px, 5vw, 56px);
+  background: #fffdf7;
+}
+
+.reader p {
+  margin: 0.65rem 0;
+}
+
+.lb {
+  display: inline-block;
+  margin-right: 0.45rem;
+  color: #9a8a73;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.72rem;
+}
+
+.noteAnchor::after {
+  content: "＊";
+  color: #9b2c2c;
+  font-size: 0.78em;
+  vertical-align: super;
+}
+
+.notes {
+  border-top: 1px solid #ddd1bd;
+  font-size: 0.95rem;
+}
+
+.footnote {
+  display: block;
+  margin: 0.35rem 0;
+  padding-left: 0.75rem;
+  border-left: 3px solid #d2b48c;
+}
+
+.empty-note {
+  color: #766c5d;
+}
+
+.lg {
+  margin: 0.8rem 0;
+}
+
+.lg-row {
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.lg-cell {
+  min-width: 12rem;
+}
+
+.index-list ol {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.index-list li {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 1rem;
+  padding: 0.4rem 0;
+  border-bottom: 1px solid #eee2cc;
+}
+
+.index-list span {
+  color: #8b8173;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.8rem;
+}
+
+.level-1 { padding-left: 1.25rem !important; }
+.level-2 { padding-left: 2.5rem !important; }
+.level-3 { padding-left: 3.75rem !important; }
+.level-4 { padding-left: 5rem !important; }
+.level-5 { padding-left: 6.25rem !important; }
+
+@media (max-width: 640px) {
+  .index-list li {
+    grid-template-columns: 1fr;
+    gap: 0.1rem;
+  }
+}

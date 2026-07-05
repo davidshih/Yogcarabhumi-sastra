@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>白話翻譯工作流程 - 瑜伽師地論聲聞地</title>
+  <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+  <header class="site-header">
+    <a href="../index.html">Index</a>
+    <div class="kicker">Translation Workflow</div>
+    <h1>白話翻譯工作流程</h1>
+    <p>本頁記錄後續卷次翻譯時的 agent 分工、術語保存方式、交付格式與檢查流程。</p>
+    <nav class="translation-tools">
+      <a href="../../translations/glossary/T1579-terms.json">術語庫 JSON</a>
+      <a href="../../translations/T1579-033-baihua.md">卷33來源稿</a>
+      <a href="../translations/T1579-033-baihua.html">卷33對照頁</a>
+    </nav>
+  </header>
+
+  <main class="reader doc-page">
+    <section>
+      <h2>目標</h2>
+      <p>每一卷都以 CBETA 原文為底本，產出可追溯的 Markdown 來源稿與左右對照 HTML。翻譯以正確精準優先，通順漂亮其次；核心術語以玄奘譯語為準，必要處使用「白話詞（玄奘詞）」雙軌。</p>
+      <p>多 agent 的目的不是讓每個人各自改主檔，而是把切段、初譯、術語、義理、外部對照、格式檢查分開，最後由 coordinator 統一合併。</p>
+    </section>
+
+    <section>
+      <h2>固定檔案</h2>
+      <table class="doc-table">
+        <thead>
+          <tr>
+            <th>檔案</th>
+            <th>用途</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>translations/T1579-XXX-baihua.md</code></td>
+            <td>每卷唯一來源稿，保存段落 ID、CBETA range、原文、白話、校註。</td>
+          </tr>
+          <tr>
+            <td><code>html/translations/T1579-XXX-baihua.html</code></td>
+            <td>由來源稿產生的左右對照閱讀頁。</td>
+          </tr>
+          <tr>
+            <td><code>translations/glossary/T1579-terms.json</code></td>
+            <td>跨卷術語庫，保存玄奘詞、白話譯法、外語候補、語境規則與禁譯提醒。</td>
+          </tr>
+          <tr>
+            <td><code>scripts/build_translation_html.py</code></td>
+            <td>將翻譯來源稿轉成 HTML。</td>
+          </tr>
+          <tr>
+            <td><code>scripts/check_translation_terms.py</code></td>
+            <td>檢查術語庫 schema 與來源稿中的基本術語覆蓋。</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>來源稿合約</h2>
+      <p>所有 agent 都要遵守下列 Markdown 格式。<code>Range</code>、<code>Source</code>、<code>Translation</code> 必填，<code>Note</code> 可空但建議保留。</p>
+      <pre class="doc-code"><code>## 01 段落標題
+Range: T30n1579_p0465a23-p0465a27
+
+Source:
+&lt;&lt;&lt;
+CBETA 原文
+&gt;&gt;&gt;
+
+Translation:
+&lt;&lt;&lt;
+白話譯文
+&gt;&gt;&gt;
+
+Note:
+&lt;&lt;&lt;
+校勘、段落歸屬或譯語判斷。
+&gt;&gt;&gt;</code></pre>
+      <p><code>Range</code> 和 <code>Source</code> 只由切段 agent 或 coordinator 修改。翻譯 agent 若發現範圍問題，只在交接清單提出，不直接改邊界。</p>
+    </section>
+
+    <section>
+      <h2>Agent Pool</h2>
+      <div class="workflow-grid">
+        <article>
+          <h3>Coordinator</h3>
+          <p>鎖定卷號、底本範圍、段落分派與最後合併。所有 reviewer 的建議由 coordinator 收斂。</p>
+        </article>
+        <article>
+          <h3>Segmenter</h3>
+          <p>依 CBETA JSON、目次與語義切段，產出空白來源稿骨架。跨行、跨目次、卷首卷末都要寫入 note。</p>
+        </article>
+        <article>
+          <h3>Translator</h3>
+          <p>只填指定段落的 <code>Translation</code> 與必要 <code>Note</code>。不改 <code>Range</code>、不改別人的段。</p>
+        </article>
+        <article>
+          <h3>Terminology Reviewer</h3>
+          <p>檢查核心術語一致性，更新或建議更新 glossary。特別注意作意、勝解、補特伽羅、止觀、加行、麁性、靜性、伏斷。</p>
+        </article>
+        <article>
+          <h3>Parallel Source Reviewer</h3>
+          <p>查可公開取得的梵文、巴利、英文、Nikaya 或 Agama 平行資料，只交付證據包與疑義，不直接重寫主譯。</p>
+        </article>
+        <article>
+          <h3>Doctrinal Reviewer</h3>
+          <p>檢查義理與修道次第，例如世間道和出世間道、伏斷和永害種子、無想定和滅盡定是否混淆。</p>
+        </article>
+        <article>
+          <h3>Coverage QA</h3>
+          <p>比對行號範圍，確認沒有漏譯、重複、混入下一卷。段落邊界問題回報 coordinator。</p>
+        </article>
+        <article>
+          <h3>HTML QA</h3>
+          <p>跑 build、連結檢查、術語檢查與手機版結構檢查，確認生成頁可讀。</p>
+        </article>
+      </div>
+    </section>
+
+    <section>
+      <h2>工作順序</h2>
+      <ol class="doc-steps">
+        <li>Coordinator 鎖定卷號、CBETA 起訖行號、是否保留卷題與卷末題。</li>
+        <li>Segmenter 產生 Markdown 骨架，所有段落都有 <code>Range</code> 和 <code>Source</code>。</li>
+        <li>Coordinator 分派段號給 translators；每個 translator 只負責自己的段。</li>
+        <li>Translator 依 glossary 初譯。疑難處短註，不寫長篇論文式考證。</li>
+        <li>Terminology Reviewer 檢查同詞多譯與禁譯，提出 glossary 更新。</li>
+        <li>Parallel Source Reviewer 交付外部資料證據包，標明可信度與影響句。</li>
+        <li>Doctrinal Reviewer 檢查義理、修道位階與上下文。</li>
+        <li>Coordinator 統一合併、定稿、更新 glossary。</li>
+        <li>HTML QA 跑建置與檢查，通過後 commit；有 remote 才 push。</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>術語庫規格</h2>
+      <p>術語庫使用 JSON，避免新增 Python 依賴。每個條目至少要有下列欄位：</p>
+      <table class="doc-table">
+        <thead>
+          <tr>
+            <th>欄位</th>
+            <th>說明</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td><code>id</code></td><td>穩定機器 ID。</td></tr>
+          <tr><td><code>xuanzang</code></td><td>玄奘原詞。</td></tr>
+          <tr><td><code>display</code></td><td>建議首次或疑難處顯示形式。</td></tr>
+          <tr><td><code>plain</code></td><td>主要白話譯法。</td></tr>
+          <tr><td><code>english</code>、<code>sanskrit</code>、<code>pali</code></td><td>外語候補，只作對照，不取代 CBETA 底本。</td></tr>
+          <tr><td><code>source_terms</code></td><td>在原文中要觸發檢查的詞。</td></tr>
+          <tr><td><code>translation_patterns</code></td><td>譯文中可接受的譯法。</td></tr>
+          <tr><td><code>status</code></td><td><code>stable</code>、<code>review</code> 或 <code>deprecated</code>。</td></tr>
+          <tr><td><code>rule</code></td><td>語境規則、禁譯提醒或跨卷注意。</td></tr>
+        </tbody>
+      </table>
+      <p>重要警告要寫進 <code>rule</code>。例如「勝解」不可只譯為一般理解，「伏斷」不可譯成究竟斷惑，「麁相／靜相」是上下地比較詞，不是固定實體性質。</p>
+    </section>
+
+    <section>
+      <h2>必要檢查</h2>
+      <pre class="doc-code"><code>python3 scripts/build_shengwen_di_html.py
+python3 scripts/build_translation_html.py
+python3 scripts/check_translation_terms.py</code></pre>
+      <p>完成新卷時，還要跑 HTML 相對連結檢查、行號覆蓋檢查、卷界檢查。確認 <code>index.html</code>、<code>sections/</code>、<code>translations/</code>、<code>docs/</code> 沒有缺檔連結。</p>
+    </section>
+
+    <section>
+      <h2>衝突規則</h2>
+      <ul>
+        <li>段落邊界只能由 Segmenter 或 Coordinator 改。</li>
+        <li>Reviewer 不直接覆蓋主檔，只提供建議、證據或 patch。</li>
+        <li>術語修改要更新 glossary，不能只在單段譯文中局部改。</li>
+        <li>外部英文、梵文、巴利資料只用來解疑，不作主底本。</li>
+        <li>測試通過後才 commit；沒有 remote 或 push 權限時，停在 commit 並回報。</li>
+      </ul>
+    </section>
+  </main>
+</body>
+</html>

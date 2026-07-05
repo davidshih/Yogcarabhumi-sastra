@@ -93,6 +93,8 @@ def render(entries: list[Entry]) -> str:
     <p>譯例：核心術語採白話詞（玄奘詞）雙軌，疑難處以精簡校註標示。</p>
     <nav class="translation-tools">
       <a href="../../translations/T1579-033-baihua.md">來源稿</a>
+      <a href="../../translations/glossary/T1579-terms.json">術語庫</a>
+      <a href="../docs/translation-workflow.html">翻譯流程</a>
       <a href="https://cbdata.dila.edu.tw/stable/juans?work=T1579&amp;juan=33&amp;toc=1&amp;work_info=1">CBETA API</a>
     </nav>
   </header>

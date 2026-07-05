@@ -276,6 +276,7 @@ def render_index(entries: list[tuple[TocNode, str]]) -> str:
     <h1>瑜伽師地論聲聞地</h1>
     <p>Split from CBETA HTML by mulu nodes. Notes, line markers, and source anchors are preserved.</p>
     <p><a href="translations/T1579-033-baihua.html">卷第三十三白話左右對照翻譯</a></p>
+    <p><a href="docs/translation-workflow.html">白話翻譯工作流程與術語庫</a></p>
   </header>
   <main class="index-list">
     <ol>
@@ -393,6 +394,68 @@ a {
   border-left: 3px solid #d2b48c;
   color: #5f564a;
   font-size: 0.94rem;
+}
+
+.doc-page h2 {
+  margin-top: 2rem;
+  padding-bottom: 0.25rem;
+  border-bottom: 1px solid #eee2cc;
+  font-size: 1.35rem;
+}
+
+.doc-page h3 {
+  margin: 0 0 0.25rem;
+  font-size: 1rem;
+}
+
+.doc-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+  font-size: 0.96rem;
+}
+
+.doc-table th,
+.doc-table td {
+  border-bottom: 1px solid #eee2cc;
+  padding: 0.45rem 0.55rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.doc-table th {
+  color: #5a5145;
+  background: #fff6e5;
+}
+
+.doc-code {
+  overflow-x: auto;
+  padding: 0.9rem;
+  border: 1px solid #e6d8c1;
+  background: #fff8ea;
+  line-height: 1.55;
+}
+
+.workflow-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.85rem;
+  margin: 1rem 0;
+}
+
+.workflow-grid article {
+  padding: 0.85rem;
+  border: 1px solid #eee2cc;
+  background: #fffaf0;
+}
+
+.workflow-grid p {
+  margin: 0.25rem 0 0;
+}
+
+.doc-steps li,
+.doc-page li {
+  margin: 0.35rem 0;
 }
 
 .reader p {

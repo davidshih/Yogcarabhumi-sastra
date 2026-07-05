@@ -233,11 +233,13 @@ def render_section(
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{title} - 瑜伽師地論聲聞地</title>
   <link rel="stylesheet" href="../style.css">
+  <script src="../theme.js"></script>
 </head>
 <body>
   <div class="topbar">
     <a class="topbar-brand" href="../index.html">聲聞地</a>
     <a class="topbar-link" href="../index.html">Index</a>
+    <button class="theme-toggle" type="button" aria-label="切換深色或淺色模式"></button>
   </div>
   <header class="site-header">
     <div class="kicker">CBETA T1579</div>
@@ -304,11 +306,13 @@ def render_index(entries: list[tuple[TocNode, str]]) -> str:
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>瑜伽師地論聲聞地</title>
   <link rel="stylesheet" href="style.css">
+  <script src="theme.js"></script>
 </head>
 <body>
   <div class="topbar">
     <a class="topbar-brand" href="index.html">聲聞地</a>
     <a class="topbar-link" href="docs/translation-workflow.html">翻譯流程</a>
+    <button class="theme-toggle" type="button" aria-label="切換深色或淺色模式"></button>
   </div>
   <header class="site-header">
     <div class="kicker">CBETA T1579</div>
@@ -317,10 +321,12 @@ def render_index(entries: list[tuple[TocNode, str]]) -> str:
     <p><a href="docs/translation-workflow.html">白話翻譯工作流程與術語庫</a></p>
   </header>
   <main class="index-list">
-{translation_list}    <h2>章節索引</h2>
-{juan_tabs}    <ol>
+{translation_list}    <details class="index-disclosure">
+      <summary>章節索引</summary>
+{juan_tabs}      <ol>
       {'\n      '.join(links)}
-    </ol>
+      </ol>
+    </details>
   </main>
   <script>
     const juanTabs = Array.from(document.querySelectorAll(".juan-tab"));

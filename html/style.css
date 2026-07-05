@@ -5,8 +5,8 @@
  * scripts/build_shengwen_di_html.py — edit it directly.
  *
  * System fonts only: sans-serif for UI / headings / vernacular, serif for the
- * classical source text. Light and dark themes follow the OS via
- * prefers-color-scheme; no JS theme toggle.
+ * classical source text. Themes follow the OS via prefers-color-scheme by
+ * default; a [data-theme] attribute (set by theme.js) overrides that choice.
  */
 
 :root {
@@ -34,8 +34,10 @@
   --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 
+/* Dark tokens: applied on system dark (unless the user forced a theme) and
+ * whenever theme.js sets data-theme="dark". Kept in sync between both rules. */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme]) {
     --bg: #000000;
     --surface: #1c1c1e;
     --surface-raised: #1c1c1e;
@@ -46,6 +48,18 @@
     --blur-bg: rgba(0, 0, 0, 0.72);
     --shadow: 0 4px 24px rgba(0, 0, 0, 0.6);
   }
+}
+
+:root[data-theme="dark"] {
+  --bg: #000000;
+  --surface: #1c1c1e;
+  --surface-raised: #1c1c1e;
+  --ink: #f5f5f7;
+  --ink-soft: #a1a1a6;
+  --accent: #2997ff;
+  --rule: #38383a;
+  --blur-bg: rgba(0, 0, 0, 0.72);
+  --shadow: 0 4px 24px rgba(0, 0, 0, 0.6);
 }
 
 * {
@@ -113,6 +127,25 @@ a {
 .topbar-link {
   margin-left: auto;
   color: var(--ink-soft);
+}
+
+.theme-toggle {
+  font: inherit;
+  font-size: 1rem;
+  line-height: 1;
+  min-width: 40px;
+  min-height: 32px;
+  padding: 0.3rem 0.55rem;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.theme-toggle:hover {
+  border-color: var(--accent);
+  color: var(--accent);
 }
 
 /* ------------------------------------------------------------------ */
@@ -250,6 +283,39 @@ a {
 .index-list h2 {
   font-size: 1.45rem;
   letter-spacing: -0.012em;
+}
+
+/* Collapsible chapter index — hidden until the user opens it. */
+.index-disclosure {
+  margin-top: 1.75rem;
+}
+
+.index-disclosure > summary {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+  font-size: 1.45rem;
+  font-weight: 600;
+  letter-spacing: -0.012em;
+  color: var(--ink);
+  cursor: pointer;
+  list-style: none;
+}
+
+.index-disclosure > summary::-webkit-details-marker {
+  display: none;
+}
+
+.index-disclosure > summary::after {
+  content: "›";
+  color: var(--ink-soft);
+  font-weight: 400;
+  transition: transform 0.2s ease;
+}
+
+.index-disclosure[open] > summary::after {
+  transform: rotate(90deg);
 }
 
 .translation-index {

@@ -107,11 +107,13 @@ def render(entries: list[Entry], source: Path, juan: int, title: str) -> str:
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{html.escape(title)}</title>
   <link rel="stylesheet" href="../style.css">
+  <script src="../theme.js"></script>
 </head>
 <body class="source-collapsed">
   <div class="topbar">
     <a class="topbar-brand" href="../index.html">聲聞地</a>
     <a class="topbar-link" href="../index.html">Index</a>
+    <button class="theme-toggle" type="button" aria-label="切換深色或淺色模式"></button>
   </div>
   <header class="site-header">
     <div class="kicker">CBETA T1579 / Juan {juan}</div>

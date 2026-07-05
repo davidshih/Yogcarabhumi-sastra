@@ -1,1 +1,1 @@
-{"generated": "2026-07-05T12:24:15-04:00", "jobs": [{"id": "20260705-122413-echo-a6c5", "work": "T1579", "juans": [13], "model": "echo", "state": "done", "created": "2026-07-05T12:24:13-04:00", "updated": "2026-07-05T12:24:15-04:00", "resume_at": null, "error": null, "push": false, "summary": false, "progress": {"13": {"step": "done", "sections_total": 1, "section": 0, "review_done": ["review_terms", "review_doctrine", "review_parallel"]}}}]}
+{"generated": "2026-07-05T12:27:04-04:00", "jobs": []}

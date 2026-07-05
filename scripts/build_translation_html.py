@@ -12,7 +12,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_SOURCE = ROOT / "translations" / "T1579-033-baihua.md"
-DEFAULT_OUTPUT_DIR = ROOT / "html" / "translations"
+DEFAULT_OUTPUT_DIR = ROOT / "docs" / "T1579" / "translations"
+REPO_BLOB = "https://github.com/davidshih/Yogcarabhumi-sastra/blob/main"  # Pages only serves docs/; repo files link out
 
 
 @dataclass
@@ -99,15 +100,15 @@ def render(entries: list[Entry], source: Path, juan: int, title: str) -> str:
         )
     first_start, _ = parse_range(entries[0].range_label)
     _, last_end = parse_range(entries[-1].range_label)
-    source_link = html.escape(f"../../translations/{source.name}")
+    source_link = html.escape(f"{REPO_BLOB}/translations/{source.name}")
     return f"""<!doctype html>
 <html lang="zh-Hant">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{html.escape(title)}</title>
-  <link rel="stylesheet" href="../style.css">
-  <script src="../theme.js"></script>
+  <link rel="stylesheet" href="../../style.css">
+  <script src="../../theme.js"></script>
 </head>
 <body class="source-collapsed">
   <div class="topbar">
@@ -122,7 +123,7 @@ def render(entries: list[Entry], source: Path, juan: int, title: str) -> str:
     <p>譯例：核心術語採白話詞（玄奘詞）雙軌，疑難處以精簡校註標示。</p>
     <nav class="translation-tools">
       <a href="{source_link}">來源稿</a>
-      <a href="../../translations/glossary/T1579-terms.json">術語庫</a>
+      <a href="{REPO_BLOB}/translations/glossary/T1579-terms.json">術語庫</a>
       <a href="../docs/translation-workflow.html">翻譯流程</a>
       <a href="https://cbdata.dila.edu.tw/stable/juans?work=T1579&amp;juan={juan}&amp;toc=1&amp;work_info=1">CBETA API</a>
       <button class="source-toggle" type="button" id="sourceToggle" aria-pressed="false" aria-controls="parallelText">顯示文言原文</button>

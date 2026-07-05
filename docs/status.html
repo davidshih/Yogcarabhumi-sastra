@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="refresh" content="30">
+  <title>翻譯進度</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="theme.js"></script>
+</head>
+<body>
+  <div class="topbar">
+    <a class="topbar-brand" href="index.html">佛典白話翻譯</a>
+    <button class="theme-toggle" type="button" aria-label="切換深色或淺色模式"></button>
+  </div>
+  <header class="site-header">
+    <div class="kicker">Pipeline</div>
+    <h1>翻譯進度</h1>
+  </header>
+  <main class="index-list">
+    <div id="status">尚無進行中的翻譯工作。</div>
+  </main>
+  <script>
+    fetch("status.json").then(r => r.ok ? r.json() : null).then(data => {
+      if (!data || !data.jobs || !data.jobs.length) return;
+      const zh = {queued: "排隊中", running: "進行中", done: "完成", failed: "失敗", waiting_limit: "等待額度重置"};
+      document.getElementById("status").innerHTML = "<ol>" + data.jobs.map(j => {
+        const prog = Object.entries(j.progress || {}).map(([k, v]) =>
+          `卷${k}:${v.step}${v.sections_total ? `（${v.section || 0}/${v.sections_total} 段）` : ""}`).join("、");
+        return `<li class="level-0"><strong>${j.work} 卷 ${j.juans.join(",")}</strong>（${j.model}）— ${zh[j.state] || j.state}<span>${prog}</span></li>`;
+      }).join("") + "</ol>";
+    }).catch(() => {});
+  </script>
+</body>
+</html>

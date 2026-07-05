@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check that relative href/src links in html/ point at files that exist."""
+"""Check that relative href/src links in docs/ point at files that exist."""
 
 from __future__ import annotations
 
@@ -8,7 +8,7 @@ from pathlib import Path
 from urllib.parse import unquote, urlparse
 
 ROOT = Path(__file__).resolve().parents[1]
-HTML_DIR = ROOT / "html"
+HTML_DIR = ROOT / "docs"
 
 
 class LinkParser(HTMLParser):

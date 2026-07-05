@@ -23,7 +23,7 @@ BASE_URL = "https://cbdata.dila.edu.tw/stable"
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA_DIR = ROOT / "data"
-HTML_DIR = ROOT / "html"
+HTML_DIR = ROOT / "docs" / WORK  # GitHub Pages serves docs/; per-work subdir
 SECTION_DIR = HTML_DIR / "sections"
 
 
@@ -232,8 +232,8 @@ def render_section(
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{title} - 瑜伽師地論聲聞地</title>
-  <link rel="stylesheet" href="../style.css">
-  <script src="../theme.js"></script>
+  <link rel="stylesheet" href="../../style.css">
+  <script src="../../theme.js"></script>
 </head>
 <body>
   <div class="topbar">
@@ -305,12 +305,13 @@ def render_index(entries: list[tuple[TocNode, str]]) -> str:
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>瑜伽師地論聲聞地</title>
-  <link rel="stylesheet" href="style.css">
-  <script src="theme.js"></script>
+  <link rel="stylesheet" href="../style.css">
+  <script src="../theme.js"></script>
 </head>
 <body>
   <div class="topbar">
     <a class="topbar-brand" href="index.html">聲聞地</a>
+    <a class="topbar-link" href="../index.html">總目錄</a>
     <a class="topbar-link" href="docs/translation-workflow.html">翻譯流程</a>
     <button class="theme-toggle" type="button" aria-label="切換深色或淺色模式"></button>
   </div>

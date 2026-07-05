@@ -184,16 +184,24 @@ Note:
     </section>
 
     <section>
+      <h2>預設雙稿模式</h2>
+      <p>每個正式翻譯任務預設採用雙稿模式：Codex 與 GLM 先各自產出白話初稿、疑義清單與術語判斷，Coordinator 只做格式整理與差異對照，不先融合立場。</p>
+      <p>Claude 擔任 final reviewer，負責比較 Codex/GLM 雙稿、CBETA 原文、glossary 與 reviewer 證據包，最後輸出定稿建議、保留疑義與必要 glossary 更新。</p>
+      <p>若 Claude 不可用，改由 Codex 執行 final review。此時 Codex 必須以 final reviewer 身分重新審讀雙稿，明確列出採用、改寫或退回 GLM 意見的理由，避免只沿用自己的初稿。</p>
+    </section>
+
+    <section>
       <h2>工作順序</h2>
       <ol class="doc-steps">
         <li>Coordinator 鎖定卷號、CBETA 起訖行號、是否保留卷題與卷末題。</li>
         <li>Segmenter 產生 <code>translations/segments/T1579-XXX.tsv</code>，所有段落都有標題、<code>Range</code> 和邊界 note。</li>
         <li>Coordinator 執行 <code>scripts/make_translation_skeleton.py</code> 產生 Markdown 骨架，所有段落都有 <code>Range</code> 和 <code>Source</code>。</li>
         <li>Coordinator 分派段號給 translators；每個 translator 只負責自己的段。</li>
-        <li>Translator 依 glossary 初譯。疑難處短註，不寫長篇論文式考證。</li>
+        <li>Translator 依 glossary 初譯，預設由 Codex 與 GLM 各自提交雙稿；疑難處短註，不寫長篇論文式考證。</li>
         <li>Terminology Reviewer 檢查同詞多譯與禁譯，提出 glossary 更新。</li>
         <li>Parallel Source Reviewer 交付外部資料證據包，標明可信度與影響句。</li>
         <li>Doctrinal Reviewer 檢查義理、修道位階與上下文。</li>
+        <li>Claude 執行 final review；若 Claude 不可用，改由 Codex 以 final reviewer 身分審讀雙稿並輸出定稿建議。</li>
         <li>Coordinator 統一合併、定稿、更新 glossary。</li>
         <li>HTML QA 跑建置與檢查，通過後 commit；有 remote 才 push。</li>
       </ol>
@@ -248,6 +256,7 @@ python3 scripts/check_html_links.py</code></pre>
         <li>Reviewer 不直接覆蓋主檔，只提供建議、證據或 patch。</li>
         <li>術語修改要更新 glossary，不能只在單段譯文中局部改。</li>
         <li>外部英文、梵文、巴利資料只用來解疑，不作主底本。</li>
+        <li>雙稿模式下，final reviewer 要保留採納理由；Claude 不可用時由 Codex 終審，不跳過終審步驟。</li>
         <li>測試通過後才 commit；沒有 remote 或 push 權限時，停在 commit 並回報。</li>
       </ul>
     </section>

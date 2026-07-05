@@ -275,6 +275,7 @@ def render_index(entries: list[tuple[TocNode, str]]) -> str:
     <div class="kicker">CBETA T1579</div>
     <h1>瑜伽師地論聲聞地</h1>
     <p>Split from CBETA HTML by mulu nodes. Notes, line markers, and source anchors are preserved.</p>
+    <p><a href="translations/T1579-033-baihua.html">卷第三十三白話左右對照翻譯</a></p>
   </header>
   <main class="index-list">
     <ol>
@@ -330,6 +331,68 @@ a {
   margin: 0 auto;
   padding: 28px clamp(18px, 5vw, 56px);
   background: #fffdf7;
+}
+
+.translation-tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.translation-tools a {
+  border: 1px solid #cdbb9f;
+  padding: 0.25rem 0.65rem;
+  background: #fffdf7;
+  text-decoration: none;
+}
+
+.parallel-text {
+  max-width: 1280px;
+}
+
+.parallel-pair {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: clamp(1rem, 3vw, 2rem);
+  padding: 1.2rem 0;
+  border-bottom: 1px solid #eee2cc;
+}
+
+.parallel-pair h2 {
+  grid-column: 1 / -1;
+  margin: 0 0 0.25rem;
+  font-size: 1.15rem;
+}
+
+.source-text,
+.translation-text {
+  min-width: 0;
+}
+
+.source-text {
+  color: #4f463c;
+}
+
+.translation-text {
+  font-size: 1.05rem;
+}
+
+.line-range {
+  display: block;
+  margin-bottom: 0.35rem;
+  color: #8b8173;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.78rem;
+}
+
+.translation-note {
+  grid-column: 1 / -1;
+  margin: 0.2rem 0 0;
+  padding-left: 0.75rem;
+  border-left: 3px solid #d2b48c;
+  color: #5f564a;
+  font-size: 0.94rem;
 }
 
 .reader p {
@@ -411,6 +474,10 @@ a {
   .index-list li {
     grid-template-columns: 1fr;
     gap: 0.1rem;
+  }
+
+  .parallel-pair {
+    grid-template-columns: 1fr;
   }
 }
 """,

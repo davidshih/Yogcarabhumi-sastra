@@ -34,6 +34,7 @@ ZAI_TZ = dt.timezone(dt.timedelta(hours=8))
 SCRATCH = Path(tempfile.gettempdir()) / "yogacara-llm-scratch"
 
 TIMEOUT = 1800
+AVAILABILITY_TIMEOUT = 120
 TRANSIENT_RETRIES = 3
 # All three backends run 5-hour windows. When no reset time is parsable, this
 # ladder (with MAX_LIMIT_WAITS=10) spans a bit over 5h, so an unknown-format
@@ -78,6 +79,14 @@ class LLMResult:
 
 class LLMError(Exception):
     pass
+
+
+def availability_probe(model: str, timeout: int = AVAILABILITY_TIMEOUT) -> LLMResult:
+    """Run a tiny paid-session probe and return the classified backend state."""
+    try:
+        return run_llm(model, "Reply with exactly OK.", timeout=timeout)
+    except (LLMError, FileNotFoundError) as err:
+        return LLMResult(ok=False, error=str(err))
 
 
 def _zai_key() -> str:

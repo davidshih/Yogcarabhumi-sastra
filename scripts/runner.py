@@ -21,8 +21,10 @@ import sys
 import threading
 import time
 import uuid
+import shutil
+from concurrent.futures import ThreadPoolExecutor
 from contextlib import contextmanager
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 from string import Template
 from subprocess import run as sh
@@ -45,6 +47,12 @@ GLOSSARY_PATH = ROOT / "translations" / "glossary" / "T1579-terms.json"
 STATUS_JSON = ROOT / "docs" / "status.json"
 REVIEW_PASSES = ("review_terms", "review_doctrine", "review_parallel")
 POLL_SECONDS = 10
+MODEL_WAIT_FALLBACK_MINUTES = 15
+JOB_WRITE_LOCK = threading.RLock()
+DUAL_REQUIRED_MODELS = ("codex",)
+DUAL_OPTIONAL_MODELS = ("glm", "claude")
+DUAL_TASKS = ("availability", "segment", "skeleton", "draft_codex", "draft_glm",
+              "review", "checks", "repair", "html", "commit")
 
 # Cost-optimal default routing for --model mix: bulk translation on the cheap
 # GLM coding plan, hardest review line on claude, cross-vendor reviews so the
@@ -91,6 +99,9 @@ def prompt_vars(job: dict) -> dict:
 
 
 def stage_model(job: dict, stage: str) -> str:
+    runtime = job.get("_stage_models", {})
+    if stage in runtime:
+        return runtime[stage]
     model = job["model"]
     if model == "mix":
         return MIX_ROUTING.get(stage, "claude")
@@ -140,25 +151,154 @@ def load_job(path: Path) -> dict:
 
 
 def save_job(job: dict) -> None:
-    job["updated"] = now_iso()
-    atomic_write(JOBS_DIR / f"{job['id']}.json", json.dumps(job, ensure_ascii=False, indent=1))
-    publish_status()
+    with JOB_WRITE_LOCK:
+        job["updated"] = now_iso()
+        persisted = {k: v for k, v in job.items() if not k.startswith("_")}
+        atomic_write(JOBS_DIR / f"{job['id']}.json", json.dumps(persisted, ensure_ascii=False, indent=1))
+        publish_status()
 
 
 def publish_status() -> None:
-    jobs = []
-    for path in sorted(JOBS_DIR.glob("*.json")):
-        try:
-            job = load_job(path)
-        except (json.JSONDecodeError, OSError):
-            continue
-        job.pop("pid", None)
-        jobs.append(job)
-    atomic_write(STATUS_JSON, json.dumps({"generated": now_iso(), "jobs": jobs}, ensure_ascii=False))
+    with JOB_WRITE_LOCK:
+        jobs = []
+        for path in sorted(JOBS_DIR.glob("*.json")):
+            try:
+                job = load_job(path)
+            except (json.JSONDecodeError, OSError):
+                continue
+            job.pop("pid", None)
+            jobs.append(job)
+        atomic_write(STATUS_JSON, json.dumps({"generated": now_iso(), "jobs": jobs}, ensure_ascii=False))
 
 
 def log(job: dict, msg: str) -> None:
     print(f"{now_iso()} [{job['id']}] {msg}", flush=True)
+
+
+class JobHold(Exception):
+    pass
+
+
+class OptionalModelUnavailable(Exception):
+    pass
+
+
+def task_state(prog: dict, name: str) -> dict:
+    return prog.setdefault("tasks", {}).setdefault(name, {"state": "pending"})
+
+
+def set_task(prog: dict, name: str, state: str, **extra) -> dict:
+    task = task_state(prog, name)
+    task.update({"state": state, "updated": now_iso()})
+    task.update({k: v for k, v in extra.items() if v is not None})
+    return task
+
+
+def reset_task_progress(task: dict, resume_step: str | None, name: str) -> None:
+    if name != resume_step:
+        task["section"] = 0
+
+
+def mark_cancelled_tasks(prog: dict) -> None:
+    for name in DUAL_TASKS:
+        task = task_state(prog, name)
+        if task.get("state") in (None, "pending", "queued"):
+            set_task(prog, name, "cancelled")
+
+
+def can_cancel_juan(prog: dict | None) -> bool:
+    if not prog:
+        return True
+    if prog.get("cancelled") or prog.get("step") == "cancelled":
+        return False
+    if prog.get("step") not in (None, "queued", "availability", "waiting_model"):
+        return False
+    for name, task in prog.get("tasks", {}).items():
+        if name == "availability":
+            continue
+        if task.get("state") not in (None, "pending", "queued", "cancelled"):
+            return False
+    return True
+
+
+def cancel_juan(job_id: str, juan: int) -> tuple[bool, str]:
+    path = JOBS_DIR / f"{job_id}.json"
+    if not path.exists():
+        return False, "job not found"
+    with flock("jobs"):
+        job = load_job(path)
+        if juan not in job.get("juans", []):
+            return False, "juan not in job"
+        prog = job.setdefault("progress", {}).setdefault(str(juan), {})
+        if not can_cancel_juan(prog):
+            return False, "juan already started"
+        prog["cancelled"] = True
+        prog["step"] = "cancelled"
+        mark_cancelled_tasks(prog)
+        save_job(job)
+    return True, "cancelled"
+
+
+def resume_time(result: llm.LLMResult) -> datetime:
+    now = datetime.now().astimezone()
+    if result.resume_at and now < result.resume_at <= now + timedelta(hours=6):
+        return result.resume_at
+    return now + timedelta(minutes=MODEL_WAIT_FALLBACK_MINUTES)
+
+
+def probe_dual_models(job: dict, juan: int, prog: dict) -> dict[str, str]:
+    availability = set_task(prog, "availability", "running")
+    prog["step"] = "availability"
+    save_job(job)
+    if job["model"] == "dual-echo":
+        availability["models"] = {m: {"state": "available"} for m in ("codex", "glm", "claude")}
+        set_task(prog, "availability", "done")
+        save_job(job)
+        return {"segment": "echo", "draft_codex": "echo", "draft_glm": "echo",
+                "merge": "echo", "repair": "echo"}
+
+    statuses: dict[str, dict] = {}
+    for model in DUAL_REQUIRED_MODELS + DUAL_OPTIONAL_MODELS:
+        result = llm.availability_probe(model)
+        if result.ok:
+            statuses[model] = {"state": "available", "checked": now_iso()}
+        else:
+            statuses[model] = {
+                "state": "limited" if result.limit else "unavailable",
+                "checked": now_iso(),
+                "resume_at": result.resume_at.isoformat(timespec="seconds") if result.resume_at else None,
+                "error": result.error[:300],
+            }
+    availability["models"] = statuses
+    prog["availability"] = statuses
+
+    codex = statuses["codex"]
+    if codex["state"] != "available":
+        resume_at = resume_time(llm.LLMResult(ok=False, limit=codex["state"] == "limited",
+                                              resume_at=datetime.fromisoformat(codex["resume_at"])
+                                              if codex.get("resume_at") else None))
+        job["state"] = "waiting_model"
+        job["resume_at"] = resume_at.isoformat(timespec="seconds")
+        job["error"] = "codex unavailable; waiting before starting next volume"
+        prog["step"] = "waiting_model"
+        set_task(prog, "availability", "waiting", resume_at=job["resume_at"])
+        save_job(job)
+        raise JobHold(f"juan {juan}: codex unavailable, waiting until {job['resume_at']}")
+
+    stage_models = {"segment": "codex", "draft_codex": "codex", "merge": "codex", "repair": "codex"}
+    if statuses["glm"]["state"] == "available":
+        stage_models["draft_glm"] = "glm"
+    else:
+        set_task(prog, "draft_glm", "skipped", model="glm", reason="glm unavailable; codex-only draft")
+    if statuses["claude"]["state"] == "available":
+        stage_models["merge"] = "claude"
+        stage_models["repair"] = "claude"
+    else:
+        availability["review_fallback"] = "codex"
+    prog["models"] = stage_models
+    set_task(prog, "availability", "done")
+    save_job(job)
+    return stage_models
 
 
 def prompt_text(name: str, **vars) -> str:
@@ -271,8 +411,26 @@ def llm_call(job: dict, prompt: str, stage: str) -> str:
         job["state"] = "waiting_limit"
         job["resume_at"] = resume_at.isoformat(timespec="seconds")
         save_job(job)
-    text = llm.call_with_limit_retry(stage_model(job, stage), prompt, on_wait=on_wait,
-                                     log=lambda m: log(job, m))
+    model = stage_model(job, stage)
+    if stage == "draft_glm" and model == "glm":
+        try:
+            result = llm.run_llm(model, prompt)
+        except (llm.LLMError, FileNotFoundError) as err:
+            result = llm.LLMResult(ok=False, error=str(err))
+        if result.ok:
+            return result.text
+        raise OptionalModelUnavailable(f"glm unavailable during draft: {result.error}")
+    if stage in ("merge", "repair") and model == "claude":
+        try:
+            result = llm.run_llm(model, prompt)
+        except (llm.LLMError, FileNotFoundError) as err:
+            result = llm.LLMResult(ok=False, error=str(err))
+        if result.ok:
+            return result.text
+        log(job, f"[claude] review unavailable, falling back to codex: {result.error[:200]}")
+        job.setdefault("_stage_models", {})[stage] = "codex"
+        model = "codex"
+    text = llm.call_with_limit_retry(model, prompt, on_wait=on_wait, log=lambda m: log(job, m))
     if job["state"] == "waiting_limit":
         job["state"] = "running"
         job["resume_at"] = None
@@ -349,11 +507,12 @@ def translate_sections(job: dict, juan: int, md_path: Path, prog: dict,
 
 
 def merge_sections(job: dict, juan: int, paths: dict[str, Path], prog: dict) -> None:
-    """claude reviews both drafts against the source and settles the final text."""
+    """Review available drafts against the source and settle the final text."""
     glossary = load_glossary()
     entries = bth.parse_entries(paths["md"].read_text(encoding="utf-8"))
     draft_a = bth.parse_entries(paths["draft_codex"].read_text(encoding="utf-8"))
-    draft_b = bth.parse_entries(paths["draft_glm"].read_text(encoding="utf-8"))
+    draft_b = (bth.parse_entries(paths["draft_glm"].read_text(encoding="utf-8"))
+               if paths["draft_glm"].exists() else draft_a)
     if not (len(entries) == len(draft_a) == len(draft_b)):
         raise RuntimeError(f"juan {juan}: draft/skeleton section counts differ "
                            f"({len(entries)}/{len(draft_a)}/{len(draft_b)})")
@@ -448,9 +607,20 @@ def run_juan(job: dict, juan: int) -> None:
     work = job["work"]
     paths = juan_paths(work, juan)
     prog = job["progress"].setdefault(str(juan), {})
+    if prog.get("cancelled"):
+        prog["step"] = "cancelled"
+        mark_cancelled_tasks(prog)
+        save_job(job)
+        return
     if prog.get("step") == "done":
         return
     resume_step = prog.get("step")  # step saved before a crash/restart, if any
+
+    if is_dual(job):
+        stage_models = probe_dual_models(job, juan, prog)
+        job["_stage_models"] = stage_models
+    else:
+        job["_stage_models"] = {}
 
     prog["step"] = "fetch"
     save_job(job)
@@ -460,35 +630,73 @@ def run_juan(job: dict, juan: int) -> None:
 
     if not paths["tsv"].exists() and not paths["md"].exists():
         # segmentation only feeds the skeleton; an existing md makes it moot
+        set_task(prog, "segment", "running", model=stage_model(job, "segment"))
         prog["step"] = "segment"
         save_job(job)
         llm_segment(job, juan, lines, paths["tsv"])
+        set_task(prog, "segment", "done")
 
     if not paths["md"].exists():
+        set_task(prog, "skeleton", "running")
         prog["step"] = "skeleton"
         save_job(job)
         segments = read_segments(paths["tsv"])
         paths["md"].parent.mkdir(exist_ok=True)
         atomic_write(paths["md"], render_skeleton(juan, start, end, segments, lines))
+        set_task(prog, "skeleton", "done")
+        save_job(job)
 
     if is_dual(job):
-        # two independent drafts (codex, glm), then claude settles the final text
-        import shutil
-        for stage in DUAL_STAGES:
+        # Codex and GLM drafts are independent; run both when both are available.
+        def run_draft(stage: str) -> None:
             draft = paths[stage]
             if not draft.exists():
                 draft.parent.mkdir(exist_ok=True)
                 shutil.copyfile(paths["md"], draft)
-            if stage != resume_step:
-                prog["section"] = 0
+            task = task_state(prog, stage)
+            if task.get("state") == "done":
+                return
+            reset_task_progress(task, resume_step, stage)
+            set_task(prog, stage, "running", model=stage_model(job, stage))
             prog["step"] = stage
             save_job(job)
-            translate_sections(job, juan, draft, prog, stage=stage)
-        if "merge" != resume_step:
-            prog["section"] = 0
-        prog["step"] = "merge"
-        save_job(job)
-        merge_sections(job, juan, paths, prog)
+            try:
+                translate_sections(job, juan, draft, task, stage=stage)
+            except OptionalModelUnavailable as err:
+                set_task(prog, stage, "skipped", model=stage_model(job, stage), reason=str(err)[:500])
+                save_job(job)
+                return
+            except Exception as err:
+                set_task(prog, stage, "failed", error=str(err)[:500])
+                save_job(job)
+                raise
+            set_task(prog, stage, "done")
+            save_job(job)
+
+        draft_stages = [stage for stage in DUAL_STAGES if stage in job["_stage_models"]]
+        if len(draft_stages) > 1:
+            with ThreadPoolExecutor(max_workers=len(draft_stages)) as pool:
+                futures = [pool.submit(run_draft, stage) for stage in draft_stages]
+                for future in futures:
+                    future.result()
+        else:
+            for stage in draft_stages:
+                run_draft(stage)
+
+        review_task = task_state(prog, "review")
+        if review_task.get("state") != "done":
+            reset_task_progress(review_task, resume_step, "merge")
+            set_task(prog, "review", "running", model=stage_model(job, "merge"))
+            prog["step"] = "merge"
+            save_job(job)
+            try:
+                merge_sections(job, juan, paths, review_task)
+            except Exception as err:
+                set_task(prog, "review", "failed", error=str(err)[:500])
+                save_job(job)
+                raise
+            set_task(prog, "review", "done")
+            save_job(job)
     else:
         prog["step"] = "translate"
         save_job(job)
@@ -506,6 +714,7 @@ def run_juan(job: dict, juan: int) -> None:
             prog["section"] = 0
             save_job(job)
 
+    set_task(prog, "checks", "running")
     prog["step"] = "checks"
     save_job(job)
     issues = run_checks(job, juan, paths["md"], data_path, start, end)
@@ -514,21 +723,31 @@ def run_juan(job: dict, juan: int) -> None:
         bad_titles = {i.split(":")[0].strip() for i in issues if ":" in i}
         log(job, f"juan {juan}: checks failed ({len(issues)}), repairing {len(bad_titles)} sections")
         prog["repaired"] = True
+        repair_task = task_state(prog, "repair")
+        repair_task["section"] = 0
+        set_task(prog, "repair", "running", model=stage_model(job, "repair"))
         save_job(job)
-        translate_sections(job, juan, paths["md"], prog, only_titles=bad_titles,
+        translate_sections(job, juan, paths["md"], repair_task, only_titles=bad_titles,
                            extra="注意：前次譯文未通過術語檢查：" + "；".join(issues[:10]),
                            stage="repair")
+        set_task(prog, "repair", "done")
         issues = run_checks(job, juan, paths["md"], data_path, start, end)
     if issues:
+        set_task(prog, "checks", "failed", error="; ".join(issues[:10])[:500])
         raise RuntimeError(f"juan {juan} checks failed: " + "; ".join(issues[:10]))
+    set_task(prog, "checks", "done")
 
+    set_task(prog, "html", "running")
     prog["step"] = "html"
     save_job(job)
     build_html(job, paths["md"])
+    set_task(prog, "html", "done")
 
+    set_task(prog, "commit", "running")
     prog["step"] = "commit"
     save_job(job)
     git_commit_push(job, juan)
+    set_task(prog, "commit", "done")
 
     prog["step"] = "done"
     save_job(job)
@@ -537,17 +756,28 @@ def run_juan(job: dict, juan: int) -> None:
 def run_job(job: dict) -> None:
     job["state"] = "running"
     job["pid"] = os.getpid()
+    job["resume_at"] = None
+    job["error"] = None
     save_job(job)
     if job.get("summary"):
         log(job, "summary: not implemented")
     failed = []
+    held = False
     for juan in job["juans"]:
+        if job["progress"].get(str(juan), {}).get("cancelled"):
+            continue
         try:
             run_juan(job, juan)
+        except JobHold as err:
+            held = True
+            log(job, str(err))
+            break
         except Exception as err:  # noqa: BLE001 — job must survive a bad juan
             failed.append(juan)
             job["progress"].setdefault(str(juan), {})["error"] = str(err)[:500]
             log(job, f"juan {juan} FAILED: {err}")
+    if held:
+        return
     job["state"] = "failed" if failed else "done"
     job["error"] = f"juans failed: {failed}" if failed else None
     save_job(job)
@@ -562,7 +792,7 @@ def claimable(job: dict, model: str) -> bool:
     state = job.get("state")
     if state == "queued":
         return True
-    if state in ("running", "waiting_limit"):
+    if state in ("running", "waiting_limit", "waiting_model"):
         pid = job.get("pid")
         if pid == os.getpid():
             return False  # owned by another thread in this process

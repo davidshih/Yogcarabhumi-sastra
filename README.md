@@ -6,7 +6,7 @@
 
 - `html/index.html`：章節索引
 - `html/sections/*.html`：各章節 HTML
-- `html/translations/T1579-033-baihua.html`：卷第三十三白話左右對照翻譯
+- `html/translations/T1579-XXX-baihua.html`：各卷白話左右對照翻譯
 - `html/docs/translation-workflow.html`：後續卷次白話翻譯工作流程與 agent 分工
 - `data/*.json`：下載時保留的 CBETA API 原始回應
 - `translations/*.md`：白話翻譯來源稿
@@ -16,9 +16,12 @@
 
 ```sh
 python3 scripts/build_shengwen_di_html.py
-python3 scripts/build_translation_html.py
-python3 scripts/check_translation_terms.py
+python3 scripts/build_translation_html.py --translation translations/T1579-033-baihua.md
+python3 scripts/check_translation_terms.py --translation translations/T1579-033-baihua.md
+python3 scripts/check_translation_coverage.py --translation translations/T1579-033-baihua.md --data data/T1579-033.json --start T30n1579_p0465a23 --end T30n1579_p0470c05
 ```
+
+後續卷次請把 `033`、`data`、`start`、`end` 換成該卷設定。例：卷34 使用 `translations/T1579-034-baihua.md`、`data/T1579-034.json`、`T30n1579_p0470c08` 到 `T30n1579_p0478b01`。
 
 資料來源：
 

@@ -262,6 +262,25 @@ def render_index(entries: list[tuple[TocNode, str]]) -> str:
             f"<li class='level-{indent}'><a href='sections/{html.escape(filename)}'>"
             f"{html.escape(node.title)}</a><span>{html.escape(node.line_id)}</span></li>"
         )
+    translation_links = []
+    for path in sorted((ROOT / "translations").glob("T1579-*-baihua.md")):
+        match = re.search(r"T1579-(\d{3})-baihua", path.name)
+        label = f"卷第{int(match.group(1))}白話對照翻譯" if match else path.stem
+        html_name = f"{path.stem}.html"
+        translation_links.append(
+            f"<li><a href='translations/{html.escape(html_name)}'>{html.escape(label)}</a></li>"
+        )
+    translation_list = ""
+    if translation_links:
+        joined_translation_links = "\n        ".join(translation_links)
+        translation_list = (
+            "    <section class='translation-index'>\n"
+            "      <h2>白話對照翻譯</h2>\n"
+            "      <ul>\n"
+            f"        {joined_translation_links}\n"
+            "      </ul>\n"
+            "    </section>\n"
+        )
     return f"""<!doctype html>
 <html lang="zh-Hant">
 <head>
@@ -275,10 +294,10 @@ def render_index(entries: list[tuple[TocNode, str]]) -> str:
     <div class="kicker">CBETA T1579</div>
     <h1>瑜伽師地論聲聞地</h1>
     <p>Split from CBETA HTML by mulu nodes. Notes, line markers, and source anchors are preserved.</p>
-    <p><a href="translations/T1579-033-baihua.html">卷第三十三白話左右對照翻譯</a></p>
     <p><a href="docs/translation-workflow.html">白話翻譯工作流程與術語庫</a></p>
   </header>
   <main class="index-list">
+{translation_list}    <h2>章節索引</h2>
     <ol>
       {'\n      '.join(links)}
     </ol>

@@ -14,8 +14,8 @@
     <p>本頁記錄後續卷次翻譯時的 agent 分工、術語保存方式、交付格式與檢查流程。</p>
     <nav class="translation-tools">
       <a href="../../translations/glossary/T1579-terms.json">術語庫 JSON</a>
-      <a href="../../translations/T1579-033-baihua.md">卷33來源稿</a>
-      <a href="../translations/T1579-033-baihua.html">卷33對照頁</a>
+      <a href="../index.html">翻譯清單</a>
+      <a href="../../translations/T1579-033-baihua.md">來源稿範例</a>
     </nav>
   </header>
 
@@ -97,13 +97,17 @@
             <td><code>scripts/check_translation_terms.py</code></td>
             <td>檢查術語庫 schema 與來源稿中的基本術語覆蓋。</td>
           </tr>
+          <tr>
+            <td><code>scripts/check_translation_coverage.py</code></td>
+            <td>檢查來源稿 range 單調性、起訖行號與 CBETA data line id 是否一致。</td>
+          </tr>
         </tbody>
       </table>
     </section>
 
     <section>
       <h2>來源稿合約</h2>
-      <p>所有 agent 都要遵守下列 Markdown 格式。<code>Range</code>、<code>Source</code>、<code>Translation</code> 必填，<code>Note</code> 可空但建議保留。</p>
+      <p>所有 agent 都要遵守下列 Markdown 格式。<code>Range</code>、<code>Source</code>、<code>Translation</code> 必填，<code>Note</code> 可空但建議保留。下方以卷33為例。</p>
       <pre class="doc-code"><code>## 01 段落標題
 Range: T30n1579_p0465a23-p0465a27
 
@@ -205,9 +209,10 @@ Note:
     <section>
       <h2>必要檢查</h2>
       <pre class="doc-code"><code>python3 scripts/build_shengwen_di_html.py
-python3 scripts/build_translation_html.py
-python3 scripts/check_translation_terms.py</code></pre>
-      <p>完成新卷時，還要跑 HTML 相對連結檢查、行號覆蓋檢查、卷界檢查。確認 <code>index.html</code>、<code>sections/</code>、<code>translations/</code>、<code>docs/</code> 沒有缺檔連結。</p>
+python3 scripts/build_translation_html.py --translation translations/T1579-XXX-baihua.md
+python3 scripts/check_translation_terms.py --translation translations/T1579-XXX-baihua.md
+python3 scripts/check_translation_coverage.py --translation translations/T1579-XXX-baihua.md --data data/T1579-XXX.json --start T30n1579_p... --end T30n1579_p...</code></pre>
+      <p>完成新卷時，還要跑 HTML 相對連結檢查。確認 <code>index.html</code>、<code>sections/</code>、<code>translations/</code>、<code>docs/</code> 沒有缺檔連結。</p>
     </section>
 
     <section>

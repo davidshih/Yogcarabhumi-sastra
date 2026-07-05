@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""Render the juan 33 vernacular translation page."""
+"""Render vernacular translation pages."""
 
 from __future__ import annotations
 
+import argparse
 import html
 import re
 from dataclasses import dataclass
@@ -10,8 +11,8 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = ROOT / "translations" / "T1579-033-baihua.md"
-OUTPUT = ROOT / "html" / "translations" / "T1579-033-baihua.html"
+DEFAULT_SOURCE = ROOT / "translations" / "T1579-033-baihua.md"
+DEFAULT_OUTPUT_DIR = ROOT / "html" / "translations"
 
 
 @dataclass
@@ -56,7 +57,27 @@ def render_text(text: str) -> str:
     return "\n".join(paragraphs)
 
 
-def render(entries: list[Entry]) -> str:
+def translation_output_path(source: Path, output: Path | None) -> Path:
+    if output:
+        return output
+    return DEFAULT_OUTPUT_DIR / f"{source.stem}.html"
+
+
+def infer_juan(source: Path) -> int:
+    match = re.search(r"T1579-(\d{3})-baihua", source.name)
+    if not match:
+        raise ValueError(f"Could not infer juan from filename: {source}")
+    return int(match.group(1))
+
+
+def infer_title(text: str, juan: int) -> str:
+    first_line = text.splitlines()[0].lstrip("#").strip()
+    if "白話" in first_line:
+        return first_line.replace("來源稿", "").replace("白話對照", "白話對照").strip()
+    return f"瑜伽師地論卷第{juan}白話對照"
+
+
+def render(entries: list[Entry], source: Path, juan: int, title: str) -> str:
     pairs = []
     for entry in entries:
         source_start, source_end = parse_range(entry.range_label)
@@ -76,26 +97,29 @@ def render(entries: list[Entry]) -> str:
       </div>{note_html}
     </section>"""
         )
+    first_start, _ = parse_range(entries[0].range_label)
+    _, last_end = parse_range(entries[-1].range_label)
+    source_link = html.escape(f"../../translations/{source.name}")
     return f"""<!doctype html>
 <html lang="zh-Hant">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>瑜伽師地論卷第三十三白話對照</title>
+  <title>{html.escape(title)}</title>
   <link rel="stylesheet" href="../style.css">
 </head>
 <body class="source-collapsed">
   <header class="site-header">
     <a href="../index.html">Index</a>
-    <div class="kicker">CBETA T1579 / Juan 33</div>
-    <h1>瑜伽師地論卷第三十三白話對照</h1>
-    <p>底本範圍：T30n1579_p0465a23 至 T30n1579_p0470c05。正文不納入卷三十四。</p>
+    <div class="kicker">CBETA T1579 / Juan {juan}</div>
+    <h1>{html.escape(title)}</h1>
+    <p>底本範圍：{html.escape(first_start)} 至 {html.escape(last_end)}。</p>
     <p>譯例：核心術語採白話詞（玄奘詞）雙軌，疑難處以精簡校註標示。</p>
     <nav class="translation-tools">
-      <a href="../../translations/T1579-033-baihua.md">來源稿</a>
+      <a href="{source_link}">來源稿</a>
       <a href="../../translations/glossary/T1579-terms.json">術語庫</a>
       <a href="../docs/translation-workflow.html">翻譯流程</a>
-      <a href="https://cbdata.dila.edu.tw/stable/juans?work=T1579&amp;juan=33&amp;toc=1&amp;work_info=1">CBETA API</a>
+      <a href="https://cbdata.dila.edu.tw/stable/juans?work=T1579&amp;juan={juan}&amp;toc=1&amp;work_info=1">CBETA API</a>
       <button class="source-toggle" type="button" id="sourceToggle" aria-pressed="false" aria-controls="parallelText">顯示文言原文</button>
     </nav>
   </header>
@@ -125,10 +149,27 @@ def parse_range(range_label: str) -> tuple[str, str]:
 
 
 def main() -> int:
-    entries = parse_entries(SOURCE.read_text(encoding="utf-8"))
-    OUTPUT.parent.mkdir(parents=True, exist_ok=True)
-    OUTPUT.write_text(render(entries), encoding="utf-8")
-    print(f"Wrote {OUTPUT}")
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--translation", type=Path, default=DEFAULT_SOURCE)
+    parser.add_argument("--output", type=Path)
+    args = parser.parse_args()
+
+    source = args.translation
+    if not source.is_absolute():
+        source = ROOT / source
+    output = translation_output_path(source, args.output)
+    if not output.is_absolute():
+        output = ROOT / output
+
+    text = source.read_text(encoding="utf-8")
+    entries = parse_entries(text)
+    if not entries:
+        raise ValueError(f"No entries found in {source}")
+    juan = infer_juan(source)
+    title = infer_title(text, juan)
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(render(entries, source, juan, title), encoding="utf-8")
+    print(f"Wrote {output}")
     return 0
 
 

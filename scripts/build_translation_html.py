@@ -109,8 +109,11 @@ def render(entries: list[Entry], source: Path, juan: int, title: str) -> str:
   <link rel="stylesheet" href="../style.css">
 </head>
 <body class="source-collapsed">
+  <div class="topbar">
+    <a class="topbar-brand" href="../index.html">聲聞地</a>
+    <a class="topbar-link" href="../index.html">Index</a>
+  </div>
   <header class="site-header">
-    <a href="../index.html">Index</a>
     <div class="kicker">CBETA T1579 / Juan {juan}</div>
     <h1>{html.escape(title)}</h1>
     <p>底本範圍：{html.escape(first_start)} 至 {html.escape(last_end)}。</p>

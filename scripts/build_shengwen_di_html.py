@@ -235,8 +235,11 @@ def render_section(
   <link rel="stylesheet" href="../style.css">
 </head>
 <body>
+  <div class="topbar">
+    <a class="topbar-brand" href="../index.html">聲聞地</a>
+    <a class="topbar-link" href="../index.html">Index</a>
+  </div>
   <header class="site-header">
-    <a href="../index.html">Index</a>
     <div class="kicker">CBETA T1579</div>
     <h1>{title}</h1>
     <p>{breadcrumb}</p>
@@ -259,9 +262,22 @@ def render_index(entries: list[tuple[TocNode, str]]) -> str:
     for node, filename in entries:
         indent = max(node.level - 1, 0)
         links.append(
-            f"<li class='level-{indent}'><a href='sections/{html.escape(filename)}'>"
+            f"<li class='level-{indent}' data-juan='{node.juan}'><a href='sections/{html.escape(filename)}'>"
             f"{html.escape(node.title)}</a><span>{html.escape(node.line_id)}</span></li>"
         )
+    juans = sorted({node.juan for node, _ in entries})
+    tabs = [
+        "<button type='button' class='juan-tab' data-juan='all' aria-selected='true'>全部</button>"
+    ]
+    tabs.extend(
+        f"<button type='button' class='juan-tab' data-juan='{juan}' aria-selected='false'>卷{juan}</button>"
+        for juan in juans
+    )
+    juan_tabs = (
+        "    <nav class='juan-tabs' aria-label='依卷次瀏覽'>\n      "
+        + "\n      ".join(tabs)
+        + "\n    </nav>\n"
+    )
     translation_links = []
     for path in sorted((ROOT / "translations").glob("T1579-*-baihua.md")):
         match = re.search(r"T1579-(\d{3})-baihua", path.name)
@@ -290,6 +306,10 @@ def render_index(entries: list[tuple[TocNode, str]]) -> str:
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <div class="topbar">
+    <a class="topbar-brand" href="index.html">聲聞地</a>
+    <a class="topbar-link" href="docs/translation-workflow.html">翻譯流程</a>
+  </div>
   <header class="site-header">
     <div class="kicker">CBETA T1579</div>
     <h1>瑜伽師地論聲聞地</h1>
@@ -298,362 +318,26 @@ def render_index(entries: list[tuple[TocNode, str]]) -> str:
   </header>
   <main class="index-list">
 {translation_list}    <h2>章節索引</h2>
-    <ol>
+{juan_tabs}    <ol>
       {'\n      '.join(links)}
     </ol>
   </main>
+  <script>
+    const juanTabs = Array.from(document.querySelectorAll(".juan-tab"));
+    const juanItems = Array.from(document.querySelectorAll(".index-list ol > li"));
+    juanTabs.forEach((tab) => {{
+      tab.addEventListener("click", () => {{
+        const selected = tab.dataset.juan;
+        juanTabs.forEach((other) => other.setAttribute("aria-selected", String(other === tab)));
+        juanItems.forEach((item) => {{
+          item.hidden = selected !== "all" && item.dataset.juan !== selected;
+        }});
+      }});
+    }});
+  </script>
 </body>
 </html>
 """
-
-
-def write_style() -> None:
-    (HTML_DIR / "style.css").write_text(
-        """body {
-  margin: 0;
-  color: #1f2933;
-  background: #f7f3ea;
-  font-family: "Noto Serif CJK TC", "Songti TC", "PMingLiU", serif;
-  line-height: 1.9;
-}
-
-a {
-  color: #8a3f21;
-}
-
-.site-header {
-  padding: 28px clamp(18px, 5vw, 56px);
-  border-bottom: 1px solid #ddd1bd;
-  background: #fffaf0;
-}
-
-.site-header h1 {
-  margin: 4px 0 8px;
-  font-size: 2rem;
-  letter-spacing: 0;
-}
-
-.site-header p {
-  margin: 4px 0;
-  color: #5a5145;
-}
-
-.kicker {
-  color: #805b2f;
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 0.85rem;
-}
-
-.reader,
-.notes,
-.index-list {
-  max-width: 980px;
-  margin: 0 auto;
-  padding: 28px clamp(18px, 5vw, 56px);
-  background: #fffdf7;
-}
-
-.translation-tools {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  margin-top: 1rem;
-}
-
-.translation-tools a {
-  border: 1px solid #cdbb9f;
-  padding: 0.25rem 0.65rem;
-  background: #fffdf7;
-  text-decoration: none;
-}
-
-.source-toggle {
-  border: 1px solid #8a3f21;
-  padding: 0.25rem 0.65rem;
-  color: #fffdf7;
-  background: #8a3f21;
-  font: inherit;
-  cursor: pointer;
-}
-
-.parallel-text {
-  max-width: 1280px;
-}
-
-.parallel-pair {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: clamp(1rem, 3vw, 2rem);
-  padding: 1.2rem 0;
-  border-bottom: 1px solid #eee2cc;
-}
-
-body.source-collapsed .parallel-pair {
-  grid-template-columns: minmax(0, 1fr);
-}
-
-.parallel-pair h2 {
-  grid-column: 1 / -1;
-  margin: 0 0 0.25rem;
-  font-size: 1.15rem;
-}
-
-.source-text,
-.translation-text {
-  min-width: 0;
-}
-
-.source-text {
-  color: #4f463c;
-}
-
-body.source-collapsed .source-text {
-  display: none;
-}
-
-.translation-text {
-  font-size: 1.05rem;
-}
-
-body.source-collapsed .translation-text {
-  grid-column: 1 / -1;
-}
-
-.line-range {
-  display: block;
-  margin-bottom: 0.35rem;
-  color: #8b8173;
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 0.78rem;
-}
-
-.translation-note {
-  grid-column: 1 / -1;
-  margin: 0.2rem 0 0;
-  padding-left: 0.75rem;
-  border-left: 3px solid #d2b48c;
-  color: #5f564a;
-  font-size: 0.94rem;
-}
-
-.doc-page h2 {
-  margin-top: 2rem;
-  padding-bottom: 0.25rem;
-  border-bottom: 1px solid #eee2cc;
-  font-size: 1.35rem;
-}
-
-.doc-page h3 {
-  margin: 0 0 0.25rem;
-  font-size: 1rem;
-}
-
-.doc-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin: 1rem 0;
-  font-size: 0.96rem;
-}
-
-.doc-table th,
-.doc-table td {
-  border-bottom: 1px solid #eee2cc;
-  padding: 0.45rem 0.55rem;
-  text-align: left;
-  vertical-align: top;
-}
-
-.doc-table th {
-  color: #5a5145;
-  background: #fff6e5;
-}
-
-.doc-code {
-  overflow-x: auto;
-  padding: 0.9rem;
-  border: 1px solid #e6d8c1;
-  background: #fff8ea;
-  line-height: 1.55;
-}
-
-.workflow-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 0.85rem;
-  margin: 1rem 0;
-}
-
-.workflow-grid article {
-  padding: 0.85rem;
-  border: 1px solid #eee2cc;
-  background: #fffaf0;
-}
-
-.workflow-grid p {
-  margin: 0.25rem 0 0;
-}
-
-.doc-steps li,
-.doc-page li {
-  margin: 0.35rem 0;
-}
-
-.flowchart {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 0.75rem;
-  align-items: stretch;
-  margin: 1rem 0;
-}
-
-.flow-step {
-  position: relative;
-  min-width: 0;
-  padding: 0.8rem;
-  border: 1px solid #d6c4a8;
-  background: #fffaf0;
-}
-
-.flow-step strong {
-  display: block;
-  color: #57331f;
-}
-
-.flow-step span {
-  display: block;
-  color: #5f564a;
-  font-size: 0.9rem;
-  line-height: 1.55;
-}
-
-.flow-step:not(:last-child)::after {
-  content: ">";
-  position: absolute;
-  top: 50%;
-  right: -0.58rem;
-  color: #8a3f21;
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  transform: translateY(-50%);
-}
-
-.flow-lanes {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.75rem;
-  margin: 1rem 0;
-}
-
-.flow-lane {
-  padding: 0.85rem;
-  border-left: 4px solid #8a3f21;
-  background: #fff8ea;
-}
-
-.flow-lane h3 {
-  margin-bottom: 0.4rem;
-}
-
-.reader p {
-  margin: 0.65rem 0;
-}
-
-.lb {
-  display: inline-block;
-  margin-right: 0.45rem;
-  color: #9a8a73;
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 0.72rem;
-}
-
-.noteAnchor::after {
-  content: "＊";
-  color: #9b2c2c;
-  font-size: 0.78em;
-  vertical-align: super;
-}
-
-.notes {
-  border-top: 1px solid #ddd1bd;
-  font-size: 0.95rem;
-}
-
-.footnote {
-  display: block;
-  margin: 0.35rem 0;
-  padding-left: 0.75rem;
-  border-left: 3px solid #d2b48c;
-}
-
-.empty-note {
-  color: #766c5d;
-}
-
-.lg {
-  margin: 0.8rem 0;
-}
-
-.lg-row {
-  display: flex;
-  gap: 2rem;
-  flex-wrap: wrap;
-}
-
-.lg-cell {
-  min-width: 12rem;
-}
-
-.index-list ol {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.index-list li {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 1rem;
-  padding: 0.4rem 0;
-  border-bottom: 1px solid #eee2cc;
-}
-
-.index-list span {
-  color: #8b8173;
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 0.8rem;
-}
-
-.level-1 { padding-left: 1.25rem !important; }
-.level-2 { padding-left: 2.5rem !important; }
-.level-3 { padding-left: 3.75rem !important; }
-.level-4 { padding-left: 5rem !important; }
-.level-5 { padding-left: 6.25rem !important; }
-
-@media (max-width: 640px) {
-  .index-list li {
-    grid-template-columns: 1fr;
-    gap: 0.1rem;
-  }
-
-  .parallel-pair {
-    grid-template-columns: 1fr;
-  }
-
-  .flowchart,
-  .flow-lanes {
-    grid-template-columns: 1fr;
-  }
-
-  .flow-step:not(:last-child)::after {
-    content: "v";
-    top: auto;
-    right: 50%;
-    bottom: -0.72rem;
-    transform: translateX(50%);
-  }
-}
-""",
-        encoding="utf-8",
-    )
 
 
 def main() -> int:
@@ -696,7 +380,6 @@ def main() -> int:
         )
         entries.append((node, filename))
 
-    write_style()
     (HTML_DIR / "index.html").write_text(render_index(entries), encoding="utf-8")
     print(f"Wrote {len(entries)} section files to {SECTION_DIR}")
     return 0

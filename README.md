@@ -21,6 +21,7 @@ python3 scripts/make_translation_skeleton.py --juan 11 --data data/T1579-011.jso
 python3 scripts/build_translation_html.py --translation translations/T1579-033-baihua.md
 python3 scripts/check_translation_terms.py --translation translations/T1579-033-baihua.md
 python3 scripts/check_translation_coverage.py --translation translations/T1579-033-baihua.md --data data/T1579-033.json --start T30n1579_p0465a23 --end T30n1579_p0470c05
+python3 scripts/check_html_links.py
 ```
 
 後續卷次請把 `033`、`data`、`segments`、`start`、`end` 換成該卷設定。例：卷11 使用 `translations/T1579-011-baihua.md`、`data/T1579-011.json`、`translations/segments/T1579-011.tsv`、`T30n1579_p0328c02` 到 `T30n1579_p0335a10`；卷12 使用 `T30n1579_p0335a13` 到 `T30n1579_p0341a19`；卷34 使用 `T30n1579_p0470c08` 到 `T30n1579_p0478b01`。

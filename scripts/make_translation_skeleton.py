@@ -110,7 +110,7 @@ def read_segments(path: Path) -> list[Segment]:
         if not line or line.startswith("#"):
             continue
         parts = [part.strip() for part in line.split("\t")]
-        if len(parts) < 3:
+        if len(parts) < 2:
             raise ValueError(f"{path}:{index}: expected title, range, and optional note separated by tabs")
         title, raw_range = parts[0], parts[1]
         start, end = parse_range(raw_range)

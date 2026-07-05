@@ -13,6 +13,16 @@
 - `translations/segments/*.tsv`：每卷翻譯段落切分表，可重建來源稿骨架
 - `translations/glossary/T1579-terms.json`：跨卷術語庫
 
+線上閱讀：
+
+- GitHub Pages：`https://davidshih.github.io/Yogcarabhumi-sastra/`
+
+部署方式：
+
+- `.github/workflows/deploy-pages.yml` 會在每次 push 到 `main` 時，把 `html/` 目錄部署到 GitHub Pages。
+- 手動重跑部署可到 GitHub Actions 執行 `Deploy Pages` workflow。
+- 若改用 S3，直接同步 `html/` 目錄即可；但若要 HTTPS、自訂網域與快取，通常還需要 CloudFront 與 DNS 設定。此 repo 目前以 GitHub Pages 為預設發布方式。
+
 使用方式：
 
 ```sh

@@ -235,6 +235,13 @@ python3 scripts/check_html_links.py</code></pre>
     </section>
 
     <section>
+      <h2>發布方式</h2>
+      <p>公開網站目前使用 GitHub Pages：<a href="https://davidshih.github.io/Yogcarabhumi-sastra/">https://davidshih.github.io/Yogcarabhumi-sastra/</a>。</p>
+      <p><code>.github/workflows/deploy-pages.yml</code> 會在每次 push 到 <code>main</code> 時，把 <code>html/</code> 目錄部署到 GitHub Pages。若需要手動重跑，可到 GitHub Actions 執行 <code>Deploy Pages</code> workflow。</p>
+      <p>若改用 S3，可同步 <code>html/</code> 目錄作為靜態網站內容；但 HTTPS、自訂網域與快取通常還需要 CloudFront 與 DNS 設定。除非需要自訂 AWS 架構，預設維持 GitHub Pages。</p>
+    </section>
+
+    <section>
       <h2>衝突規則</h2>
       <ul>
         <li>段落邊界只能由 Segmenter 或 Coordinator 改。</li>

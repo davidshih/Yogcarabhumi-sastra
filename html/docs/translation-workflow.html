@@ -35,7 +35,7 @@
         </div>
         <div class="flow-step">
           <strong>2. 切段</strong>
-          <span>Segmenter 只負責 Range、Source、段題與邊界 note。</span>
+          <span>Segmenter 先寫 segment TSV，再由工具抽 Range、Source 與邊界 note。</span>
         </div>
         <div class="flow-step">
           <strong>3. 分段初譯</strong>
@@ -78,6 +78,10 @@
         </thead>
         <tbody>
           <tr>
+            <td><code>translations/segments/T1579-XXX.tsv</code></td>
+            <td>每卷段落切分表，保存段題、CBETA range、邊界 note，供來源稿骨架重建。</td>
+          </tr>
+          <tr>
             <td><code>translations/T1579-XXX-baihua.md</code></td>
             <td>每卷唯一來源稿，保存段落 ID、CBETA range、原文、白話、校註。</td>
           </tr>
@@ -88,6 +92,10 @@
           <tr>
             <td><code>translations/glossary/T1579-terms.json</code></td>
             <td>跨卷術語庫，保存玄奘詞、白話譯法、外語候補、語境規則與禁譯提醒。</td>
+          </tr>
+          <tr>
+            <td><code>scripts/make_translation_skeleton.py</code></td>
+            <td>依 CBETA JSON 與 segment TSV 產生 Markdown 來源稿骨架。</td>
           </tr>
           <tr>
             <td><code>scripts/build_translation_html.py</code></td>
@@ -107,7 +115,7 @@
 
     <section>
       <h2>來源稿合約</h2>
-      <p>所有 agent 都要遵守下列 Markdown 格式。<code>Range</code>、<code>Source</code>、<code>Translation</code> 必填，<code>Note</code> 可空但建議保留。下方以卷33為例。</p>
+      <p>所有 agent 都要遵守下列 Markdown 格式。<code>Range</code>、<code>Source</code>、<code>Translation</code> 必填，<code>Note</code> 可空但建議保留。下方以卷33為例。新卷先寫 <code>translations/segments/T1579-XXX.tsv</code>，再用 <code>make_translation_skeleton.py</code> 抽出 <code>Source</code>，不要手動複製 CBETA 原文。</p>
       <pre class="doc-code"><code>## 01 段落標題
 Range: T30n1579_p0465a23-p0465a27
 
@@ -126,6 +134,8 @@ Note:
 校勘、段落歸屬或譯語判斷。
 &gt;&gt;&gt;</code></pre>
       <p><code>Range</code> 和 <code>Source</code> 只由切段 agent 或 coordinator 修改。翻譯 agent 若發現範圍問題，只在交接清單提出，不直接改邊界。</p>
+      <p>建立新卷骨架時使用下列指令；譯文填入後不要再用同一路徑重跑，以免覆蓋定稿。</p>
+      <pre class="doc-code"><code>python3 scripts/make_translation_skeleton.py --juan XXX --data data/T1579-XXX.json --segments translations/segments/T1579-XXX.tsv --output translations/T1579-XXX-baihua.md --start T30n1579_p... --end T30n1579_p...</code></pre>
     </section>
 
     <section>
@@ -170,7 +180,8 @@ Note:
       <h2>工作順序</h2>
       <ol class="doc-steps">
         <li>Coordinator 鎖定卷號、CBETA 起訖行號、是否保留卷題與卷末題。</li>
-        <li>Segmenter 產生 Markdown 骨架，所有段落都有 <code>Range</code> 和 <code>Source</code>。</li>
+        <li>Segmenter 產生 <code>translations/segments/T1579-XXX.tsv</code>，所有段落都有標題、<code>Range</code> 和邊界 note。</li>
+        <li>Coordinator 執行 <code>scripts/make_translation_skeleton.py</code> 產生 Markdown 骨架，所有段落都有 <code>Range</code> 和 <code>Source</code>。</li>
         <li>Coordinator 分派段號給 translators；每個 translator 只負責自己的段。</li>
         <li>Translator 依 glossary 初譯。疑難處短註，不寫長篇論文式考證。</li>
         <li>Terminology Reviewer 檢查同詞多譯與禁譯，提出 glossary 更新。</li>

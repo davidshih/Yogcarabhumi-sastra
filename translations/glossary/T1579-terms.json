@@ -14,11 +14,24 @@
       "xuanzang": "作意",
       "display": "專注觀修（作意）",
       "plain": "專注觀修",
-      "english": ["attention", "mental engagement"],
-      "sanskrit": ["manaskara"],
-      "pali": ["manasikara"],
-      "source_terms": ["作意"],
-      "translation_patterns": ["作意", "專注觀修", "作意思惟"],
+      "english": [
+        "attention",
+        "mental engagement"
+      ],
+      "sanskrit": [
+        "manaskara"
+      ],
+      "pali": [
+        "manasikara"
+      ],
+      "source_terms": [
+        "作意"
+      ],
+      "translation_patterns": [
+        "作意",
+        "專注觀修",
+        "作意思惟"
+      ],
       "status": "stable",
       "rule": "作為七作意等術語時保留「作意」；需白話展開時用「專注觀修（作意）」或「作意思惟」。"
     },
@@ -27,11 +40,23 @@
       "xuanzang": "勝解",
       "display": "決定勝解（勝解）",
       "plain": "決定勝解",
-      "english": ["resolution", "determinate understanding"],
-      "sanskrit": ["adhimoksha"],
-      "pali": ["adhimokkha"],
-      "source_terms": ["勝解"],
-      "translation_patterns": ["勝解", "決定勝解"],
+      "english": [
+        "resolution",
+        "determinate understanding"
+      ],
+      "sanskrit": [
+        "adhimoksha"
+      ],
+      "pali": [
+        "adhimokkha"
+      ],
+      "source_terms": [
+        "勝解"
+      ],
+      "translation_patterns": [
+        "勝解",
+        "決定勝解"
+      ],
       "status": "stable",
       "rule": "不簡化為一般理解；重點是對所緣相決定取持。"
     },
@@ -40,11 +65,24 @@
       "xuanzang": "補特伽羅",
       "display": "人（補特伽羅）",
       "plain": "人",
-      "english": ["person", "individual"],
-      "sanskrit": ["pudgala"],
-      "pali": ["puggala"],
-      "source_terms": ["補特伽羅"],
-      "translation_patterns": ["補特伽羅", "人", "個體"],
+      "english": [
+        "person",
+        "individual"
+      ],
+      "sanskrit": [
+        "pudgala"
+      ],
+      "pali": [
+        "puggala"
+      ],
+      "source_terms": [
+        "補特伽羅"
+      ],
+      "translation_patterns": [
+        "補特伽羅",
+        "人",
+        "個體"
+      ],
       "status": "stable",
       "rule": "可譯為「人」，但首次或論義精密處保留玄奘音譯。"
     },
@@ -53,11 +91,24 @@
       "xuanzang": "奢摩他",
       "display": "止（奢摩他）",
       "plain": "止",
-      "english": ["calm abiding", "serenity"],
-      "sanskrit": ["shamatha", "samatha"],
-      "pali": ["samatha"],
-      "source_terms": ["奢摩他"],
-      "translation_patterns": ["奢摩他", "止"],
+      "english": [
+        "calm abiding",
+        "serenity"
+      ],
+      "sanskrit": [
+        "shamatha",
+        "samatha"
+      ],
+      "pali": [
+        "samatha"
+      ],
+      "source_terms": [
+        "奢摩他"
+      ],
+      "translation_patterns": [
+        "奢摩他",
+        "止"
+      ],
       "status": "stable",
       "rule": "白話用「止」，重要處用「止（奢摩他）」。"
     },
@@ -66,11 +117,24 @@
       "xuanzang": "毘鉢舍那",
       "display": "觀（毘鉢舍那）",
       "plain": "觀",
-      "english": ["insight", "discernment"],
-      "sanskrit": ["vipashyana", "vipasyana"],
-      "pali": ["vipassana"],
-      "source_terms": ["毘鉢舍那"],
-      "translation_patterns": ["毘鉢舍那", "觀"],
+      "english": [
+        "insight",
+        "discernment"
+      ],
+      "sanskrit": [
+        "vipashyana",
+        "vipasyana"
+      ],
+      "pali": [
+        "vipassana"
+      ],
+      "source_terms": [
+        "毘鉢舍那"
+      ],
+      "translation_patterns": [
+        "毘鉢舍那",
+        "觀"
+      ],
       "status": "stable",
       "rule": "白話用「觀」，重要處用「觀（毘鉢舍那）」。"
     },
@@ -79,11 +143,20 @@
       "xuanzang": "加行",
       "display": "加行",
       "plain": "加行",
-      "english": ["preparatory practice", "application"],
-      "sanskrit": ["prayoga"],
+      "english": [
+        "preparatory practice",
+        "application"
+      ],
+      "sanskrit": [
+        "prayoga"
+      ],
       "pali": [],
-      "source_terms": ["加行"],
-      "translation_patterns": ["加行"],
+      "source_terms": [
+        "加行"
+      ],
+      "translation_patterns": [
+        "加行"
+      ],
       "status": "stable",
       "rule": "保留玄奘詞；必要時以語境說明為修行上的用功、預備或推進。"
     },
@@ -92,11 +165,26 @@
       "xuanzang": "麁性",
       "display": "粗重性（麁性）",
       "plain": "粗重性",
-      "english": ["coarseness", "grossness"],
-      "sanskrit": ["audarya", "dausthulya"],
+      "english": [
+        "coarseness",
+        "grossness"
+      ],
+      "sanskrit": [
+        "audarya",
+        "dausthulya"
+      ],
       "pali": [],
-      "source_terms": ["麁性", "麁相", "麁重"],
-      "translation_patterns": ["麁性", "麁相", "麁重", "粗重"],
+      "source_terms": [
+        "麁性",
+        "麁相",
+        "麁重"
+      ],
+      "translation_patterns": [
+        "麁性",
+        "麁相",
+        "麁重",
+        "粗重"
+      ],
       "status": "review",
       "rule": "依玄奘原詞保留「麁」於括注；白話正文多用「粗重」。"
     },
@@ -105,11 +193,25 @@
       "xuanzang": "靜性",
       "display": "寂靜性（靜性）",
       "plain": "寂靜性",
-      "english": ["peacefulness", "tranquility"],
-      "sanskrit": ["shanta"],
-      "pali": ["santa"],
-      "source_terms": ["靜性", "靜相"],
-      "translation_patterns": ["靜性", "靜相", "寂靜"],
+      "english": [
+        "peacefulness",
+        "tranquility"
+      ],
+      "sanskrit": [
+        "shanta"
+      ],
+      "pali": [
+        "santa"
+      ],
+      "source_terms": [
+        "靜性",
+        "靜相"
+      ],
+      "translation_patterns": [
+        "靜性",
+        "靜相",
+        "寂靜"
+      ],
       "status": "stable",
       "rule": "與下地麁相相對；白話用「寂靜相／寂靜性」。"
     },
@@ -118,11 +220,29 @@
       "xuanzang": "離欲",
       "display": "離欲",
       "plain": "離開欲貪",
-      "english": ["seclusion from sensuality", "dispassion"],
-      "sanskrit": ["viveka", "vairagya"],
-      "pali": ["viveka", "viraga"],
-      "source_terms": ["離欲", "離欲界欲"],
-      "translation_patterns": ["離欲", "離開欲", "離開了欲", "離開欲貪", "厭離欲"],
+      "english": [
+        "seclusion from sensuality",
+        "dispassion"
+      ],
+      "sanskrit": [
+        "viveka",
+        "vairagya"
+      ],
+      "pali": [
+        "viveka",
+        "viraga"
+      ],
+      "source_terms": [
+        "離欲",
+        "離欲界欲"
+      ],
+      "translation_patterns": [
+        "離欲",
+        "離開欲",
+        "離開了欲",
+        "離開欲貪",
+        "厭離欲"
+      ],
       "status": "stable",
       "rule": "依語境分辨離欲界欲、離煩惱欲、境界離，不一律譯成抽象厭離。"
     },
@@ -131,11 +251,22 @@
       "xuanzang": "輕安",
       "display": "輕安",
       "plain": "身心輕安",
-      "english": ["pliancy", "tranquility"],
-      "sanskrit": ["prashrabdhi"],
-      "pali": ["passaddhi"],
-      "source_terms": ["輕安"],
-      "translation_patterns": ["輕安"],
+      "english": [
+        "pliancy",
+        "tranquility"
+      ],
+      "sanskrit": [
+        "prashrabdhi"
+      ],
+      "pali": [
+        "passaddhi"
+      ],
+      "source_terms": [
+        "輕安"
+      ],
+      "translation_patterns": [
+        "輕安"
+      ],
       "status": "stable",
       "rule": "保留「輕安」；必要時加身心或廣大等語境。"
     },
@@ -144,37 +275,73 @@
       "xuanzang": "心一境性",
       "display": "心專注一境（心一境性）",
       "plain": "心專注一境",
-      "english": ["one-pointedness of mind"],
-      "sanskrit": ["cittaikagrata"],
-      "pali": ["cittass'ekaggata"],
-      "source_terms": ["心一境性"],
-      "translation_patterns": ["心一境性", "心專注一境"],
+      "english": [
+        "one-pointedness of mind"
+      ],
+      "sanskrit": [
+        "cittaikagrata"
+      ],
+      "pali": [
+        "cittass'ekaggata"
+      ],
+      "source_terms": [
+        "心一境性"
+      ],
+      "translation_patterns": [
+        "心一境性",
+        "心專注一境"
+      ],
       "status": "stable",
       "rule": "首次用雙軌，之後可保留玄奘詞。"
     },
     {
-      "id": "samapatti",
+      "id": "dhyana",
       "xuanzang": "靜慮",
-      "display": "禪定（靜慮）",
-      "plain": "禪定",
-      "english": ["meditative absorption", "dhyana"],
-      "sanskrit": ["dhyana"],
-      "pali": ["jhana"],
-      "source_terms": ["靜慮", "初靜慮", "第二靜慮", "第三靜慮", "第四靜慮"],
-      "translation_patterns": ["靜慮", "禪", "禪定"],
+      "display": "靜慮",
+      "plain": "靜慮定",
+      "english": [
+        "meditative absorption",
+        "dhyana"
+      ],
+      "sanskrit": [
+        "dhyana"
+      ],
+      "pali": [
+        "jhana"
+      ],
+      "source_terms": [
+        "靜慮",
+        "初靜慮",
+        "第二靜慮",
+        "第三靜慮",
+        "第四靜慮"
+      ],
+      "translation_patterns": [
+        "靜慮",
+        "禪",
+        "禪定"
+      ],
       "status": "stable",
-      "rule": "標題與公式可用「初禪／第二禪」，必要處括注「靜慮」。"
+      "rule": "卷11/12與等持、等至並列時保留「靜慮」；必要時說明為靜慮定，不可把等持、等至也都混譯成禪定。"
     },
     {
       "id": "vashikara",
       "xuanzang": "伏斷",
       "display": "伏斷",
       "plain": "暫時伏斷",
-      "english": ["suppression", "temporary abandonment"],
+      "english": [
+        "suppression",
+        "temporary abandonment"
+      ],
       "sanskrit": [],
       "pali": [],
-      "source_terms": ["伏斷"],
-      "translation_patterns": ["伏斷", "暫時伏斷"],
+      "source_terms": [
+        "伏斷"
+      ],
+      "translation_patterns": [
+        "伏斷",
+        "暫時伏斷"
+      ],
       "status": "stable",
       "rule": "必須和「永害種子」區分；世間道此處只是暫伏，不作究竟斷。"
     },
@@ -183,11 +350,23 @@
       "xuanzang": "隨眠",
       "display": "隨眠",
       "plain": "潛伏煩惱",
-      "english": ["underlying tendency", "latent tendency"],
-      "sanskrit": ["anushaya"],
-      "pali": ["anusaya"],
-      "source_terms": ["隨眠"],
-      "translation_patterns": ["隨眠", "潛伏"],
+      "english": [
+        "underlying tendency",
+        "latent tendency"
+      ],
+      "sanskrit": [
+        "anushaya"
+      ],
+      "pali": [
+        "anusaya"
+      ],
+      "source_terms": [
+        "隨眠"
+      ],
+      "translation_patterns": [
+        "隨眠",
+        "潛伏"
+      ],
       "status": "stable",
       "rule": "保留「隨眠」；需要白話時說明為尚未永斷的潛伏煩惱。"
     },
@@ -196,11 +375,22 @@
       "xuanzang": "近分",
       "display": "近分",
       "plain": "近分定",
-      "english": ["access", "preparatory stage"],
-      "sanskrit": ["samantaka"],
-      "pali": ["upacara"],
-      "source_terms": ["近分"],
-      "translation_patterns": ["近分"],
+      "english": [
+        "access",
+        "preparatory stage"
+      ],
+      "sanskrit": [
+        "samantaka"
+      ],
+      "pali": [
+        "upacara"
+      ],
+      "source_terms": [
+        "近分"
+      ],
+      "translation_patterns": [
+        "近分"
+      ],
       "status": "review",
       "rule": "無色定段落多與根本定相對；先保留玄奘詞。"
     },
@@ -209,11 +399,20 @@
       "xuanzang": "根本",
       "display": "根本定",
       "plain": "根本定",
-      "english": ["root absorption", "full absorption"],
+      "english": [
+        "root absorption",
+        "full absorption"
+      ],
       "sanskrit": [],
-      "pali": ["appana"],
-      "source_terms": ["根本"],
-      "translation_patterns": ["根本"],
+      "pali": [
+        "appana"
+      ],
+      "source_terms": [
+        "根本"
+      ],
+      "translation_patterns": [
+        "根本"
+      ],
       "status": "review",
       "rule": "與近分相對時譯為根本定；不要只譯成一般的根本。"
     },
@@ -222,11 +421,21 @@
       "xuanzang": "無想定",
       "display": "無想定",
       "plain": "無想定",
-      "english": ["attainment of non-perception"],
-      "sanskrit": ["asamjni-samapatti"],
-      "pali": ["asanna-samapatti"],
-      "source_terms": ["無想定"],
-      "translation_patterns": ["無想定"],
+      "english": [
+        "attainment of non-perception"
+      ],
+      "sanskrit": [
+        "asamjni-samapatti"
+      ],
+      "pali": [
+        "asanna-samapatti"
+      ],
+      "source_terms": [
+        "無想定"
+      ],
+      "translation_patterns": [
+        "無想定"
+      ],
       "status": "stable",
       "rule": "保留定名，並標明唯異生能入。"
     },
@@ -235,11 +444,21 @@
       "xuanzang": "滅盡定",
       "display": "滅盡定",
       "plain": "滅盡定",
-      "english": ["attainment of cessation"],
-      "sanskrit": ["nirodha-samapatti"],
-      "pali": ["nirodha-samapatti"],
-      "source_terms": ["滅盡定"],
-      "translation_patterns": ["滅盡定"],
+      "english": [
+        "attainment of cessation"
+      ],
+      "sanskrit": [
+        "nirodha-samapatti"
+      ],
+      "pali": [
+        "nirodha-samapatti"
+      ],
+      "source_terms": [
+        "滅盡定"
+      ],
+      "translation_patterns": [
+        "滅盡定"
+      ],
       "status": "stable",
       "rule": "保留定名，並標明唯聖者能入。"
     },
@@ -248,11 +467,22 @@
       "xuanzang": "五神通",
       "display": "五神通",
       "plain": "五種神通",
-      "english": ["five superknowledges"],
-      "sanskrit": ["abhijna"],
-      "pali": ["abhinna"],
-      "source_terms": ["五神通", "神通"],
-      "translation_patterns": ["神通"],
+      "english": [
+        "five superknowledges"
+      ],
+      "sanskrit": [
+        "abhijna"
+      ],
+      "pali": [
+        "abhinna"
+      ],
+      "source_terms": [
+        "五神通",
+        "神通"
+      ],
+      "translation_patterns": [
+        "神通"
+      ],
       "status": "stable",
       "rule": "保留神通類名；各通名依玄奘詞。"
     },
@@ -261,11 +491,30 @@
       "xuanzang": "四聖諦",
       "display": "四聖諦",
       "plain": "四種聖者所證真理",
-      "english": ["four noble truths"],
-      "sanskrit": ["catvari aryasatyani"],
-      "pali": ["cattari ariyasaccani"],
-      "source_terms": ["四聖諦", "苦諦", "集諦", "滅諦", "道諦"],
-      "translation_patterns": ["四聖諦", "苦諦", "集諦", "滅諦", "道諦", "聖諦"],
+      "english": [
+        "four noble truths"
+      ],
+      "sanskrit": [
+        "catvari aryasatyani"
+      ],
+      "pali": [
+        "cattari ariyasaccani"
+      ],
+      "source_terms": [
+        "四聖諦",
+        "苦諦",
+        "集諦",
+        "滅諦",
+        "道諦"
+      ],
+      "translation_patterns": [
+        "四聖諦",
+        "苦諦",
+        "集諦",
+        "滅諦",
+        "道諦",
+        "聖諦"
+      ],
       "status": "stable",
       "rule": "諦名保留玄奘詞；不可只譯成普通道理。必要時解釋為苦、苦因集起、苦滅、滅苦之道。"
     },
@@ -274,11 +523,52 @@
       "xuanzang": "十六行",
       "display": "十六種觀察行相（十六行）",
       "plain": "十六種觀察行相",
-      "english": ["sixteen aspects"],
+      "english": [
+        "sixteen aspects"
+      ],
       "sanskrit": [],
       "pali": [],
-      "source_terms": ["十六行", "四行", "無常行", "苦行", "空行", "無我行", "因行", "集行", "起行", "緣行", "滅行", "靜行", "妙行", "離行", "道行", "如行", "行行", "出行"],
-      "translation_patterns": ["十六行", "四行", "行相", "無常行", "苦行", "空行", "無我行", "因行", "集行", "起行", "緣行", "滅行", "靜行", "妙行", "離行", "道行", "如行", "行行", "出行"],
+      "source_terms": [
+        "十六行",
+        "四行",
+        "無常行",
+        "苦行",
+        "空行",
+        "無我行",
+        "因行",
+        "集行",
+        "起行",
+        "緣行",
+        "滅行",
+        "靜行",
+        "妙行",
+        "離行",
+        "道行",
+        "如行",
+        "行行",
+        "出行"
+      ],
+      "translation_patterns": [
+        "十六行",
+        "四行",
+        "行相",
+        "無常行",
+        "苦行",
+        "空行",
+        "無我行",
+        "因行",
+        "集行",
+        "起行",
+        "緣行",
+        "滅行",
+        "靜行",
+        "妙行",
+        "離行",
+        "道行",
+        "如行",
+        "行行",
+        "出行"
+      ],
       "status": "stable",
       "rule": "此處「行」是觀察行相，不是一般行為；「苦行」不可譯成苦修或禁欲修行。"
     },
@@ -287,11 +577,29 @@
       "xuanzang": "順決擇分",
       "display": "順向抉擇分善根（順決擇分）",
       "plain": "順向抉擇分善根",
-      "english": ["aids to penetration"],
-      "sanskrit": ["nirvedha-bhagiya"],
+      "english": [
+        "aids to penetration"
+      ],
+      "sanskrit": [
+        "nirvedha-bhagiya"
+      ],
       "pali": [],
-      "source_terms": ["順決擇分", "煗", "頂", "忍", "諦順忍", "世第一法"],
-      "translation_patterns": ["順決擇分", "煗", "頂", "忍", "諦順忍", "世第一法"],
+      "source_terms": [
+        "順決擇分",
+        "煗",
+        "頂",
+        "忍",
+        "諦順忍",
+        "世第一法"
+      ],
+      "translation_patterns": [
+        "順決擇分",
+        "煗",
+        "頂",
+        "忍",
+        "諦順忍",
+        "世第一法"
+      ],
       "status": "stable",
       "rule": "卷34依原文用「煗」不改為「煖」；此處「忍」是道位與忍可，不是忍耐。"
     },
@@ -300,11 +608,26 @@
       "xuanzang": "現觀",
       "display": "直接現證（現觀）",
       "plain": "直接現證",
-      "english": ["direct realization", "manifest insight"],
-      "sanskrit": ["abhisamaya"],
-      "pali": ["abhisamaya"],
-      "source_terms": ["現觀", "法現觀", "諦現觀"],
-      "translation_patterns": ["現觀", "直接現證", "現證"],
+      "english": [
+        "direct realization",
+        "manifest insight"
+      ],
+      "sanskrit": [
+        "abhisamaya"
+      ],
+      "pali": [
+        "abhisamaya"
+      ],
+      "source_terms": [
+        "現觀",
+        "法現觀",
+        "諦現觀"
+      ],
+      "translation_patterns": [
+        "現觀",
+        "直接現證",
+        "現證"
+      ],
       "status": "stable",
       "rule": "連到見道與證果；不可譯成一般觀察。"
     },
@@ -313,11 +636,21 @@
       "xuanzang": "見道",
       "display": "見道",
       "plain": "見道",
-      "english": ["path of seeing"],
-      "sanskrit": ["darshana-marga"],
+      "english": [
+        "path of seeing"
+      ],
+      "sanskrit": [
+        "darshana-marga"
+      ],
       "pali": [],
-      "source_terms": ["見道", "見道所斷"],
-      "translation_patterns": ["見道", "見道所斷"],
+      "source_terms": [
+        "見道",
+        "見道所斷"
+      ],
+      "translation_patterns": [
+        "見道",
+        "見道所斷"
+      ],
       "status": "stable",
       "rule": "保留玄奘詞；不可白話成看見道路。"
     },
@@ -326,11 +659,21 @@
       "xuanzang": "修道",
       "display": "修道",
       "plain": "修道",
-      "english": ["path of cultivation"],
-      "sanskrit": ["bhavana-marga"],
+      "english": [
+        "path of cultivation"
+      ],
+      "sanskrit": [
+        "bhavana-marga"
+      ],
       "pali": [],
-      "source_terms": ["修道", "修所斷"],
-      "translation_patterns": ["修道", "修所斷"],
+      "source_terms": [
+        "修道",
+        "修所斷"
+      ],
+      "translation_patterns": [
+        "修道",
+        "修所斷"
+      ],
       "status": "stable",
       "rule": "保留玄奘詞；與見道所斷區分。"
     },
@@ -339,11 +682,37 @@
       "xuanzang": "獨覺",
       "display": "獨覺",
       "plain": "獨覺",
-      "english": ["solitary buddha", "pratyekabuddha"],
-      "sanskrit": ["pratyekabuddha"],
-      "pali": ["paccekabuddha"],
-      "source_terms": ["獨覺", "獨覺地", "獨覺種姓", "本性獨覺", "獨覺菩提", "獨覺道", "獨覺習", "獨覺住", "獨覺行"],
-      "translation_patterns": ["獨覺", "獨覺地", "獨覺種姓", "獨覺菩提", "獨覺道", "獨覺習", "獨覺住", "獨覺行"],
+      "english": [
+        "solitary buddha",
+        "pratyekabuddha"
+      ],
+      "sanskrit": [
+        "pratyekabuddha"
+      ],
+      "pali": [
+        "paccekabuddha"
+      ],
+      "source_terms": [
+        "獨覺",
+        "獨覺地",
+        "獨覺種姓",
+        "本性獨覺",
+        "獨覺菩提",
+        "獨覺道",
+        "獨覺習",
+        "獨覺住",
+        "獨覺行"
+      ],
+      "translation_patterns": [
+        "獨覺",
+        "獨覺地",
+        "獨覺種姓",
+        "獨覺菩提",
+        "獨覺道",
+        "獨覺習",
+        "獨覺住",
+        "獨覺行"
+      ],
       "status": "stable",
       "rule": "保留術語；不可譯成孤獨的人。"
     },
@@ -352,11 +721,23 @@
       "xuanzang": "麟角喻",
       "display": "如犀角般獨行者（麟角喻）",
       "plain": "如犀角般獨行者",
-      "english": ["rhinoceros-like"],
+      "english": [
+        "rhinoceros-like"
+      ],
       "sanskrit": [],
       "pali": [],
-      "source_terms": ["麟角喻", "部行喻", "獨勝"],
-      "translation_patterns": ["麟角喻", "部行喻", "獨勝", "犀角", "部眾同行"],
+      "source_terms": [
+        "麟角喻",
+        "部行喻",
+        "獨勝"
+      ],
+      "translation_patterns": [
+        "麟角喻",
+        "部行喻",
+        "獨勝",
+        "犀角",
+        "部眾同行"
+      ],
       "status": "stable",
       "rule": "麟角喻重點是獨行；部行喻重點是可與部眾同行。"
     },
@@ -365,11 +746,30 @@
       "xuanzang": "善巧",
       "display": "善於通達（善巧）",
       "plain": "善於通達",
-      "english": ["skill", "expertise"],
-      "sanskrit": ["kaushalya"],
-      "pali": ["kosalla"],
-      "source_terms": ["善巧", "蘊善巧", "處善巧", "界善巧", "緣起善巧", "處非處善巧", "諦善巧"],
-      "translation_patterns": ["善巧", "善於通達", "善知"],
+      "english": [
+        "skill",
+        "expertise"
+      ],
+      "sanskrit": [
+        "kaushalya"
+      ],
+      "pali": [
+        "kosalla"
+      ],
+      "source_terms": [
+        "善巧",
+        "蘊善巧",
+        "處善巧",
+        "界善巧",
+        "緣起善巧",
+        "處非處善巧",
+        "諦善巧"
+      ],
+      "translation_patterns": [
+        "善巧",
+        "善於通達",
+        "善知"
+      ],
       "status": "stable",
       "rule": "此處是對法類別的通達能力，不只是技巧熟練。"
     },
@@ -378,13 +778,595 @@
       "xuanzang": "沙門果",
       "display": "沙門果",
       "plain": "沙門果",
-      "english": ["fruition of recluseship"],
-      "sanskrit": ["shramanya-phala"],
-      "pali": ["samannaphala"],
-      "source_terms": ["沙門果", "阿羅漢果", "梵行邊際"],
-      "translation_patterns": ["沙門果", "阿羅漢果", "梵行", "究竟邊際"],
+      "english": [
+        "fruition of recluseship"
+      ],
+      "sanskrit": [
+        "shramanya-phala"
+      ],
+      "pali": [
+        "samannaphala"
+      ],
+      "source_terms": [
+        "沙門果",
+        "阿羅漢果",
+        "梵行邊際"
+      ],
+      "translation_patterns": [
+        "沙門果",
+        "阿羅漢果",
+        "梵行",
+        "究竟邊際"
+      ],
       "status": "stable",
       "rule": "果位名保留；不可泛譯成成果。"
+    },
+    {
+      "id": "samahita-bhumi",
+      "xuanzang": "三摩呬多地",
+      "display": "定境地（三摩呬多地）",
+      "plain": "定境地",
+      "english": [
+        "stage of meditative composure"
+      ],
+      "sanskrit": [
+        "samahita-bhumi"
+      ],
+      "pali": [],
+      "source_terms": [
+        "三摩呬多地",
+        "等引地",
+        "三摩呬多"
+      ],
+      "translation_patterns": [
+        "三摩呬多地",
+        "定境地",
+        "等引地"
+      ],
+      "status": "stable",
+      "rule": "保留地名骨架；不可泛譯成「禪修」而丟掉本地分的分類。"
+    },
+    {
+      "id": "samadhi",
+      "xuanzang": "等持",
+      "display": "心安住一境的定（等持／三摩地）",
+      "plain": "心安住一境的定",
+      "english": [
+        "concentration",
+        "samadhi"
+      ],
+      "sanskrit": [
+        "samadhi"
+      ],
+      "pali": [
+        "samadhi"
+      ],
+      "source_terms": [
+        "等持",
+        "三摩地",
+        "正三摩地"
+      ],
+      "translation_patterns": [
+        "等持",
+        "三摩地",
+        "心一境性之定",
+        "心安住一境"
+      ],
+      "status": "stable",
+      "rule": "與「等至／三摩鉢底」分開；等持偏定心狀態與心一境性。"
+    },
+    {
+      "id": "samapatti",
+      "xuanzang": "等至",
+      "display": "入定成就（等至／三摩鉢底）",
+      "plain": "入定成就",
+      "english": [
+        "attainment",
+        "meditative attainment"
+      ],
+      "sanskrit": [
+        "samapatti"
+      ],
+      "pali": [
+        "samapatti"
+      ],
+      "source_terms": [
+        "等至",
+        "三摩鉢底"
+      ],
+      "translation_patterns": [
+        "等至",
+        "三摩鉢底",
+        "入定成就",
+        "定境現前"
+      ],
+      "status": "stable",
+      "rule": "不譯成等持；偏進入並成就某種定境。"
+    },
+    {
+      "id": "vimoksha",
+      "xuanzang": "解脫",
+      "display": "解脫",
+      "plain": "定中解脫法門",
+      "english": [
+        "liberation",
+        "vimoksha"
+      ],
+      "sanskrit": [
+        "vimoksha"
+      ],
+      "pali": [
+        "vimokkha"
+      ],
+      "source_terms": [
+        "八解脫",
+        "身作證具足住"
+      ],
+      "translation_patterns": [
+        "解脫",
+        "八解脫",
+        "親證具足安住",
+        "親身證得"
+      ],
+      "status": "stable",
+      "rule": "卷11/12多指八解脫分類，不只是一般解放；「身作證具足住」宜譯為親身證得並具足安住。"
+    },
+    {
+      "id": "five-hindrances",
+      "xuanzang": "五蓋",
+      "display": "五種覆障（五蓋）",
+      "plain": "遮蔽定慧的五種障礙",
+      "english": [
+        "five hindrances"
+      ],
+      "sanskrit": [
+        "panca nivaranani"
+      ],
+      "pali": [
+        "panca nivaranani"
+      ],
+      "source_terms": [
+        "五蓋",
+        "貪欲蓋",
+        "瞋恚蓋",
+        "惛沈睡眠蓋",
+        "掉舉惡作蓋",
+        "疑蓋"
+      ],
+      "translation_patterns": [
+        "五蓋",
+        "五種覆障",
+        "遮蔽定慧的五障",
+        "貪欲蓋",
+        "疑蓋"
+      ],
+      "status": "stable",
+      "rule": "五蓋是入靜慮與等至的障礙；合稱不可拆錯。"
+    },
+    {
+      "id": "ahara-nonahara",
+      "xuanzang": "食／非食",
+      "display": "助長因素與對治因素（食／非食）",
+      "plain": "助長因素與對治因素",
+      "english": [
+        "nutriment and non-nutriment"
+      ],
+      "sanskrit": [
+        "ahara"
+      ],
+      "pali": [
+        "ahara"
+      ],
+      "source_terms": [
+        "以之為食",
+        "以為非食"
+      ],
+      "translation_patterns": [
+        "助長因素",
+        "滋養條件",
+        "對治因素",
+        "非食"
+      ],
+      "status": "stable",
+      "rule": "此處「食」是使蓋增長的條件，「非食」是不生或斷除的對治條件；不可譯成飲食。"
+    },
+    {
+      "id": "seven-root-attentions",
+      "xuanzang": "七種作意",
+      "display": "七種根本作意",
+      "plain": "七階段觀修",
+      "english": [
+        "seven attentions"
+      ],
+      "sanskrit": [],
+      "pali": [],
+      "source_terms": [
+        "七種作意",
+        "了相作意",
+        "勝解作意",
+        "遠離作意",
+        "攝樂作意",
+        "觀察作意",
+        "加行究竟作意",
+        "加行究竟果作意"
+      ],
+      "translation_patterns": [
+        "七種根本作意",
+        "七作意",
+        "七階段觀修",
+        "了相作意",
+        "勝解作意",
+        "遠離作意",
+        "攝樂作意",
+        "觀察作意",
+        "加行究竟作意",
+        "加行究竟果作意",
+        "專注觀修",
+        "七種專注觀修"
+      ],
+      "status": "stable",
+      "rule": "七名應固定保留，不自由改寫；需要白話時可總稱七階段觀修。"
+    },
+    {
+      "id": "three-samadhis",
+      "xuanzang": "三三摩地",
+      "display": "空、無願、無相三定（三三摩地）",
+      "plain": "空、無願、無相三定",
+      "english": [
+        "three concentrations"
+      ],
+      "sanskrit": [
+        "trayah samadhayah"
+      ],
+      "pali": [
+        "tayo samadhi"
+      ],
+      "source_terms": [
+        "三三摩地",
+        "空三摩地",
+        "無願心三摩地",
+        "無相心三摩地"
+      ],
+      "translation_patterns": [
+        "三三摩地",
+        "三種三摩地",
+        "空、無願、無相三定",
+        "空三摩地",
+        "無願",
+        "無相"
+      ],
+      "status": "stable",
+      "rule": "「無願」不是沒有志願；是對五取蘊不再希求。"
+    },
+    {
+      "id": "meditation-objects-aspects",
+      "xuanzang": "所緣諸相",
+      "display": "觀修所緣的各類相（所緣諸相）",
+      "plain": "觀修所緣的各類相",
+      "english": [
+        "aspects of meditation objects"
+      ],
+      "sanskrit": [],
+      "pali": [],
+      "source_terms": [
+        "所緣相",
+        "因緣相",
+        "應遠離相",
+        "應修習相",
+        "三十二相"
+      ],
+      "translation_patterns": [
+        "所緣諸相",
+        "觀修所緣相",
+        "應遠離相",
+        "應修習相",
+        "三十二相",
+        "所緣相",
+        "因緣相",
+        "所緣"
+      ],
+      "status": "stable",
+      "rule": "「相」是修定時取用、遠離或修習的操作對象，不是抽象外貌。"
+    },
+    {
+      "id": "assada-samadhi",
+      "xuanzang": "愛味相應靜慮等定",
+      "display": "貪著定味的定（愛味相應定）",
+      "plain": "帶貪著味染的定",
+      "english": [
+        "concentration connected with gratification"
+      ],
+      "sanskrit": [],
+      "pali": [
+        "assada"
+      ],
+      "source_terms": [
+        "愛味相應靜慮等定",
+        "戀著堅住"
+      ],
+      "translation_patterns": [
+        "愛味相應定",
+        "貪著定味",
+        "對定境生愛著",
+        "戀著堅住",
+        "愛味相應靜慮等定",
+        "愛味相應"
+      ],
+      "status": "stable",
+      "rule": "「愛味」不是滋味好，是對定功德生貪戀。"
+    },
+    {
+      "id": "pure-samadhi",
+      "xuanzang": "清淨靜慮等定",
+      "display": "清淨靜慮等定",
+      "plain": "不貪著的清淨定",
+      "english": [
+        "pure concentration"
+      ],
+      "sanskrit": [],
+      "pali": [],
+      "source_terms": [
+        "清淨靜慮等定",
+        "清淨定"
+      ],
+      "translation_patterns": [
+        "清淨靜慮",
+        "清淨定",
+        "不愛味的定"
+      ],
+      "status": "stable",
+      "rule": "仍可能是世間定；不可直接等同無漏解脫。"
+    },
+    {
+      "id": "anasrava-samadhi",
+      "xuanzang": "無漏靜慮等定",
+      "display": "無漏靜慮等定",
+      "plain": "無漏聖道相應定",
+      "english": [
+        "undefiled concentration"
+      ],
+      "sanskrit": [
+        "anasrava-samadhi"
+      ],
+      "pali": [],
+      "source_terms": [
+        "無漏靜慮等定",
+        "無漏定"
+      ],
+      "translation_patterns": [
+        "無漏靜慮",
+        "無漏定",
+        "聖道相應定"
+      ],
+      "status": "stable",
+      "rule": "要與愛味相應、清淨二類分層。"
+    },
+    {
+      "id": "fourfold-samadhi-tendencies",
+      "xuanzang": "四分定",
+      "display": "退、住、勝、決擇四向定（四分定）",
+      "plain": "退、住、勝、決擇四向定",
+      "english": [
+        "fourfold tendencies of concentration"
+      ],
+      "sanskrit": [],
+      "pali": [],
+      "source_terms": [
+        "順退分定",
+        "順住分定",
+        "順勝分定",
+        "順決擇分定"
+      ],
+      "translation_patterns": [
+        "四分定",
+        "順退分",
+        "順住分",
+        "順勝分",
+        "順決擇分"
+      ],
+      "status": "stable",
+      "rule": "「分」是趨向、分位；不是把定切成四塊。"
+    },
+    {
+      "id": "kasina-ayatana",
+      "xuanzang": "勝處／遍處",
+      "display": "勝處與遍處",
+      "plain": "勝解制勝所緣與遍滿所緣",
+      "english": [
+        "spheres of mastery",
+        "totalities"
+      ],
+      "sanskrit": [
+        "abhibhvayatana",
+        "krtsnayatana"
+      ],
+      "pali": [
+        "abhibhayatana",
+        "kasina"
+      ],
+      "source_terms": [
+        "八勝處",
+        "十遍處",
+        "勝處",
+        "遍處"
+      ],
+      "translation_patterns": [
+        "八勝處",
+        "十遍處",
+        "勝解制勝所緣",
+        "遍滿所緣",
+        "勝處",
+        "遍處"
+      ],
+      "status": "stable",
+      "rule": "此處「色」多為形色或色法，不可一律譯成顏色。"
+    },
+    {
+      "id": "four-cultivations-of-samadhi",
+      "xuanzang": "四修定",
+      "display": "四種修定目的（四修定）",
+      "plain": "四種修定目的",
+      "english": [
+        "four cultivations of concentration"
+      ],
+      "sanskrit": [],
+      "pali": [],
+      "source_terms": [
+        "四修定",
+        "現法樂住",
+        "智見",
+        "分別慧",
+        "盡諸漏"
+      ],
+      "translation_patterns": [
+        "四修定",
+        "現法樂住",
+        "智見",
+        "分別慧",
+        "盡漏",
+        "盡諸漏"
+      ],
+      "status": "stable",
+      "rule": "這是依修定目的分類，不是四個禪定層級。"
+    },
+    {
+      "id": "five-noble-knowledges-samadhi",
+      "xuanzang": "五聖智三摩地",
+      "display": "五聖智三摩地",
+      "plain": "具五種聖智相的三摩地",
+      "english": [
+        "concentration with five noble knowledges"
+      ],
+      "sanskrit": [],
+      "pali": [],
+      "source_terms": [
+        "五聖智三摩地",
+        "五行相智"
+      ],
+      "translation_patterns": [
+        "五聖智三摩地",
+        "五種聖智相定"
+      ],
+      "status": "stable",
+      "rule": "經句讚定的五面向，勿拆成五個獨立定。"
+    },
+    {
+      "id": "five-limbed-noble-samadhi",
+      "xuanzang": "聖五支三摩地",
+      "display": "聖五支三摩地",
+      "plain": "五支聖定",
+      "english": [
+        "five-limbed noble concentration"
+      ],
+      "sanskrit": [],
+      "pali": [],
+      "source_terms": [
+        "聖五支三摩地",
+        "聖三摩地"
+      ],
+      "translation_patterns": [
+        "聖五支三摩地",
+        "五支聖定"
+      ],
+      "status": "stable",
+      "rule": "前四支依四現法樂住，第五支依審觀緣起斷結。"
+    },
+    {
+      "id": "noble-right-samadhi-causes",
+      "xuanzang": "有因有具聖正三摩地",
+      "display": "有因有具聖正三摩地",
+      "plain": "有因有助具的聖正定",
+      "english": [
+        "noble right concentration with causes and requisites"
+      ],
+      "sanskrit": [],
+      "pali": [],
+      "source_terms": [
+        "有因有具聖正三摩地",
+        "聖正三摩地"
+      ],
+      "translation_patterns": [
+        "有因有具聖正三摩地",
+        "有因有助具的聖正定",
+        "聖正定"
+      ],
+      "status": "stable",
+      "rule": "五道支為因、三道支為具；別譯要保留八正道結構。"
+    },
+    {
+      "id": "vajropama-samadhi",
+      "xuanzang": "金剛喻三摩地",
+      "display": "金剛喻三摩地",
+      "plain": "如金剛般摧破煩惱的定",
+      "english": [
+        "vajra-like concentration"
+      ],
+      "sanskrit": [
+        "vajropama-samadhi"
+      ],
+      "pali": [],
+      "source_terms": [
+        "金剛喻三摩地",
+        "最後邊學三摩地",
+        "金剛喻"
+      ],
+      "translation_patterns": [
+        "金剛喻三摩地",
+        "如金剛般摧破煩惱的定",
+        "最後邊學",
+        "金剛般",
+        "金剛"
+      ],
+      "status": "stable",
+      "rule": "不是裝飾性比喻；指能摧伏最後煩惱的學位定。"
+    },
+    {
+      "id": "image-object",
+      "xuanzang": "影像所緣",
+      "display": "有分別／無分別影像所緣",
+      "plain": "觀與止所緣影像",
+      "english": [
+        "conceptual and nonconceptual image object"
+      ],
+      "sanskrit": [],
+      "pali": [],
+      "source_terms": [
+        "有分別影像所緣作意",
+        "無分別影像所緣作意",
+        "分別體境"
+      ],
+      "translation_patterns": [
+        "有分別影像所緣",
+        "無分別影像所緣",
+        "觀所緣影像",
+        "止所緣影像",
+        "分別體境"
+      ],
+      "status": "stable",
+      "rule": "有分別偏毘鉢舍那，無分別偏奢摩他；不可譯成哲學上的絕對無分別。"
+    },
+    {
+      "id": "perfuming-dhyana",
+      "xuanzang": "薰修靜慮",
+      "display": "薰修靜慮",
+      "plain": "相間熏習定力",
+      "english": [
+        "perfuming cultivation of dhyana"
+      ],
+      "sanskrit": [],
+      "pali": [],
+      "source_terms": [
+        "薰修靜慮",
+        "薰修",
+        "有漏無漏更相間雜"
+      ],
+      "translation_patterns": [
+        "薰修靜慮",
+        "熏修靜慮",
+        "相間熏習定力"
+      ],
+      "status": "stable",
+      "rule": "不譯成薰香；是有漏與無漏相間入定以得自在。"
     }
   ]
 }

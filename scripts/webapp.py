@@ -384,6 +384,8 @@ FORM_PAGE = """<!doctype html>
       color: var(--ops-muted);
       background: var(--ops-surface);
     }
+    .job-log pre { font-size:.75rem; color:var(--ops-muted); white-space:pre-wrap; max-height:14em; overflow-y:auto; margin:0; }
+    .job-log summary { cursor:pointer; font-size:.85rem; color:var(--ops-muted); }
     @media (max-width: 840px) {
       .ops-grid {
         grid-template-columns: 1fr;
@@ -538,12 +540,17 @@ __WORK_OPTIONS__
       const volume = (job.progress || {})[String(juan)] || {step: "queued", tasks: {}};
       const state = volume.cancelled ? "cancelled" : (volume.error ? "failed" : volume.step || "queued");
       const chips = taskOrder.map(name => chipFor(name, (volume.tasks || {})[name])).join("");
-      const cancel = canCancel(volume)
-        ? `<button class="retry-btn" type="button" data-action="cancel-volume" data-job="${esc(job.id)}" data-juan="${esc(juan)}">取消</button>`
-        : "<span></span>";
+      let action;  // cancel and retry are mutually exclusive per volume state
+      if (canCancel(volume)) {
+        action = `<button class="retry-btn" type="button" data-action="cancel-volume" data-job="${esc(job.id)}" data-juan="${esc(juan)}">取消</button>`;
+      } else if (state === "failed" || state === "cancelled") {
+        action = `<button class="retry-btn" type="button" data-action="retry-volume" data-job="${esc(job.id)}" data-juan="${esc(juan)}">重試</button>`;
+      } else {
+        action = "<span></span>";
+      }
       const error = volume.error ? `<span class="volume-error">${esc(volume.error)}</span>` : "";
       return `<div class="volume-row ${volumeStateClass(state)}">
-        <strong>卷 ${esc(juan)}</strong>${statusPill(state)}${chips}${cancel}${error}
+        <strong>卷 ${esc(juan)}</strong>${statusPill(state)}${chips}${action}${error}
       </div>`;
     }
     function jobActions(job) {
@@ -565,6 +572,9 @@ __WORK_OPTIONS__
       const approval = job.state === "awaiting_approval"
         ? `<div class="volume-error">卷 ${(job.needs_approval || []).map(esc).join("、")} 已有譯文；核准後舊版封存為新版本、重新翻譯。</div>`
         : "";
+      const logRing = (job.log && job.log.length)
+        ? `<details class="job-log"><summary>日誌</summary><pre>${job.log.slice(-12).map(esc).join("\\n")}</pre></details>`
+        : "";
       return `<article class="job-card">
         <div class="job-top">
           <div class="job-title">
@@ -575,15 +585,15 @@ __WORK_OPTIONS__
         </div>
         ${approval}
         <div class="volume-list">${volumes}</div>
+        ${logRing}
       </article>`;
     }
     async function jobAction(button) {
       button.disabled = true;
       const action = button.dataset.action;
-      const url = action === "cancel-volume"
-        ? `/api/jobs/${encodeURIComponent(button.dataset.job)}/cancel-volume`
-        : `/api/jobs/${encodeURIComponent(button.dataset.job)}/${action}`;
-      const body = action === "cancel-volume" ? new URLSearchParams({juan: button.dataset.juan}) : null;
+      const perVolume = action === "cancel-volume" || action === "retry-volume";
+      const url = `/api/jobs/${encodeURIComponent(button.dataset.job)}/${action}`;
+      const body = perVolume ? new URLSearchParams({juan: button.dataset.juan}) : null;
       const result = await fetch(url, {method: "POST", body}).then(r => r.json()).catch(() => null);
       document.getElementById("message").textContent = result?.ok
         ? (result.message || "完成。") : `失敗：${result?.error || "unknown error"}`;
@@ -764,6 +774,13 @@ class Handler(SimpleHTTPRequestHandler):
                     self._send_json({"ok": False, "error": "invalid juan"}, status=400)
                     return
                 ok, message = runner.cancel_juan(job_id, juan)
+            elif action == "retry-volume":
+                try:
+                    juan = int(form.get("juan", [""])[0])
+                except ValueError:
+                    self._send_json({"ok": False, "error": "invalid juan"}, status=400)
+                    return
+                ok, message = runner.retry_juan(job_id, juan)
             elif action == "cancel":
                 ok, message = runner.cancel_job(job_id)
             elif action == "retry":

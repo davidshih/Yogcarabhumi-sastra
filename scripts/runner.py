@@ -191,6 +191,9 @@ def publish_status() -> None:
 
 def log(job: dict, msg: str) -> None:
     print(f"{now_iso()} [{job['id']}] {msg}", flush=True)
+    ring = job.setdefault("log", [])
+    ring.append(f"{now_iso()} {msg}")
+    del ring[:-50]  # keep only the last 50 entries; persisted by the next save_job
 
 
 MODEL_STATUS_PATH = LOCKS_DIR / "model-status.json"  # not jobs/: that dir is globbed as jobs
@@ -314,6 +317,18 @@ def cancel_job(job_id: str) -> tuple[bool, str]:
         return True, "cancel requested; stops at the next section"
 
 
+def reset_juan(prog: dict) -> None:
+    """Reset one volume's progress for a fresh attempt: drop failure/retry state,
+    unstick the step, and requeue any failed/cancelled/waiting tasks."""
+    for key in ("error", "auto_retried", "repaired", "cancelled", "force_fallback"):
+        prog.pop(key, None)
+    prog.pop("step", None)
+    for task in prog.get("tasks", {}).values():
+        if task.get("state") in ("failed", "cancelled", "waiting"):
+            task["state"] = "pending"
+            task.pop("error", None)
+
+
 def retry_job(job_id: str) -> tuple[bool, str]:
     path = JOBS_DIR / f"{job_id}.json"
     if not path.exists():
@@ -323,20 +338,36 @@ def retry_job(job_id: str) -> tuple[bool, str]:
         if job.get("state") not in ("failed", "cancelled"):
             return False, "only failed or cancelled jobs can be retried"
         cancel_flag(job_id).unlink(missing_ok=True)
+        for stale in JOBS_DIR.glob(f"{job_id}.*.cancel"):  # per-volume sentinels too
+            stale.unlink(missing_ok=True)
         job["state"] = "queued"
         job["error"] = None
         job["resume_at"] = None
         for prog in job.get("progress", {}).values():
-            prog.pop("error", None)
-            prog.pop("repaired", None)  # allow a fresh repair round
-            for task in prog.get("tasks", {}).values():
-                if task.get("state") in ("failed", "waiting"):
-                    task["state"] = "pending"
-                    task.pop("error", None)
-            if prog.get("step") in ("cancelled",) and not prog.get("cancelled"):
-                prog.pop("step", None)
+            if prog.get("step") == "done":
+                continue  # keep successful volumes untouched
+            reset_juan(prog)
         save_job(job)
     return True, "requeued"
+
+
+def retry_juan(job_id: str, juan: int) -> tuple[bool, str]:
+    path = JOBS_DIR / f"{job_id}.json"
+    if not path.exists():
+        return False, "job not found"
+    with flock("jobs"):
+        job = load_job(path)
+        if juan not in job.get("juans", []):
+            return False, "juan not in job"
+        prog = job.setdefault("progress", {}).setdefault(str(juan), {})
+        if prog.get("step") == "done":
+            return False, "此卷已完成"
+        cancel_flag(job_id, juan).unlink(missing_ok=True)
+        reset_juan(prog)
+        if job.get("state") in ("failed", "cancelled", "done"):
+            job["state"] = "queued"  # run_juan short-circuits already-done volumes
+        save_job(job)
+    return True, "已重排此卷"
 
 
 # ---------- reprocess approval / versioning ----------
@@ -424,12 +455,16 @@ def probe_dual_models(job: dict, juan: int, prog: dict) -> dict[str, str]:
     def usable(model: str | None) -> bool:
         return bool(model) and statuses.get(model, {}).get("state") == "available"
 
+    force_fallback = prog.get("force_fallback")  # 2nd auto-retry: prefer fallbacks
     stage_models: dict[str, str] = {}
     for stage, cfg in stages.items():
-        if usable(cfg.get("primary")):
-            stage_models[stage] = cfg["primary"]
-        elif usable(cfg.get("fallback")):
-            stage_models[stage] = cfg["fallback"]
+        primary, fallback = cfg.get("primary"), cfg.get("fallback")
+        if force_fallback and usable(fallback):
+            stage_models[stage] = fallback
+        elif usable(primary):
+            stage_models[stage] = primary
+        elif usable(fallback):
+            stage_models[stage] = fallback
 
     # draft 1 is required; draft 2 is strictly optional
     if "draft_codex" in stage_models and "merge" in stage_models:
@@ -951,28 +986,34 @@ def run_job(job: dict) -> None:
             return
         except Exception as err:  # noqa: BLE001 — job must survive a bad juan
             prog = job["progress"].setdefault(str(juan), {})
-            if not prog.get("auto_retried"):
-                # one automatic retry: reset failed tasks (and the repair budget)
-                # so the rerun resumes from saved progress and repairs again
-                prog["auto_retried"] = True
+            # up to two automatic retries: #1 same model group, #2 forced fallback.
+            # auto_retried is an int counter (old data may store bool True -> 1).
+            retried = int(bool(prog.get("auto_retried")))
+            while retried < 2:
+                retried += 1
+                prog["auto_retried"] = retried
                 prog.pop("error", None)
-                prog.pop("repaired", None)
+                prog.pop("repaired", None)  # fresh repair budget on each rerun
                 for task in prog.get("tasks", {}).values():
                     if task.get("state") == "failed":
                         task["state"] = "pending"
                         task.pop("error", None)
+                if retried >= 2:
+                    prog["force_fallback"] = True  # probe_dual_models prefers fallbacks
+                group = "備援模型組" if prog.get("force_fallback") else "同組模型"
                 save_job(job)
-                log(job, f"juan {juan} failed once ({str(err)[:200]}); auto-retrying")
+                log(job, f"juan {juan} failed ({str(err)[:200]}); auto-retry #{retried} 用{group}")
                 try:
                     run_juan(job, juan)
-                    continue
+                    break
                 except (JobHold, JobCancelled, VolumeCancelled):
                     raise
                 except Exception as err2:  # noqa: BLE001
                     err = err2
-            failed.append(juan)
-            prog["error"] = str(err)[:500]
-            log(job, f"juan {juan} FAILED: {err}")
+            else:
+                failed.append(juan)
+                prog["error"] = str(err)[:500]
+                log(job, f"juan {juan} FAILED after {retried} retries: {err}")
     if held:
         return
     cancel_flag(job["id"]).unlink(missing_ok=True)

@@ -279,12 +279,13 @@ MODEL_STATUS_PATH = LOCKS_DIR / "model-status.json"  # not jobs/: that dir is gl
 def publish_model_status(statuses: dict) -> None:
     """Persist the latest probe results so the web UI can show an availability bar."""
     LOCKS_DIR.mkdir(exist_ok=True)
-    try:
-        current = json.loads(MODEL_STATUS_PATH.read_text(encoding="utf-8"))
-    except (FileNotFoundError, json.JSONDecodeError):
-        current = {}
-    current.update(statuses)
-    atomic_write(MODEL_STATUS_PATH, json.dumps(current, ensure_ascii=False))
+    with JOB_WRITE_LOCK:
+        try:
+            current = json.loads(MODEL_STATUS_PATH.read_text(encoding="utf-8"))
+        except (FileNotFoundError, json.JSONDecodeError):
+            current = {}
+        current.update(statuses)
+        atomic_write(MODEL_STATUS_PATH, json.dumps(current, ensure_ascii=False))
 
 
 class JobHold(Exception):
@@ -1266,8 +1267,8 @@ def claimable(job: dict, model: str) -> bool:
         return True
     if state in ("running", "waiting_limit", "waiting_model"):
         pid = job.get("pid")
-        if pid == os.getpid() and state == "running":
-            return False  # owned by another thread in this process
+        if pid == os.getpid():
+            return state in ("waiting_limit", "waiting_model") and job.get("id") not in ACTIVE_JOB_PARALLEL
         try:
             if pid:
                 os.kill(pid, 0)

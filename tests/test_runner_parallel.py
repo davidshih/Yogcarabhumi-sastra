@@ -147,6 +147,17 @@ class RunnerParallelTests(unittest.TestCase):
         self.assertEqual(job["state"], "failed")
         self.assertEqual(job["error"], "juans failed: [2]")
 
+    def test_waiting_job_owned_by_current_runner_is_claimable_after_run_returns(self):
+        job = self.job([1], parallel=2)
+        job["pid"] = runner.os.getpid()
+        job["state"] = "waiting_model"
+
+        with mock.patch.dict(runner.ACTIVE_JOB_PARALLEL, {}, clear=True):
+            self.assertTrue(runner.claimable(job, "dual-echo"))
+
+        with mock.patch.dict(runner.ACTIVE_JOB_PARALLEL, {job["id"]: 2}, clear=True):
+            self.assertFalse(runner.claimable(job, "dual-echo"))
+
 
 if __name__ == "__main__":
     unittest.main()

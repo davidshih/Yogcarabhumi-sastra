@@ -333,6 +333,16 @@ def reset_task_progress(task: dict, resume_step: str | None, name: str) -> None:
         task["section"] = 0
 
 
+def mark_failed_running_task(prog: dict, error: str) -> None:
+    for name, task in prog.get("tasks", {}).items():
+        if task.get("state") == "running":
+            set_task(prog, name, "failed", error=error[:500])
+            return
+    task_name = task_name_for_stage(prog.get("step", ""))
+    if task_name in prog.get("tasks", {}):
+        set_task(prog, task_name, "failed", error=error[:500])
+
+
 def mark_cancelled_tasks(prog: dict) -> None:
     for name in DUAL_TASKS:
         task = task_state(prog, name)
@@ -1221,6 +1231,7 @@ def run_juan_with_retries(job: dict, juan: int) -> dict:
             except Exception as err2:  # noqa: BLE001
                 err = err2
         prog["error"] = str(err)[:500]
+        mark_failed_running_task(prog, str(err))
         save_job(job)
         log(job, f"juan {juan} FAILED after {retried} retries: {err}")
         return {"state": "failed", "juan": juan, "error": str(err)}

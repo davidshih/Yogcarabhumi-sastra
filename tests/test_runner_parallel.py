@@ -207,6 +207,24 @@ class RunnerParallelTests(unittest.TestCase):
         self.assertFalse(ok)
         self.assertEqual(message, "此卷已完成")
 
+    def test_final_failure_marks_running_task_failed(self):
+        job = self.job([1], parallel=2)
+        job["progress"] = {
+            "1": {
+                "step": "checks",
+                "tasks": {"checks": {"state": "running"}},
+            },
+        }
+
+        with mock.patch.object(runner, "run_juan", side_effect=RuntimeError("bad range")):
+            result = runner.run_juan_with_retries(job, 1)
+
+        checks = job["progress"]["1"]["tasks"]["checks"]
+        self.assertEqual(result["state"], "failed")
+        self.assertEqual(job["progress"]["1"]["error"], "bad range")
+        self.assertEqual(checks["state"], "failed")
+        self.assertEqual(checks["error"], "bad range")
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -359,6 +359,25 @@ FORM_PAGE = """<!doctype html>
       font-size: .8rem;
       overflow-wrap: anywhere;
     }
+    .job-current {
+      display: grid;
+      gap: 4px;
+      border: 1px solid rgba(248, 113, 113, .45);
+      border-radius: 8px;
+      padding: 8px 10px;
+      background: rgba(239, 68, 68, .12);
+      color: var(--ops-text);
+      font-size: .9rem;
+      overflow-wrap: anywhere;
+    }
+    .job-current strong {
+      color: var(--ops-danger);
+    }
+    .job-meta-line {
+      color: var(--ops-dim);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: .78rem;
+    }
     .volume-model-events {
       grid-column: 1 / -1;
       color: var(--ops-muted);
@@ -441,6 +460,20 @@ FORM_PAGE = """<!doctype html>
     }
     .job-log pre { font-size:.75rem; color:var(--ops-muted); white-space:pre-wrap; max-height:14em; overflow-y:auto; margin:0; }
     .job-log summary { cursor:pointer; font-size:.85rem; color:var(--ops-muted); }
+    .volume-details {
+      grid-column: 1 / -1;
+      color: var(--ops-muted);
+      font-size: .78rem;
+    }
+    .volume-details summary {
+      cursor: pointer;
+    }
+    .volume-details pre {
+      margin: 6px 0 0;
+      white-space: pre-wrap;
+      max-height: 10em;
+      overflow: auto;
+    }
     @media (max-width: 1100px) {
       .ops-grid {
         grid-template-columns: 1fr;
@@ -575,6 +608,9 @@ __WORK_OPTIONS__
     function resumeText(value) {
       return value ? `，${esc(value.slice(11, 16))} 後續跑` : "";
     }
+    function shortTime(value) {
+      return value ? value.slice(5, 16).replace("T", " ") : "unknown";
+    }
     function statusPill(state, extra = "") {
       return `<span class="status-pill ${stateClass(state)}"><span class="dot"></span>${label(state)}${extra}</span>`;
     }
@@ -597,12 +633,32 @@ __WORK_OPTIONS__
         .filter(Boolean).join(" ｜ ");
       return `<span class="chip ${cls}" title="${esc(detail)}"><span class="dot"></span>${esc(taskLabels[name] || name)}${esc(progress)}${state === "running" ? esc(model) : ""}</span>`;
     }
-    function modelEvents(volume) {
+    function latestVolumeError(job, volume, juan) {
+      if (volume?.error) return `卷 ${juan}: ${volume.error}`;
+      if (job?.state === "failed" && job?.error?.includes(String(juan))) return `卷 ${juan}: ${job.error}`;
+      return "";
+    }
+    function latestJobBanner(job) {
+      const progress = job.progress || {};
+      const volumeErrors = (job.juans || [])
+        .map(juan => latestVolumeError(job, progress[String(juan)] || {}, juan))
+        .filter(Boolean);
+      const lines = [];
+      if (job.error) lines.push(job.error);
+      lines.push(...volumeErrors);
+      const unique = [...new Set(lines)].slice(0, 4);
+      if (!unique.length && !["failed", "waiting_model", "waiting_limit"].includes(job.state)) return "";
+      const title = job.state === "failed" ? "最新錯誤" : "最新狀態";
+      const body = unique.length ? unique.map(esc).join("<br>") : `${label(job.state)}${resumeText(job.resume_at)}`;
+      return `<div class="job-current"><strong>${title}</strong><span>${body}</span><span class="job-meta-line">updated ${esc(shortTime(job.updated))}</span></div>`;
+    }
+    function modelEventsDetail(volume) {
       const events = volume.model_events || [];
       if (!events.length) return "";
-      return `<span class="volume-model-events">模型切換：${events.map(e =>
-        `${esc(e.stage)} ${esc(e.from)}→${esc(e.to)}（${esc(e.reason || "")}）`
-      ).join("；")}</span>`;
+      const lines = events.slice(-3).map(e =>
+        `${e.updated || ""} ${e.stage} ${e.from}->${e.to}: ${e.reason || ""}`
+      ).join("\\n");
+      return `<details class="volume-details"><summary>歷史模型切換</summary><pre>${esc(lines)}</pre></details>`;
     }
     function volumeRow(job, juan) {
       const volume = (job.progress || {})[String(juan)] || {step: "queued", tasks: {}};
@@ -621,7 +677,7 @@ __WORK_OPTIONS__
       }
       const actionHtml = actions.length ? `<div class="volume-actions">${actions.join("")}</div>` : "<span></span>";
       const error = volume.error ? `<span class="volume-error">${esc(volume.error)}</span>` : "";
-      const events = modelEvents(volume);
+      const events = modelEventsDetail(volume);
       return `<div class="volume-row ${volumeStateClass(state)}">
         <strong>卷 ${esc(juan)}</strong>${statusPill(state)}${actionHtml}<div class="volume-chips">${chips}</div>${error}${events}
       </div>`;
@@ -642,6 +698,7 @@ __WORK_OPTIONS__
     function jobCard(job) {
       const resume = resumeText(job.resume_at);
       const volumes = (job.juans || []).map(juan => volumeRow(job, juan)).join("");
+      const latest = latestJobBanner(job);
       const approval = job.state === "awaiting_approval"
         ? `<div class="volume-error">卷 ${(job.needs_approval || []).map(esc).join("、")} 已有譯文；核准後舊版封存為新版本、重新翻譯。</div>`
         : "";
@@ -656,6 +713,7 @@ __WORK_OPTIONS__
           </div>
           <div>${statusPill(job.state, resume)}${jobActions(job)}</div>
         </div>
+        ${latest}
         ${approval}
         <div class="volume-list">${volumes}</div>
         ${logRing}

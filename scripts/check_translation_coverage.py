@@ -12,8 +12,11 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-LINE_RE = re.compile(r"T30n1579_p(\d{4}[abc]\d{2})")
-RANGE_RE = re.compile(r"(T30n1579_p\d{4}[abc]\d{2})(?:-(?:T30n1579_)?p?(\d{4}[abc]\d{2}))?")
+LINE_RE = re.compile(r"([A-Z]+\d+n\d+[A-Za-z]?_p(\d{4}[abc]\d{2}))")
+RANGE_RE = re.compile(
+    r"(?P<start>(?P<prefix>[A-Z]+\d+n\d+[A-Za-z]?)_p(?P<start_label>\d{4}[abc]\d{2}))"
+    r"(?:-(?:(?P=prefix)_)?p?(?P<end_label>\d{4}[abc]\d{2}))?"
+)
 
 
 @dataclass
@@ -27,7 +30,7 @@ def line_key(line_id: str) -> tuple[int, int, int]:
     match = LINE_RE.fullmatch(line_id)
     if not match:
         raise ValueError(f"Invalid line id: {line_id}")
-    label = match.group(1)
+    label = match.group(2)
     return int(label[:4]), {"a": 0, "b": 1, "c": 2}[label[4]], int(label[5:])
 
 
@@ -44,8 +47,8 @@ def parse_ranges(text: str) -> list[RangeEntry]:
         parsed = RANGE_RE.fullmatch(label)
         if not parsed:
             raise ValueError(f"Invalid Range in {title}: {label}")
-        start = parsed.group(1)
-        end = f"T30n1579_p{parsed.group(2)}" if parsed.group(2) else start
+        start = parsed.group("start")
+        end = f"{parsed.group('prefix')}_p{parsed.group('end_label')}" if parsed.group("end_label") else start
         entries.append(RangeEntry(title=title, start=start, end=end))
     return entries
 
@@ -53,7 +56,7 @@ def parse_ranges(text: str) -> list[RangeEntry]:
 def data_line_ids(data_path: Path) -> set[str]:
     payload = json.loads(data_path.read_text(encoding="utf-8"))
     raw = payload["results"][0]
-    return set(LINE_RE.findall(raw))
+    return {match.group(1) for match in LINE_RE.finditer(raw)}
 
 
 def check_ranges(entries: list[RangeEntry], line_ids: set[str], expected_start: str, expected_end: str) -> list[str]:
@@ -76,7 +79,7 @@ def check_ranges(entries: list[RangeEntry], line_ids: set[str], expected_start: 
             issues.append(f"{entry.title}: ranges are not monotonic")
         previous_start_key = start_key
         for line_id in (entry.start, entry.end):
-            if LINE_RE.fullmatch(line_id).group(1) not in line_ids:
+            if line_id not in line_ids:
                 issues.append(f"{entry.title}: {line_id} is not present in data file")
         if start_key < line_key(expected_start) or end_key > line_key(expected_end):
             issues.append(f"{entry.title}: range is outside expected coverage")

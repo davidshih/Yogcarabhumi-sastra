@@ -193,6 +193,20 @@ def log(job: dict, msg: str) -> None:
     print(f"{now_iso()} [{job['id']}] {msg}", flush=True)
 
 
+MODEL_STATUS_PATH = LOCKS_DIR / "model-status.json"  # not jobs/: that dir is globbed as jobs
+
+
+def publish_model_status(statuses: dict) -> None:
+    """Persist the latest probe results so the web UI can show an availability bar."""
+    LOCKS_DIR.mkdir(exist_ok=True)
+    try:
+        current = json.loads(MODEL_STATUS_PATH.read_text(encoding="utf-8"))
+    except (FileNotFoundError, json.JSONDecodeError):
+        current = {}
+    current.update(statuses)
+    atomic_write(MODEL_STATUS_PATH, json.dumps(current, ensure_ascii=False))
+
+
 class JobHold(Exception):
     pass
 
@@ -201,18 +215,25 @@ class JobCancelled(Exception):
     pass
 
 
+class VolumeCancelled(Exception):
+    pass
+
+
 class OptionalModelUnavailable(Exception):
     pass
 
 
-def cancel_flag(job_id: str) -> Path:
-    # ponytail: sentinel file instead of a json field — save_job can never erase it
-    return JOBS_DIR / f"{job_id}.cancel"
+def cancel_flag(job_id: str, juan: int | None = None) -> Path:
+    # ponytail: sentinel files instead of json fields — save_job can never erase them
+    suffix = f".{juan}.cancel" if juan is not None else ".cancel"
+    return JOBS_DIR / f"{job_id}{suffix}"
 
 
-def check_cancel(job: dict) -> None:
+def check_cancel(job: dict, juan: int | None = None) -> None:
     if cancel_flag(job["id"]).exists():
         raise JobCancelled(job["id"])
+    if juan is not None and cancel_flag(job["id"], juan).exists():
+        raise VolumeCancelled(juan)
 
 
 def task_state(prog: dict, name: str) -> dict:
@@ -262,13 +283,17 @@ def cancel_juan(job_id: str, juan: int) -> tuple[bool, str]:
         if juan not in job.get("juans", []):
             return False, "juan not in job"
         prog = job.setdefault("progress", {}).setdefault(str(juan), {})
-        if not can_cancel_juan(prog):
-            return False, "juan already started"
-        prog["cancelled"] = True
-        prog["step"] = "cancelled"
-        mark_cancelled_tasks(prog)
-        save_job(job)
-    return True, "cancelled"
+        if prog.get("cancelled") or prog.get("step") in ("cancelled", "done"):
+            return False, "此卷已完成或已取消"
+        if can_cancel_juan(prog):  # not started yet: cancel immediately
+            prog["cancelled"] = True
+            prog["step"] = "cancelled"
+            mark_cancelled_tasks(prog)
+            save_job(job)
+            return True, "已取消"
+        # mid-processing: raise the per-volume flag; runner stops at the next section
+        cancel_flag(job_id, juan).touch()
+        return True, "已要求取消，將於下一段落停止"
 
 
 def cancel_job(job_id: str) -> tuple[bool, str]:
@@ -394,6 +419,7 @@ def probe_dual_models(job: dict, juan: int, prog: dict) -> dict[str, str]:
             }
     availability["models"] = statuses
     prog["availability"] = statuses
+    publish_model_status(statuses)
 
     def usable(model: str | None) -> bool:
         return bool(model) and statuses.get(model, {}).get("state") == "available"
@@ -405,12 +431,13 @@ def probe_dual_models(job: dict, juan: int, prog: dict) -> dict[str, str]:
         elif usable(cfg.get("fallback")):
             stage_models[stage] = cfg["fallback"]
 
-    drafts_ok = [s for s in DUAL_STAGES if s in stage_models]
-    if drafts_ok and "merge" in stage_models:
+    # draft 1 is required; draft 2 is strictly optional
+    if "draft_codex" in stage_models and "merge" in stage_models:
         for stage in DUAL_STAGES:
             if stage not in stage_models:
-                set_task(prog, stage, "skipped", model=stages[stage].get("primary"),
-                         reason="模型不可用，僅以另一份草稿進行")
+                reason = ("未選用（單稿模式）" if not stages[stage].get("primary")
+                          else "模型不可用，僅以草稿 1 進行")
+                set_task(prog, stage, "skipped", model=stages[stage].get("primary"), reason=reason)
         for stage in ("segment", "repair"):  # never blockers: borrow the review model
             stage_models.setdefault(stage, stage_models["merge"])
         prog["models"] = stage_models
@@ -536,13 +563,13 @@ def parse_llm_blocks(raw: str) -> tuple[str, str | None]:
 
 # ---------- pipeline steps ----------
 
-def llm_call(job: dict, prompt: str, stage: str) -> str:
+def llm_call(job: dict, prompt: str, stage: str, juan: int | None = None) -> str:
     def on_wait(resume_at):
         job["state"] = "waiting_limit"
         job["resume_at"] = resume_at.isoformat(timespec="seconds")
         save_job(job)
 
-    check_cancel(job)
+    check_cancel(job, juan)
     model = stage_model(job, stage)
     fallback = stage_fallback(job, stage)
     if fallback and fallback != model:
@@ -582,7 +609,7 @@ def llm_segment(job: dict, juan: int, lines: dict[str, str], tsv_path: Path) -> 
                          range_example=range_example, **prompt_vars(job))
     errors = ""
     for attempt in range(2):
-        raw = llm_call(job, prompt + errors, "segment")
+        raw = llm_call(job, prompt + errors, "segment", juan)
         match = TSV_RE.search(raw)
         if match:
             # normalize each row to exactly 3 columns (LLMs drop the empty note column)
@@ -632,7 +659,7 @@ def translate_sections(job: dict, juan: int, md_path: Path, prog: dict,
         raw = llm_call(job, prompt_text(
             "translate", juan=juan, title=entry.title, note=entry.note or "（無）",
             source=entry.source, glossary=glossary_subset_json(glossary, entry.source),
-            extra=extra, **prompt_vars(job)), stage)
+            extra=extra, **prompt_vars(job)), stage, juan)
         translation, note = parse_llm_blocks(raw)
         splice(md_path, idx, translation, note if note else None)
         prog["section"] = idx + 1
@@ -659,7 +686,7 @@ def merge_sections(job: dict, juan: int, paths: dict[str, Path], prog: dict) -> 
             "merge", juan=juan, title=entry.title, note=entry.note or "（無）",
             source=entry.source, glossary=glossary_subset_json(glossary, entry.source),
             draft_a=draft_a[idx].translation or "（缺稿）",
-            draft_b=draft_b[idx].translation or "（缺稿）", **prompt_vars(job)), "merge")
+            draft_b=draft_b[idx].translation or "（缺稿）", **prompt_vars(job)), "merge", juan)
         translation, note = parse_llm_blocks(raw)
         splice(paths["md"], idx, translation, note)
         prog["section"] = idx + 1
@@ -680,7 +707,7 @@ def review_pass(job: dict, juan: int, md_path: Path, pass_name: str, prog: dict)
                     **prompt_vars(job))
         if pass_name != "review_parallel":
             vars["glossary"] = glossary_subset_json(glossary, entry.source)
-        raw = llm_call(job, prompt_text(pass_name, **vars), pass_name)
+        raw = llm_call(job, prompt_text(pass_name, **vars), pass_name, juan)
         new_terms = NEW_TERMS_RE.search(raw)
         if pass_name == "review_terms" and new_terms:
             append_new_terms(new_terms.group(1), job)
@@ -860,7 +887,9 @@ def run_juan(job: dict, juan: int) -> None:
         set_task(prog, "repair", "running", model=stage_model(job, "repair"))
         save_job(job)
         translate_sections(job, juan, paths["md"], repair_task, only_titles=bad_titles,
-                           extra="注意：前次譯文未通過術語檢查：" + "；".join(issues[:10]),
+                           extra=("重要：前次譯文未通過術語檢查。以下每一條「lacks one of」後列出的詞，"
+                                  "你的譯文必須一字不差地包含其中至少一個（可用「白話（玄奘詞）」形式嵌入）："
+                                  + "；".join(issues[:10])),
                            stage="repair")
         set_task(prog, "repair", "done")
         issues = run_checks(job, juan, paths["md"], data_path, start, end)
@@ -904,6 +933,15 @@ def run_job(job: dict) -> None:
             held = True
             log(job, str(err))
             break
+        except VolumeCancelled:
+            prog = job["progress"].setdefault(str(juan), {})
+            prog["cancelled"] = True
+            prog["step"] = "cancelled"
+            mark_cancelled_tasks(prog)
+            cancel_flag(job["id"], juan).unlink(missing_ok=True)
+            save_job(job)
+            log(job, f"juan {juan} cancelled by user")
+            continue  # the rest of the batch keeps going
         except JobCancelled:
             cancel_flag(job["id"]).unlink(missing_ok=True)
             job["state"] = "cancelled"
@@ -912,8 +950,28 @@ def run_job(job: dict) -> None:
             log(job, "job cancelled by user")
             return
         except Exception as err:  # noqa: BLE001 — job must survive a bad juan
+            prog = job["progress"].setdefault(str(juan), {})
+            if not prog.get("auto_retried"):
+                # one automatic retry: reset failed tasks (and the repair budget)
+                # so the rerun resumes from saved progress and repairs again
+                prog["auto_retried"] = True
+                prog.pop("error", None)
+                prog.pop("repaired", None)
+                for task in prog.get("tasks", {}).values():
+                    if task.get("state") == "failed":
+                        task["state"] = "pending"
+                        task.pop("error", None)
+                save_job(job)
+                log(job, f"juan {juan} failed once ({str(err)[:200]}); auto-retrying")
+                try:
+                    run_juan(job, juan)
+                    continue
+                except (JobHold, JobCancelled, VolumeCancelled):
+                    raise
+                except Exception as err2:  # noqa: BLE001
+                    err = err2
             failed.append(juan)
-            job["progress"].setdefault(str(juan), {})["error"] = str(err)[:500]
+            prog["error"] = str(err)[:500]
             log(job, f"juan {juan} FAILED: {err}")
     if held:
         return

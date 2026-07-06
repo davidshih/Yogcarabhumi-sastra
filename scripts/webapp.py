@@ -243,21 +243,66 @@ FORM_PAGE = """<!doctype html>
     .volume-list {
       display: grid;
       gap: 4px;
+      overflow-x: auto;
     }
     .volume-row {
-      display: flex;
+      display: grid;
+      grid-template-columns: 3.4em 7.2em repeat(10, minmax(3.6em, 1fr)) auto;
       align-items: center;
-      flex-wrap: wrap;
       gap: 4px 6px;
       border: 1px solid var(--ops-border);
       border-radius: 8px;
       padding: 4px 8px;
       background: var(--ops-bg);
       min-height: 30px;
+      min-width: 760px;
       font-size: .84rem;
     }
-    .volume-row > strong {
-      min-width: 3.2em;
+    /* whole-row state tinting: read the volume state at a glance */
+    .volume-row.vol-done { background: rgba(34, 197, 94, .14); border-color: rgba(34, 197, 94, .5); }
+    .volume-row.vol-failed { background: rgba(239, 68, 68, .13); border-color: rgba(239, 68, 68, .5); }
+    .volume-row.vol-running { background: rgba(59, 130, 246, .12); border-color: rgba(59, 130, 246, .5); }
+    .volume-row.vol-waiting { background: rgba(245, 158, 11, .13); border-color: rgba(245, 158, 11, .5); }
+    .volume-row.vol-cancelled { background: transparent; opacity: .6; }
+    .model-bar {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      border: 1px solid var(--ops-border);
+      border-radius: 8px;
+      padding: 8px 12px;
+      background: var(--ops-surface);
+      font-size: .9rem;
+    }
+    .model-bar-title { font-weight: 700; }
+    .model-bar-time { color: var(--ops-muted); font-size: .8rem; }
+    .model-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-radius: 999px;
+      padding: 2px 10px;
+      font-weight: 700;
+    }
+    .model-pill.ok { background: rgba(34, 197, 94, .15); color: var(--ops-accent); }
+    .model-pill.down { background: rgba(239, 68, 68, .13); color: var(--ops-danger); }
+    .model-pill.unknown { background: var(--ops-surface-2); color: var(--ops-muted); }
+    .profile-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr auto;
+      gap: 6px;
+      margin: 8px 0 2px;
+    }
+    .profile-row input, .profile-row select {
+      min-height: 34px;
+      border: 1px solid var(--ops-border);
+      border-radius: 6px;
+      background: var(--ops-bg);
+      color: var(--ops-text);
+      font: inherit;
+      font-size: .88rem;
+      padding: 0 8px;
     }
     .chip {
       display: inline-flex;
@@ -279,11 +324,12 @@ FORM_PAGE = """<!doctype html>
     .chip.state-skipped, .chip.state-cancelled { opacity: .55; text-decoration: line-through; }
     .chip.state-waiting { color: var(--ops-warn); border-color: var(--ops-warn); }
     .volume-error {
-      flex-basis: 100%;
+      grid-column: 1 / -1;
       color: var(--ops-danger);
       font-size: .8rem;
       overflow-wrap: anywhere;
     }
+    .chip { justify-content: center; }
     .stage-config summary {
       cursor: pointer;
       font-weight: 650;
@@ -368,6 +414,12 @@ FORM_PAGE = """<!doctype html>
       <div class="kicker">Pipeline</div>
       <h1>翻譯工作管線</h1>
       <p>每卷先檢查所選模型可用性；階段主用模型不可用時自動切備援，撞額度自動解析重置時間、5 分鐘後續跑。已有譯文的卷會暫停等你核准，核准後舊譯封存為版本。</p>
+      <div class="model-bar" id="modelBar" aria-live="polite">
+        <span class="model-bar-title">模型可用性</span>
+        <span id="modelPills">尚未檢查</span>
+        <button class="retry-btn" type="button" id="checkModels">立即檢查</button>
+        <span class="model-bar-time" id="modelTime"></span>
+      </div>
       <p class="msg" id="message">__MESSAGE__</p>
     </header>
     <div class="ops-grid">
@@ -388,6 +440,11 @@ __WORK_OPTIONS__
           </label>
           <details class="stage-config" open>
             <summary>各階段模型（主用 → 備援）</summary>
+            <div class="profile-row">
+              <select id="profileSelect"><option value="">— 載入設定檔 —</option></select>
+              <input type="text" id="profileName" placeholder="設定檔名稱">
+              <button class="retry-btn" type="button" id="saveProfile">儲存</button>
+            </div>
             <div class="stage-rows">
               <div class="stage-row"><span>切段</span>
                 <select name="segment_primary"><option>claude</option><option>codex</option><option>glm</option></select>
@@ -459,11 +516,14 @@ __WORK_OPTIONS__
       return `<span class="status-pill ${stateClass(state)}"><span class="dot"></span>${label(state)}${extra}</span>`;
     }
     function canCancel(volume) {
-      if (!volume || volume.cancelled || volume.step === "cancelled") return false;
-      if (![undefined, null, "queued", "availability", "waiting_model"].includes(volume.step)) return false;
-      const tasks = volume.tasks || {};
-      return Object.entries(tasks).every(([name, task]) =>
-        name === "availability" || [undefined, null, "pending", "queued", "cancelled"].includes(task.state));
+      // any volume that is not finished can be cancelled — mid-run stops at the next section
+      return !volume?.cancelled && !["cancelled", "done"].includes(volume?.step);
+    }
+    function volumeStateClass(state) {
+      if (state === "done") return "vol-done";
+      if (state === "failed" || state === "cancelled") return state === "failed" ? "vol-failed" : "vol-cancelled";
+      if (["waiting_model", "waiting_limit", "queued", "awaiting_approval"].includes(state)) return "vol-waiting";
+      return "vol-running";
     }
     function chipFor(name, task) {
       const state = task?.state || "pending";
@@ -480,9 +540,9 @@ __WORK_OPTIONS__
       const chips = taskOrder.map(name => chipFor(name, (volume.tasks || {})[name])).join("");
       const cancel = canCancel(volume)
         ? `<button class="retry-btn" type="button" data-action="cancel-volume" data-job="${esc(job.id)}" data-juan="${esc(juan)}">取消</button>`
-        : "";
+        : "<span></span>";
       const error = volume.error ? `<span class="volume-error">${esc(volume.error)}</span>` : "";
-      return `<div class="volume-row">
+      return `<div class="volume-row ${volumeStateClass(state)}">
         <strong>卷 ${esc(juan)}</strong>${statusPill(state)}${chips}${cancel}${error}
       </div>`;
     }
@@ -532,6 +592,75 @@ __WORK_OPTIONS__
     document.getElementById("workSelect").addEventListener("change", e => {
       document.getElementById("customLinkRow").hidden = e.target.value !== "__custom__";
     });
+
+    // ---- 模型可用性列 + 下拉灰化 ----
+    const MODEL_NAMES = ["claude", "codex", "glm"];
+    function renderModels(status) {
+      const pills = MODEL_NAMES.map(m => {
+        const s = status?.[m];
+        const cls = !s ? "unknown" : (s.state === "available" ? "ok" : "down");
+        const note = s?.state === "limited" && s.resume_at ? `（${s.resume_at.slice(11, 16)} 重置）` : "";
+        return `<span class="model-pill ${cls}">${m} ${!s ? "未知" : s.state === "available" ? "可用" : "不可用"}${note}</span>`;
+      }).join("");
+      document.getElementById("modelPills").innerHTML = pills;
+      const times = MODEL_NAMES.map(m => status?.[m]?.checked).filter(Boolean).sort();
+      document.getElementById("modelTime").textContent =
+        times.length ? `檢查於 ${times[times.length - 1].slice(5, 16).replace("T", " ")}` : "";
+      // 灰化所有階段下拉中不可用的模型（保留空值「無」選項）
+      document.querySelectorAll(".stage-row select option").forEach(opt => {
+        if (MODEL_NAMES.includes(opt.value)) {
+          opt.disabled = status?.[opt.value] && status[opt.value].state !== "available";
+        }
+      });
+    }
+    async function loadModels() {
+      const status = await fetch("/api/models").then(r => r.json()).catch(() => null);
+      if (status) renderModels(status);
+    }
+    document.getElementById("checkModels").addEventListener("click", async e => {
+      e.target.disabled = true;
+      e.target.textContent = "檢查中…";
+      const status = await fetch("/api/models/check", {method: "POST"}).then(r => r.json()).catch(() => null);
+      if (status) renderModels(status);
+      e.target.disabled = false;
+      e.target.textContent = "立即檢查";
+    });
+    loadModels();
+    setInterval(loadModels, 60000);
+
+    // ---- 模型組合設定檔（localStorage）----
+    const STAGE_SELECT_NAMES = ["segment_primary", "segment_fallback", "draft_codex_primary",
+      "draft_codex_fallback", "draft_glm_primary", "draft_glm_fallback",
+      "merge_primary", "merge_fallback", "repair_primary", "repair_fallback"];
+    function loadProfiles() {
+      try { return JSON.parse(localStorage.getItem("modelProfiles") || "{}"); } catch (e) { return {}; }
+    }
+    function renderProfileOptions() {
+      const select = document.getElementById("profileSelect");
+      const names = Object.keys(loadProfiles());
+      select.innerHTML = `<option value="">— 載入設定檔 —</option>`
+        + names.map(n => `<option value="${esc(n)}">${esc(n)}</option>`).join("");
+    }
+    document.getElementById("saveProfile").addEventListener("click", () => {
+      const name = document.getElementById("profileName").value.trim();
+      if (!name) { document.getElementById("message").textContent = "請先輸入設定檔名稱。"; return; }
+      const profiles = loadProfiles();
+      profiles[name] = Object.fromEntries(STAGE_SELECT_NAMES.map(n =>
+        [n, document.querySelector(`[name=${n}]`).value]));
+      localStorage.setItem("modelProfiles", JSON.stringify(profiles));
+      renderProfileOptions();
+      document.getElementById("profileSelect").value = name;
+      document.getElementById("message").textContent = `已儲存設定檔「${name}」。`;
+    });
+    document.getElementById("profileSelect").addEventListener("change", e => {
+      const profile = loadProfiles()[e.target.value];
+      if (!profile) return;
+      STAGE_SELECT_NAMES.forEach(n => {
+        if (n in profile) document.querySelector(`[name=${n}]`).value = profile[n];
+      });
+      document.getElementById("message").textContent = `已載入設定檔「${e.target.value}」。`;
+    });
+    renderProfileOptions();
     async function refresh() {
       const data = await fetch("/api/status").then(r => r.json()).catch(() => null);
       if (!data) return;
@@ -584,6 +713,12 @@ class Handler(SimpleHTTPRequestHandler):
                 message = "此經卷已有譯文，工作已暫停，請在佇列中核准重跑。"
             self._send_html(FORM_PAGE.replace("__MESSAGE__", message)
                             .replace("__WORK_OPTIONS__", work_options_html()))
+        elif parsed.path == "/api/models":
+            try:
+                status = json.loads(runner.MODEL_STATUS_PATH.read_text(encoding="utf-8"))
+            except (FileNotFoundError, json.JSONDecodeError):
+                status = {}
+            self._send_json(status)
         elif parsed.path == "/api/status":
             jobs = []
             for path in sorted(runner.JOBS_DIR.glob("*.json")):
@@ -604,6 +739,19 @@ class Handler(SimpleHTTPRequestHandler):
 
     def do_POST(self):
         parsed = urlparse(self.path)
+        if parsed.path == "/api/models/check":
+            statuses = {}
+            for model in ("claude", "codex", "glm"):
+                result = llm.availability_probe(model, timeout=90)
+                statuses[model] = ({"state": "available", "checked": runner.now_iso()} if result.ok else {
+                    "state": "limited" if result.limit else "unavailable",
+                    "checked": runner.now_iso(),
+                    "resume_at": result.resume_at.isoformat(timespec="seconds") if result.resume_at else None,
+                    "error": result.error[:300],
+                })
+            runner.publish_model_status(statuses)
+            self._send_json(statuses)
+            return
         if parsed.path.startswith("/api/jobs/"):
             parts = parsed.path.split("/")
             job_id, action = parts[3], parts[4] if len(parts) > 4 else ""
@@ -654,6 +802,12 @@ class Handler(SimpleHTTPRequestHandler):
                 if not {primary, fallback} <= STAGE_MODEL_CHOICES:
                     raise ValueError(f"無效的模型選擇：{name}")
                 stages[name] = {"primary": primary or None, "fallback": fallback or None}
+            # draft 1 is required; draft 2 alone is not a valid dual setup
+            if not stages["draft_codex"]["primary"]:
+                raise ValueError("草稿 1 必須指定模型（草稿 2 才是選配）")
+            for required in ("segment", "merge", "repair"):
+                if not stages[required]["primary"]:
+                    raise ValueError(f"{required} 必須指定主用模型")
         except ValueError as err:
             self._send_html(FORM_PAGE.replace("__MESSAGE__", f"錯誤：{err}")
                             .replace("__WORK_OPTIONS__", work_options_html()), status=400)

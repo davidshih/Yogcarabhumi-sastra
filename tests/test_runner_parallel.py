@@ -158,6 +158,55 @@ class RunnerParallelTests(unittest.TestCase):
         with mock.patch.dict(runner.ACTIVE_JOB_PARALLEL, {job["id"]: 2}, clear=True):
             self.assertFalse(runner.claimable(job, "dual-echo"))
 
+    def test_force_start_juan_preserves_review_section_and_requeues(self):
+        job = self.job([1], parallel=2)
+        job["state"] = "waiting_model"
+        job["resume_at"] = "2099-01-01T00:00:00+00:00"
+        job["error"] = "juans waiting: [1]"
+        job["progress"] = {
+            "1": {
+                "step": "waiting_limit",
+                "resume_at": "2099-01-01T00:00:00+00:00",
+                "error": "limit",
+                "tasks": {
+                    "review": {
+                        "state": "waiting",
+                        "section": 7,
+                        "sections_total": 15,
+                        "resume_at": "2099-01-01T00:00:00+00:00",
+                        "error": "limit",
+                    },
+                    "draft_codex": {"state": "done", "section": 15, "sections_total": 15},
+                },
+            },
+        }
+        runner.save_job(job)
+
+        ok, message = runner.force_start_juan(job["id"], 1)
+        saved = runner.load_job(self.jobs / f"{job['id']}.json")
+        review = saved["progress"]["1"]["tasks"]["review"]
+
+        self.assertTrue(ok, message)
+        self.assertEqual(saved["state"], "queued")
+        self.assertIsNone(saved["resume_at"])
+        self.assertIsNone(saved["error"])
+        self.assertEqual(saved["progress"]["1"]["step"], "merge")
+        self.assertEqual(review["state"], "pending")
+        self.assertEqual(review["section"], 7)
+        self.assertEqual(review["sections_total"], 15)
+        self.assertNotIn("resume_at", review)
+        self.assertNotIn("error", review)
+
+    def test_force_start_juan_rejects_done_volume(self):
+        job = self.job([1], parallel=2)
+        job["progress"] = {"1": {"step": "done"}}
+        runner.save_job(job)
+
+        ok, message = runner.force_start_juan(job["id"], 1)
+
+        self.assertFalse(ok)
+        self.assertEqual(message, "此卷已完成")
+
 
 if __name__ == "__main__":
     unittest.main()

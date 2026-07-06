@@ -29,49 +29,70 @@ FORM_PAGE = """<!doctype html>
   <script src="/theme.js"></script>
   <style>
     :root {
+      --ops-bg: #020617;
+      --ops-surface: #0f172a;
+      --ops-surface-2: #111827;
+      --ops-text: #f8fafc;
+      --ops-muted: #cbd5e1;
+      --ops-dim: #94a3b8;
+      --ops-border: #334155;
+      --ops-accent: #22c55e;
+      --ops-accent-2: #38bdf8;
+      --ops-warn: #b45309;
+      --ops-danger: #f87171;
+      --ops-ring: rgba(34, 197, 94, .24);
+    }
+    html[data-theme="light"] {
       --ops-bg: #f8fafc;
       --ops-surface: #ffffff;
       --ops-surface-2: #eef2f7;
       --ops-text: #0f172a;
       --ops-muted: #475569;
+      --ops-dim: #64748b;
       --ops-border: #cbd5e1;
       --ops-accent: #15803d;
+      --ops-accent-2: #0369a1;
       --ops-warn: #b45309;
       --ops-danger: #b91c1c;
       --ops-ring: rgba(21, 128, 61, .24);
     }
-    @media (prefers-color-scheme: dark) {
-      :root {
-        --ops-bg: #020617;
-        --ops-surface: #0f172a;
-        --ops-surface-2: #1e293b;
-        --ops-text: #f8fafc;
-        --ops-muted: #cbd5e1;
-        --ops-border: #334155;
-        --ops-accent: #22c55e;
-        --ops-warn: #f59e0b;
-        --ops-danger: #f87171;
-        --ops-ring: rgba(34, 197, 94, .24);
-      }
-    }
     body {
       background: var(--ops-bg);
       color: var(--ops-text);
+      font-family: "Fira Sans", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
     .ops-shell {
-      width: min(1180px, calc(100vw - 32px));
+      width: min(1440px, calc(100vw - 24px));
       margin: 0 auto 48px;
       display: grid;
-      gap: 16px;
+      gap: 12px;
     }
     .ops-header {
       display: grid;
-      gap: 8px;
-      padding: 24px 0 8px;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 12px;
+      padding: 16px;
+      margin-top: 12px;
+      border: 1px solid var(--ops-border);
+      border-radius: 8px;
+      background: linear-gradient(180deg, rgba(15, 23, 42, .96), rgba(2, 6, 23, .9));
+      box-shadow: 0 12px 40px rgba(0, 0, 0, .22);
+    }
+    html[data-theme="light"] .ops-header {
+      background: linear-gradient(180deg, rgba(255, 255, 255, .96), rgba(248, 250, 252, .9));
+      box-shadow: 0 12px 34px rgba(15, 23, 42, .08);
+    }
+    .kicker {
+      color: var(--ops-accent);
+      font-family: "Fira Code", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: .78rem;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
     }
     .ops-header h1 {
       margin: 0;
-      font-size: clamp(1.75rem, 4vw, 2.6rem);
+      font-size: clamp(1.4rem, 2.6vw, 2rem);
       letter-spacing: 0;
     }
     .ops-header p {
@@ -82,20 +103,22 @@ FORM_PAGE = """<!doctype html>
     }
     .ops-grid {
       display: grid;
-      grid-template-columns: minmax(280px, 380px) 1fr;
-      gap: 16px;
+      grid-template-columns: minmax(300px, 360px) minmax(0, 1fr);
+      gap: 12px;
       align-items: start;
     }
     .ops-panel, .job-card {
       background: var(--ops-surface);
       border: 1px solid var(--ops-border);
       border-radius: 8px;
-      box-shadow: 0 10px 30px rgba(15, 23, 42, .08);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, .18);
     }
     .ops-panel {
-      padding: 16px;
+      padding: 14px;
       display: grid;
-      gap: 14px;
+      gap: 12px;
+      position: sticky;
+      top: 12px;
     }
     .ops-panel h2, .jobs-head h2 {
       margin: 0;
@@ -103,13 +126,14 @@ FORM_PAGE = """<!doctype html>
     }
     .job-form {
       display: grid;
-      gap: 12px;
+      gap: 10px;
     }
     .job-form label {
       display: grid;
-      gap: 6px;
+      gap: 5px;
       font-weight: 650;
       color: var(--ops-text);
+      font-size: .92rem;
     }
     [hidden] { display: none !important; }
     .job-form input[type=text], .job-form input[type=number], .job-form select {
@@ -118,7 +142,7 @@ FORM_PAGE = """<!doctype html>
       border-radius: 8px;
       padding: 0 12px;
       font: inherit;
-      background: var(--ops-bg);
+      background: var(--ops-surface-2);
       color: var(--ops-text);
     }
     .job-form input[type=text]:focus, .job-form input[type=number]:focus,
@@ -173,12 +197,17 @@ FORM_PAGE = """<!doctype html>
     .jobs-panel {
       display: grid;
       gap: 12px;
+      min-width: 0;
     }
     .jobs-head {
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 12px;
+      border: 1px solid var(--ops-border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      background: var(--ops-surface);
     }
     .summary {
       display: flex;
@@ -191,7 +220,7 @@ FORM_PAGE = """<!doctype html>
       border: 1px solid var(--ops-border);
       border-radius: 999px;
       padding: 4px 9px;
-      background: var(--ops-surface);
+      background: var(--ops-surface-2);
       font-variant-numeric: tabular-nums;
     }
     .job-list {
@@ -199,9 +228,9 @@ FORM_PAGE = """<!doctype html>
       gap: 12px;
     }
     .job-card {
-      padding: 14px;
+      padding: 12px;
       display: grid;
-      gap: 12px;
+      gap: 10px;
     }
     .job-top, .volume-top {
       display: flex;
@@ -217,7 +246,7 @@ FORM_PAGE = """<!doctype html>
     .job-id {
       font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
       font-size: .82rem;
-      color: var(--ops-muted);
+      color: var(--ops-dim);
       overflow-wrap: anywhere;
     }
     .status-pill {
@@ -243,19 +272,19 @@ FORM_PAGE = """<!doctype html>
     .state-failed .dot, .state-cancelled .dot { background: var(--ops-danger); }
     .volume-list {
       display: grid;
-      gap: 4px;
+      gap: 6px;
       overflow-x: auto;
     }
     .volume-row {
       display: grid;
-      grid-template-columns: 3.4em 7.2em repeat(10, minmax(3.6em, 1fr)) auto;
+      grid-template-columns: 3.6em 7.4em minmax(430px, 1fr) minmax(170px, auto);
       align-items: center;
       gap: 4px 6px;
       border: 1px solid var(--ops-border);
       border-radius: 8px;
-      padding: 4px 8px;
-      background: var(--ops-bg);
-      min-height: 30px;
+      padding: 6px 8px;
+      background: var(--ops-surface-2);
+      min-height: 42px;
       min-width: 760px;
       font-size: .84rem;
     }
@@ -273,7 +302,7 @@ FORM_PAGE = """<!doctype html>
       border: 1px solid var(--ops-border);
       border-radius: 8px;
       padding: 8px 12px;
-      background: var(--ops-surface);
+      background: var(--ops-surface-2);
       font-size: .9rem;
     }
     .model-bar-title { font-weight: 700; }
@@ -337,6 +366,13 @@ FORM_PAGE = """<!doctype html>
       overflow-wrap: anywhere;
     }
     .chip { justify-content: center; }
+    .volume-chips {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 4px;
+      min-width: 0;
+    }
     .stage-config summary {
       cursor: pointer;
       font-weight: 650;
@@ -367,9 +403,16 @@ FORM_PAGE = """<!doctype html>
       display: flex;
       gap: 6px;
       flex-wrap: wrap;
+      justify-content: flex-end;
     }
-    .retry-btn, .approve-btn {
-      min-height: 32px;
+    .volume-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .retry-btn, .approve-btn, .force-btn {
+      min-height: 34px;
       border-radius: 8px;
       padding: 0 12px;
       font: inherit;
@@ -377,6 +420,11 @@ FORM_PAGE = """<!doctype html>
       cursor: pointer;
       border: 1px solid var(--ops-border);
       background: transparent;
+      color: var(--ops-accent);
+    }
+    .force-btn {
+      background: rgba(34, 197, 94, .16);
+      border-color: rgba(34, 197, 94, .5);
       color: var(--ops-accent);
     }
     .approve-btn {
@@ -555,20 +603,24 @@ __WORK_OPTIONS__
     }
     function volumeRow(job, juan) {
       const volume = (job.progress || {})[String(juan)] || {step: "queued", tasks: {}};
-      const state = volume.cancelled ? "cancelled" : (volume.error ? "failed" : volume.step || "queued");
+      const step = volume.step || "queued";
+      const state = volume.cancelled ? "cancelled"
+        : (["waiting_model", "waiting_limit", "waiting"].includes(step) ? step : (volume.error ? "failed" : step));
       const chips = taskOrder.map(name => chipFor(name, (volume.tasks || {})[name])).join("");
-      let action;  // cancel and retry are mutually exclusive per volume state
-      if (canCancel(volume)) {
-        action = `<button class="retry-btn" type="button" data-action="cancel-volume" data-job="${esc(job.id)}" data-juan="${esc(juan)}">取消</button>`;
-      } else if (state === "failed" || state === "cancelled") {
-        action = `<button class="retry-btn" type="button" data-action="retry-volume" data-job="${esc(job.id)}" data-juan="${esc(juan)}">重試</button>`;
-      } else {
-        action = "<span></span>";
+      const actions = [];
+      if (state !== "done") {
+        actions.push(`<button class="force-btn" type="button" data-action="force-volume" data-job="${esc(job.id)}" data-juan="${esc(juan)}">強制啟動</button>`);
       }
+      if (canCancel(volume)) {
+        actions.push(`<button class="retry-btn" type="button" data-action="cancel-volume" data-job="${esc(job.id)}" data-juan="${esc(juan)}">取消</button>`);
+      } else if (state === "failed" || state === "cancelled") {
+        actions.push(`<button class="retry-btn" type="button" data-action="retry-volume" data-job="${esc(job.id)}" data-juan="${esc(juan)}">重試</button>`);
+      }
+      const actionHtml = actions.length ? `<div class="volume-actions">${actions.join("")}</div>` : "<span></span>";
       const error = volume.error ? `<span class="volume-error">${esc(volume.error)}</span>` : "";
       const events = modelEvents(volume);
       return `<div class="volume-row ${volumeStateClass(state)}">
-        <strong>卷 ${esc(juan)}</strong>${statusPill(state)}${chips}${action}${error}${events}
+        <strong>卷 ${esc(juan)}</strong>${statusPill(state)}<div class="volume-chips">${chips}</div>${actionHtml}${error}${events}
       </div>`;
     }
     function jobActions(job) {
@@ -609,7 +661,7 @@ __WORK_OPTIONS__
     async function jobAction(button) {
       button.disabled = true;
       const action = button.dataset.action;
-      const perVolume = action === "cancel-volume" || action === "retry-volume";
+      const perVolume = action === "cancel-volume" || action === "retry-volume" || action === "force-volume";
       const url = `/api/jobs/${encodeURIComponent(button.dataset.job)}/${action}`;
       const body = perVolume ? new URLSearchParams({juan: button.dataset.juan}) : null;
       const result = await fetch(url, {method: "POST", body}).then(r => r.json()).catch(() => null);
@@ -797,6 +849,13 @@ class Handler(SimpleHTTPRequestHandler):
                     self._send_json({"ok": False, "error": "invalid juan"}, status=400)
                     return
                 ok, message = runner.retry_juan(job_id, juan)
+            elif action == "force-volume":
+                try:
+                    juan = int(form.get("juan", [""])[0])
+                except ValueError:
+                    self._send_json({"ok": False, "error": "invalid juan"}, status=400)
+                    return
+                ok, message = runner.force_start_juan(job_id, juan)
             elif action == "cancel":
                 ok, message = runner.cancel_job(job_id)
             elif action == "retry":

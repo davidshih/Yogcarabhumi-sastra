@@ -448,6 +448,61 @@ def retry_juan(job_id: str, juan: int) -> tuple[bool, str]:
     return True, "已重排此卷"
 
 
+def force_resume_step(prog: dict) -> str:
+    step_map = {
+        "availability": "availability",
+        "segment": "segment",
+        "skeleton": "skeleton",
+        "draft_codex": "draft_codex",
+        "draft_glm": "draft_glm",
+        "review": "merge",
+        "checks": "checks",
+        "repair": "repair",
+        "html": "html",
+        "commit": "commit",
+    }
+    current = prog.get("step")
+    if current in {"availability", "segment", "skeleton", "draft_codex", "draft_glm",
+                   "merge", "checks", "repair", "html", "commit"}:
+        return current
+    for name in DUAL_TASKS:
+        task = prog.get("tasks", {}).get(name, {})
+        if task.get("state") in {"waiting", "failed", "running"}:
+            return step_map.get(name, "queued")
+    return "queued"
+
+
+def force_start_juan(job_id: str, juan: int) -> tuple[bool, str]:
+    path = JOBS_DIR / f"{job_id}.json"
+    if not path.exists():
+        return False, "job not found"
+    with flock("jobs"):
+        job = load_job(path)
+        if juan not in job.get("juans", []):
+            return False, "juan not in job"
+        prog = job.setdefault("progress", {}).setdefault(str(juan), {})
+        if prog.get("step") == "done":
+            return False, "此卷已完成"
+        cancel_flag(job_id).unlink(missing_ok=True)
+        cancel_flag(job_id, juan).unlink(missing_ok=True)
+        resume_step = force_resume_step(prog)
+        for key in ("cancelled", "resume_at", "error"):
+            prog.pop(key, None)
+        prog["step"] = resume_step
+        prog["force_started"] = now_iso()
+        for task in prog.get("tasks", {}).values():
+            if task.get("state") in ("waiting", "failed", "cancelled"):
+                task["state"] = "pending"
+                task.pop("error", None)
+                task.pop("resume_at", None)
+        if job.get("state") != "running":
+            job["state"] = "queued"
+        job["resume_at"] = None
+        job["error"] = None
+        save_job(job)
+    return True, "已強制從目前進度續跑此卷"
+
+
 # ---------- reprocess approval / versioning ----------
 
 def juan_translated(work: str, juan: int) -> bool:
@@ -1296,7 +1351,7 @@ def worker(model: str) -> None:
                 wait = (datetime.fromisoformat(resume_at) - datetime.now().astimezone()).total_seconds()
                 if wait > 0:
                     print(f"{now_iso()} [{job['id']}] resuming at {resume_at}", flush=True)
-                    time.sleep(min(wait + 300, 3600))  # 5 min past the reset, chunked by the loop
+                    time.sleep(min(wait + 300, POLL_SECONDS))  # short poll so force-start wakes quickly
                     continue
             run_job(job)
         else:

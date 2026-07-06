@@ -111,6 +111,7 @@ FORM_PAGE = """<!doctype html>
       font-weight: 650;
       color: var(--ops-text);
     }
+    [hidden] { display: none !important; }
     .job-form input[type=text] {
       min-height: 44px;
       border: 1px solid var(--ops-border);
@@ -241,43 +242,94 @@ FORM_PAGE = """<!doctype html>
     .state-failed .dot, .state-cancelled .dot { background: var(--ops-danger); }
     .volume-list {
       display: grid;
-      gap: 10px;
-    }
-    .volume {
-      border: 1px solid var(--ops-border);
-      border-radius: 8px;
-      padding: 10px;
-      background: var(--ops-bg);
-      display: grid;
-      gap: 10px;
-    }
-    .stage-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
-      gap: 8px;
-    }
-    .stage {
-      border: 1px solid var(--ops-border);
-      border-radius: 8px;
-      padding: 8px;
-      background: var(--ops-surface);
-      display: grid;
       gap: 4px;
-      min-height: 72px;
     }
-    .stage-label {
+    .volume-row {
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-      font-weight: 750;
-      font-size: .88rem;
+      flex-wrap: wrap;
+      gap: 4px 6px;
+      border: 1px solid var(--ops-border);
+      border-radius: 8px;
+      padding: 4px 8px;
+      background: var(--ops-bg);
+      min-height: 30px;
+      font-size: .84rem;
     }
-    .stage-meta {
+    .volume-row > strong {
+      min-width: 3.2em;
+    }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      border: 1px solid var(--ops-border);
+      border-radius: 999px;
+      padding: 1px 8px;
+      background: var(--ops-surface);
       color: var(--ops-muted);
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
+      cursor: default;
+    }
+    .chip .dot { width: 6px; height: 6px; }
+    .chip.state-done { color: var(--ops-accent); border-color: var(--ops-accent); }
+    .chip.state-running { color: var(--ops-text); border-color: var(--ops-accent); font-weight: 700; }
+    .chip.state-failed { color: var(--ops-danger); border-color: var(--ops-danger); }
+    .chip.state-skipped, .chip.state-cancelled { opacity: .55; text-decoration: line-through; }
+    .chip.state-waiting { color: var(--ops-warn); border-color: var(--ops-warn); }
+    .volume-error {
+      flex-basis: 100%;
+      color: var(--ops-danger);
       font-size: .8rem;
-      line-height: 1.35;
       overflow-wrap: anywhere;
+    }
+    .stage-config summary {
+      cursor: pointer;
+      font-weight: 650;
+    }
+    .stage-rows {
+      display: grid;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .stage-row {
+      display: grid;
+      grid-template-columns: 4.5em 1fr 1fr;
+      gap: 6px;
+      align-items: center;
+      font-size: .9rem;
+    }
+    .stage-row select {
+      min-height: 34px;
+      border: 1px solid var(--ops-border);
+      border-radius: 6px;
+      background: var(--ops-bg);
+      color: var(--ops-text);
+      font: inherit;
+      font-size: .88rem;
+      padding: 0 6px;
+    }
+    .job-actions {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .retry-btn, .approve-btn {
+      min-height: 32px;
+      border-radius: 8px;
+      padding: 0 12px;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      border: 1px solid var(--ops-border);
+      background: transparent;
+      color: var(--ops-accent);
+    }
+    .approve-btn {
+      background: var(--ops-accent);
+      color: #fff;
+      border: 0;
     }
     .empty-state {
       border: 1px dashed var(--ops-border);
@@ -315,28 +367,50 @@ FORM_PAGE = """<!doctype html>
     <header class="ops-header">
       <div class="kicker">Pipeline</div>
       <h1>翻譯工作管線</h1>
-      <p>每卷先檢查模型可用性；Codex/GPT 是必要條件，GLM 與 Claude 可降級。Draft 可平行，review 會優先 Claude、不可用時改用 GPT。</p>
+      <p>每卷先檢查所選模型可用性；階段主用模型不可用時自動切備援，撞額度自動解析重置時間、5 分鐘後續跑。已有譯文的卷會暫停等你核准，核准後舊譯封存為版本。</p>
       <p class="msg" id="message">__MESSAGE__</p>
     </header>
     <div class="ops-grid">
       <section class="ops-panel" aria-labelledby="submit-title">
         <h2 id="submit-title">送出工作</h2>
         <form class="job-form" method="post" action="/jobs">
-          <label>CBETA 連結或經號
-            <input type="text" name="link" placeholder="https://cbetaonline.dila.edu.tw/zh/T1579_013" required>
+          <label>經典
+            <select name="work" id="workSelect">
+__WORK_OPTIONS__
+              <option value="__custom__">其他（貼 CBETA 連結）</option>
+            </select>
           </label>
-          <label>卷號範圍
-            <input type="text" name="juans" placeholder="13-15 或 13,15；留空時使用連結卷號">
+          <label id="customLinkRow" hidden>CBETA 連結
+            <input type="text" name="link" placeholder="https://cbetaonline.dila.edu.tw/zh/T1585_001">
           </label>
-          <label>模型策略
-            <span class="models">
-              <label><input type="radio" name="model" value="dual" checked> dual team：GPT + GLM draft，Claude/GPT review</label>
-              <label><input type="radio" name="model" value="mix"> mix：舊版多模型路由</label>
-              <label><input type="radio" name="model" value="claude"> claude only</label>
-              <label><input type="radio" name="model" value="codex"> codex only</label>
-              <label><input type="radio" name="model" value="glm"> glm only</label>
-            </span>
+          <label>卷號範圍（同一部經可多卷）
+            <input type="text" name="juans" placeholder="13-15 或 13,15" required>
           </label>
+          <details class="stage-config" open>
+            <summary>各階段模型（主用 → 備援）</summary>
+            <div class="stage-rows">
+              <div class="stage-row"><span>切段</span>
+                <select name="segment_primary"><option>claude</option><option>codex</option><option>glm</option></select>
+                <select name="segment_fallback"><option value="">無備援</option><option selected>codex</option><option>claude</option><option>glm</option></select>
+              </div>
+              <div class="stage-row"><span>草稿 1</span>
+                <select name="draft_codex_primary"><option selected>codex</option><option>claude</option><option>glm</option></select>
+                <select name="draft_codex_fallback"><option value="" selected>無備援</option><option>claude</option><option>codex</option><option>glm</option></select>
+              </div>
+              <div class="stage-row"><span>草稿 2</span>
+                <select name="draft_glm_primary"><option selected>glm</option><option>claude</option><option>codex</option><option value="">無（單稿）</option></select>
+                <select name="draft_glm_fallback"><option value="" selected>無備援</option><option>claude</option><option>codex</option><option>glm</option></select>
+              </div>
+              <div class="stage-row"><span>終審</span>
+                <select name="merge_primary"><option selected>claude</option><option>codex</option><option>glm</option></select>
+                <select name="merge_fallback"><option value="">無備援</option><option selected>codex</option><option>claude</option><option>glm</option></select>
+              </div>
+              <div class="stage-row"><span>修補</span>
+                <select name="repair_primary"><option selected>claude</option><option>codex</option><option>glm</option></select>
+                <select name="repair_fallback"><option value="">無備援</option><option selected>codex</option><option>claude</option><option>glm</option></select>
+              </div>
+            </div>
+          </details>
           <button class="primary-btn" type="submit">排入佇列</button>
         </form>
       </section>
@@ -352,13 +426,19 @@ FORM_PAGE = """<!doctype html>
   <script>
     const zh = {
       queued: "排隊中", running: "進行中", done: "完成", failed: "失敗",
-      waiting_limit: "等待額度", waiting_model: "等待 GPT", waiting: "等待中",
-      pending: "未開始", skipped: "略過", cancelled: "已取消"
+      waiting_limit: "等待額度", waiting_model: "等待模型", waiting: "等待中",
+      pending: "未開始", skipped: "略過", cancelled: "已取消",
+      awaiting_approval: "待核准重跑"
     };
     const taskLabels = {
+      availability: "查", segment: "段", skeleton: "骨",
+      draft_codex: "稿1", draft_glm: "稿2", review: "審",
+      checks: "檢", repair: "修", html: "頁", commit: "推"
+    };
+    const taskFull = {
       availability: "模型檢查", segment: "切段", skeleton: "骨架",
-      draft_codex: "GPT draft", draft_glm: "GLM draft", review: "Review",
-      checks: "檢查", repair: "修補", html: "HTML", commit: "Commit"
+      draft_codex: "草稿1", draft_glm: "草稿2", review: "終審",
+      checks: "檢查", repair: "修補", html: "HTML", commit: "Commit+Push"
     };
     const taskOrder = Object.keys(taskLabels);
     function esc(value) {
@@ -385,57 +465,73 @@ FORM_PAGE = """<!doctype html>
       return Object.entries(tasks).every(([name, task]) =>
         name === "availability" || [undefined, null, "pending", "queued", "cancelled"].includes(task.state));
     }
-    function taskCard(name, task) {
+    function chipFor(name, task) {
       const state = task?.state || "pending";
-      const model = task?.model ? `<span>${esc(task.model)}</span>` : "";
-      const progress = task?.sections_total ? `<span>${esc(task.section || 0)}/${esc(task.sections_total)}</span>` : "";
-      const reason = task?.reason ? `<span>${esc(task.reason)}</span>` : "";
-      const error = task?.error ? `<span>${esc(task.error)}</span>` : "";
-      return `<div class="stage ${stateClass(state)}">
-        <div class="stage-label"><span>${esc(taskLabels[name] || name)}</span><span class="dot"></span></div>
-        <div class="stage-meta">${label(state)} ${model} ${progress} ${reason} ${error}</div>
-      </div>`;
+      const cls = state === "waiting" || state === "waiting_model" ? "state-waiting" : stateClass(state);
+      const progress = task?.sections_total ? ` ${task.section || 0}/${task.sections_total}` : "";
+      const model = task?.model ? ` · ${task.model}` : "";
+      const detail = [taskFull[name] || name, label(state), task?.model, task?.reason, task?.error]
+        .filter(Boolean).join(" ｜ ");
+      return `<span class="chip ${cls}" title="${esc(detail)}"><span class="dot"></span>${esc(taskLabels[name] || name)}${esc(progress)}${state === "running" ? esc(model) : ""}</span>`;
     }
-    function volumeCard(job, juan) {
+    function volumeRow(job, juan) {
       const volume = (job.progress || {})[String(juan)] || {step: "queued", tasks: {}};
       const state = volume.cancelled ? "cancelled" : (volume.error ? "failed" : volume.step || "queued");
-      const tasks = volume.tasks || {};
+      const chips = taskOrder.map(name => chipFor(name, (volume.tasks || {})[name])).join("");
       const cancel = canCancel(volume)
-        ? `<button class="cancel-btn" type="button" data-job="${esc(job.id)}" data-juan="${esc(juan)}">取消此卷</button>`
+        ? `<button class="retry-btn" type="button" data-action="cancel-volume" data-job="${esc(job.id)}" data-juan="${esc(juan)}">取消</button>`
         : "";
-      const cards = taskOrder.map(name => taskCard(name, tasks[name])).join("");
-      const error = volume.error ? `<div class="stage-meta">錯誤：${esc(volume.error)}</div>` : "";
-      return `<article class="volume">
-        <div class="volume-top">
-          <strong>卷 ${esc(juan)}</strong>
-          <div>${statusPill(state)} ${cancel}</div>
-        </div>
-        ${error}
-        <div class="stage-grid">${cards}</div>
-      </article>`;
+      const error = volume.error ? `<span class="volume-error">${esc(volume.error)}</span>` : "";
+      return `<div class="volume-row">
+        <strong>卷 ${esc(juan)}</strong>${statusPill(state)}${chips}${cancel}${error}
+      </div>`;
+    }
+    function jobActions(job) {
+      const actions = [];
+      if (job.state === "awaiting_approval") {
+        actions.push(`<button class="approve-btn" type="button" data-action="approve" data-job="${esc(job.id)}">核准重跑（另存新版）</button>`);
+      }
+      if (["failed", "cancelled"].includes(job.state)) {
+        actions.push(`<button class="retry-btn" type="button" data-action="retry" data-job="${esc(job.id)}">重試</button>`);
+      }
+      if (!["done", "cancelled"].includes(job.state)) {
+        actions.push(`<button class="cancel-btn" type="button" data-action="cancel" data-job="${esc(job.id)}">取消</button>`);
+      }
+      return `<div class="job-actions">${actions.join("")}</div>`;
     }
     function jobCard(job) {
       const resume = resumeText(job.resume_at);
-      const volumes = (job.juans || []).map(juan => volumeCard(job, juan)).join("");
+      const volumes = (job.juans || []).map(juan => volumeRow(job, juan)).join("");
+      const approval = job.state === "awaiting_approval"
+        ? `<div class="volume-error">卷 ${(job.needs_approval || []).map(esc).join("、")} 已有譯文；核准後舊版封存為新版本、重新翻譯。</div>`
+        : "";
       return `<article class="job-card">
         <div class="job-top">
           <div class="job-title">
-            <strong>${esc(job.work)} 卷 ${(job.juans || []).map(esc).join(", ")} · ${esc(job.model)}</strong>
+            <strong>${esc(job.work)} 卷 ${(job.juans || []).map(esc).join(", ")}</strong>
             <span class="job-id">${esc(job.id)}</span>
           </div>
-          ${statusPill(job.state, resume)}
+          <div>${statusPill(job.state, resume)}${jobActions(job)}</div>
         </div>
+        ${approval}
         <div class="volume-list">${volumes}</div>
       </article>`;
     }
-    async function cancelVolume(button) {
+    async function jobAction(button) {
       button.disabled = true;
-      const body = new URLSearchParams({juan: button.dataset.juan});
-      const url = `/api/jobs/${encodeURIComponent(button.dataset.job)}/cancel-volume`;
+      const action = button.dataset.action;
+      const url = action === "cancel-volume"
+        ? `/api/jobs/${encodeURIComponent(button.dataset.job)}/cancel-volume`
+        : `/api/jobs/${encodeURIComponent(button.dataset.job)}/${action}`;
+      const body = action === "cancel-volume" ? new URLSearchParams({juan: button.dataset.juan}) : null;
       const result = await fetch(url, {method: "POST", body}).then(r => r.json()).catch(() => null);
-      document.getElementById("message").textContent = result?.ok ? "已取消該卷。" : `取消失敗：${result?.error || "unknown error"}`;
+      document.getElementById("message").textContent = result?.ok
+        ? (result.message || "完成。") : `失敗：${result?.error || "unknown error"}`;
       await refresh();
     }
+    document.getElementById("workSelect").addEventListener("change", e => {
+      document.getElementById("customLinkRow").hidden = e.target.value !== "__custom__";
+    });
     async function refresh() {
       const data = await fetch("/api/status").then(r => r.json()).catch(() => null);
       if (!data) return;
@@ -449,8 +545,8 @@ FORM_PAGE = """<!doctype html>
       document.getElementById("jobs").innerHTML = jobs.length
         ? jobs.map(jobCard).join("")
         : `<div class="empty-state">目前沒有工作。</div>`;
-      document.querySelectorAll("[data-job][data-juan]").forEach(btn => {
-        btn.addEventListener("click", () => cancelVolume(btn), {once: true});
+      document.querySelectorAll("[data-action][data-job]").forEach(btn => {
+        btn.addEventListener("click", () => jobAction(btn), {once: true});
       });
     }
     refresh();
@@ -461,6 +557,21 @@ FORM_PAGE = """<!doctype html>
 """
 
 
+def work_options_html() -> str:
+    works = json.loads((ROOT / "works.json").read_text(encoding="utf-8"))["works"]
+    options = []
+    for w in works:
+        disabled = "" if w.get("pipeline_ready") else " disabled"
+        suffix = "" if w.get("pipeline_ready") else "・準備中"
+        options.append(f'              <option value="{w["id"]}"{disabled}>'
+                       f'{w["title"]}（{w["id"]}）{suffix}</option>')
+    return "\n".join(options)
+
+
+STAGE_NAMES = ("segment", "draft_codex", "draft_glm", "merge", "repair")
+STAGE_MODEL_CHOICES = {"claude", "codex", "glm", ""}
+
+
 class Handler(SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=str(ROOT / "docs"), **kwargs)
@@ -469,7 +580,10 @@ class Handler(SimpleHTTPRequestHandler):
         parsed = urlparse(self.path)
         if parsed.path in ("/", "/jobs"):
             message = "已排入佇列。" if "queued=1" in parsed.query else ""
-            self._send_html(FORM_PAGE.replace("__MESSAGE__", message))
+            if "approval=1" in parsed.query:
+                message = "此經卷已有譯文，工作已暫停，請在佇列中核准重跑。"
+            self._send_html(FORM_PAGE.replace("__MESSAGE__", message)
+                            .replace("__WORK_OPTIONS__", work_options_html()))
         elif parsed.path == "/api/status":
             jobs = []
             for path in sorted(runner.JOBS_DIR.glob("*.json")):
@@ -490,53 +604,77 @@ class Handler(SimpleHTTPRequestHandler):
 
     def do_POST(self):
         parsed = urlparse(self.path)
-        if parsed.path.startswith("/api/jobs/") and parsed.path.endswith("/cancel-volume"):
-            job_id = parsed.path.split("/")[3]
+        if parsed.path.startswith("/api/jobs/"):
+            parts = parsed.path.split("/")
+            job_id, action = parts[3], parts[4] if len(parts) > 4 else ""
             length = int(self.headers.get("Content-Length", 0))
             form = parse_qs(self.rfile.read(length).decode("utf-8"))
-            try:
-                juan = int(form.get("juan", [""])[0])
-            except ValueError:
-                self._send_json({"ok": False, "error": "invalid juan"}, status=400)
+            if action == "cancel-volume":
+                try:
+                    juan = int(form.get("juan", [""])[0])
+                except ValueError:
+                    self._send_json({"ok": False, "error": "invalid juan"}, status=400)
+                    return
+                ok, message = runner.cancel_juan(job_id, juan)
+            elif action == "cancel":
+                ok, message = runner.cancel_job(job_id)
+            elif action == "retry":
+                ok, message = runner.retry_job(job_id)
+            elif action == "approve":
+                ok, message = runner.approve_job(job_id)
+            else:
+                self.send_error(404)
                 return
-            ok, message = runner.cancel_juan(job_id, juan)
-            self._send_json({"ok": ok, "error": None if ok else message}, status=200 if ok else 409)
+            self._send_json({"ok": ok, "message": message if ok else None,
+                             "error": None if ok else message}, status=200 if ok else 409)
             return
         if parsed.path != "/jobs":
             self.send_error(404)
             return
         length = int(self.headers.get("Content-Length", 0))
         form = parse_qs(self.rfile.read(length).decode("utf-8"))
+        work_choice = form.get("work", [""])[0]
         link = form.get("link", [""])[0].strip()
         juans_spec = form.get("juans", [""])[0].strip()
-        model = form.get("model", [""])[0]
         try:
-            if model not in runner.QUEUES:
-                raise ValueError(f"unknown model: {model}")
-            if re.fullmatch(r"[A-Z]+\d+[a-z]?", link):
-                work, link_juan = link, None
+            if work_choice and work_choice != "__custom__":
+                work = work_choice
+            elif re.fullmatch(r"[A-Z]+\d+[a-z]?", link):
+                work = link
             else:
-                work, link_juan = runner.parse_link(link)
-            juans = runner.parse_juans(juans_spec) if juans_spec else ([link_juan] if link_juan else None)
+                work, _ = runner.parse_link(link)
+            juans = runner.parse_juans(juans_spec) if juans_spec else None
             runner.get_work(work)
             if not juans:
-                raise ValueError("請給卷號範圍，或用帶卷號的連結")
+                raise ValueError("請給卷號範圍")
+            stages = {}
+            for name in STAGE_NAMES:
+                primary = form.get(f"{name}_primary", [""])[0]
+                fallback = form.get(f"{name}_fallback", [""])[0]
+                if not {primary, fallback} <= STAGE_MODEL_CHOICES:
+                    raise ValueError(f"無效的模型選擇：{name}")
+                stages[name] = {"primary": primary or None, "fallback": fallback or None}
         except ValueError as err:
-            self._send_html(FORM_PAGE.replace("__MESSAGE__", f"錯誤：{err}"), status=400)
+            self._send_html(FORM_PAGE.replace("__MESSAGE__", f"錯誤：{err}")
+                            .replace("__WORK_OPTIONS__", work_options_html()), status=400)
             return
         from datetime import datetime
         import uuid
+        # already-translated volumes pause the job for explicit human approval
+        needs_approval = [j for j in juans if runner.juan_translated(work, j)]
         job = {
-            "id": f"{datetime.now():%Y%m%d-%H%M%S}-{model}-{uuid.uuid4().hex[:4]}",
-            "work": work, "juans": juans, "model": model,
-            "state": "queued", "created": runner.now_iso(), "updated": runner.now_iso(),
+            "id": f"{datetime.now():%Y%m%d-%H%M%S}-dual-{uuid.uuid4().hex[:4]}",
+            "work": work, "juans": juans, "model": "dual", "stages": stages,
+            "state": "awaiting_approval" if needs_approval else "queued",
+            "needs_approval": needs_approval,
+            "created": runner.now_iso(), "updated": runner.now_iso(),
             "pid": None, "resume_at": None, "error": None,
             "push": True, "summary": False, "progress": {},
         }
         runner.JOBS_DIR.mkdir(exist_ok=True)
         runner.save_job(job)
         self.send_response(303)
-        self.send_header("Location", "/jobs?queued=1")
+        self.send_header("Location", "/jobs?" + ("approval=1" if needs_approval else "queued=1"))
         self.end_headers()
 
     def _send_html(self, page: str, status: int = 200) -> None:

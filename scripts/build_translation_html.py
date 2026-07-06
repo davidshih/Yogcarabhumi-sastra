@@ -14,7 +14,9 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 GLOSSARY_PATH = ROOT / "translations" / "glossary" / "T1579-terms.json"
+VERSIONS_DIR = ROOT / "translations" / "versions"
 DEFAULT_SOURCE = ROOT / "translations" / "T1579-033-baihua.md"
+VERSION_N_RE = re.compile(r"\.v(\d+)\.md$")
 DEFAULT_OUTPUT_DIR = ROOT / "docs" / "T1579" / "translations"
 REPO_BLOB = "https://github.com/davidshih/Yogcarabhumi-sastra/blob/main"  # Pages only serves docs/; repo files link out
 
@@ -98,6 +100,27 @@ def wrap_terms(rendered_html: str) -> str:
                 lambda m: f'<span class="term" tabindex="0" data-tip="{html.escape(tipmap[m.group(0)])}">{m.group(0)}</span>',
                 part))
     return "".join(out)
+
+
+def archived_versions(source: Path) -> list[Path]:
+    base = source.name.split(".v")[0].removesuffix(".md")
+    return sorted(VERSIONS_DIR.glob(f"{base}.v*.md"),
+                  key=lambda p: int(VERSION_N_RE.search(p.name).group(1)))
+
+
+def version_select_html(source: Path) -> str:
+    base = source.name.split(".v")[0].removesuffix(".md")
+    versions = archived_versions(source)
+    if not versions:
+        return ""
+    current = source.stem
+    options = [f"<option value='{base}.html'{' selected' if current == base else ''}>最新版</option>"]
+    for path in versions:
+        n = VERSION_N_RE.search(path.name).group(1)
+        selected = " selected" if current == f"{base}.v{n}" else ""
+        options.append(f"<option value='{base}.v{n}.html'{selected}>第 {n} 版（封存）</option>")
+    return ("<label class='version-pick'>版本 <select class='version-select' "
+            "onchange=\"location.href=this.value\">" + "".join(options) + "</select></label>")
 
 
 def juan_neighbors(source: Path, juan: int) -> tuple[int | None, int | None]:
@@ -188,6 +211,7 @@ def render(entries: list[Entry], source: Path, juan: int, title: str) -> str:
         <button type="button" data-mode="both" aria-pressed="false">對照</button>
         <button type="button" data-mode="source" aria-pressed="false">原文</button>
       </div>
+      {version_select_html(source)}
       <a href="{source_link}">來源稿</a>
       <a href="{REPO_BLOB}/translations/glossary/T1579-terms.json">術語庫</a>
       <a href="../docs/translation-workflow.html">翻譯流程</a>
@@ -264,6 +288,21 @@ def parse_range(range_label: str) -> tuple[str, str]:
     return start, end
 
 
+def build_page(source: Path, output: Path | None = None) -> Path:
+    """Render one translation md (and any archived versions of it) to HTML."""
+    for path in [source, *archived_versions(source)]:
+        text = path.read_text(encoding="utf-8")
+        entries = parse_entries(text)
+        if not entries:
+            raise ValueError(f"No entries found in {path}")
+        juan = infer_juan(path)
+        out = translation_output_path(path, output if path == source else None)
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(render(entries, path, juan, infer_title(text, juan)), encoding="utf-8")
+        print(f"Wrote {out}")
+    return translation_output_path(source, output)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--translation", type=Path, default=DEFAULT_SOURCE)
@@ -273,19 +312,10 @@ def main() -> int:
     source = args.translation
     if not source.is_absolute():
         source = ROOT / source
-    output = translation_output_path(source, args.output)
-    if not output.is_absolute():
+    output = args.output
+    if output and not output.is_absolute():
         output = ROOT / output
-
-    text = source.read_text(encoding="utf-8")
-    entries = parse_entries(text)
-    if not entries:
-        raise ValueError(f"No entries found in {source}")
-    juan = infer_juan(source)
-    title = infer_title(text, juan)
-    output.parent.mkdir(parents=True, exist_ok=True)
-    output.write_text(render(entries, source, juan, title), encoding="utf-8")
-    print(f"Wrote {output}")
+    build_page(source, output)
     return 0
 
 

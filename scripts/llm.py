@@ -43,7 +43,7 @@ BACKOFF_MINUTES = [15, 30, 45, 60]
 MAX_LIMIT_WAITS = 10
 
 LIMIT_PATTERNS = re.compile(
-    r"(?i)usage limit|limit reached|5-hour limit|hit your usage limit"
+    r"(?i)usage limit|session limit|limit reached|5-hour limit|hit your (?:usage|session|weekly) limit"
     r"|rate.?limit|too many requests|quota|exhausted|\b429\b|overloaded"
 )
 # "…usage limit reached|1751721600" (claude CLI unix-ts form)
@@ -274,6 +274,8 @@ if __name__ == "__main__":
         # claude CLI, human form
         "5-hour limit reached ∙ resets 3pm": (15, 0),
         "You've reached your usage limit. Your limit will reset at 8pm (America/New_York).": (20, 0),
+        # claude CLI session-limit wording (seen live 2026-07-05; killed juans 4-5)
+        "You've hit your session limit · resets 9pm (America/New_York)": (21, 0),
         # codex CLI
         "You've hit your usage limit. Try again at 3:45 PM.": (15, 45),
         "Rate limit exceeded. Try again in 2 hours 15 minutes.": None,

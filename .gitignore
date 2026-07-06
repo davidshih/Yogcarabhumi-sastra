@@ -4,3 +4,4 @@ jobs/
 locks/
 config/
 runner.log
+webapp.log

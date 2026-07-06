@@ -49,10 +49,18 @@ REVIEW_PASSES = ("review_terms", "review_doctrine", "review_parallel")
 POLL_SECONDS = 10
 MODEL_WAIT_FALLBACK_MINUTES = 15
 JOB_WRITE_LOCK = threading.RLock()
-DUAL_REQUIRED_MODELS = ("codex",)
-DUAL_OPTIONAL_MODELS = ("glm", "claude")
+VERSIONS_DIR = ROOT / "translations" / "versions"
 DUAL_TASKS = ("availability", "segment", "skeleton", "draft_codex", "draft_glm",
               "review", "checks", "repair", "html", "commit")
+# Per-stage model + fallback defaults; a job may carry its own "stages" dict
+# with the same shape (set from the web form).
+DEFAULT_STAGES = {
+    "segment": {"primary": "claude", "fallback": "codex"},
+    "draft_codex": {"primary": "codex", "fallback": None},
+    "draft_glm": {"primary": "glm", "fallback": None},
+    "merge": {"primary": "claude", "fallback": "codex"},
+    "repair": {"primary": "claude", "fallback": "codex"},
+}
 
 # Cost-optimal default routing for --model mix: bulk translation on the cheap
 # GLM coding plan, hardest review line on claude, cross-vendor reviews so the
@@ -98,6 +106,16 @@ def prompt_vars(job: dict) -> dict:
     return {"work": info["id"], "work_title": info["title"], "file_id": info["file_id"]}
 
 
+def job_stages(job: dict) -> dict:
+    return {**DEFAULT_STAGES, **(job.get("stages") or {})}
+
+
+def stage_fallback(job: dict, stage: str) -> str | None:
+    if job["model"] == "dual-echo":
+        return None
+    return job_stages(job).get(stage, {}).get("fallback")
+
+
 def stage_model(job: dict, stage: str) -> str:
     runtime = job.get("_stage_models", {})
     if stage in runtime:
@@ -106,7 +124,7 @@ def stage_model(job: dict, stage: str) -> str:
     if model == "mix":
         return MIX_ROUTING.get(stage, "claude")
     if model == "dual":
-        return DUAL_ROUTING.get(stage, "claude")
+        return job_stages(job).get(stage, {}).get("primary") or DUAL_ROUTING.get(stage, "claude")
     if model == "dual-echo":
         return "echo"
     return model
@@ -179,8 +197,22 @@ class JobHold(Exception):
     pass
 
 
+class JobCancelled(Exception):
+    pass
+
+
 class OptionalModelUnavailable(Exception):
     pass
+
+
+def cancel_flag(job_id: str) -> Path:
+    # ponytail: sentinel file instead of a json field — save_job can never erase it
+    return JOBS_DIR / f"{job_id}.cancel"
+
+
+def check_cancel(job: dict) -> None:
+    if cancel_flag(job["id"]).exists():
+        raise JobCancelled(job["id"])
 
 
 def task_state(prog: dict, name: str) -> dict:
@@ -239,6 +271,92 @@ def cancel_juan(job_id: str, juan: int) -> tuple[bool, str]:
     return True, "cancelled"
 
 
+def cancel_job(job_id: str) -> tuple[bool, str]:
+    path = JOBS_DIR / f"{job_id}.json"
+    if not path.exists():
+        return False, "job not found"
+    with flock("jobs"):
+        job = load_job(path)
+        state = job.get("state")
+        if state in ("done", "cancelled"):
+            return False, f"job already {state}"
+        if state in ("queued", "awaiting_approval", "failed"):
+            job["state"] = "cancelled"
+            save_job(job)
+            return True, "cancelled"
+        # running / waiting: raise the flag; the runner cancels at the next section
+        cancel_flag(job_id).touch()
+        return True, "cancel requested; stops at the next section"
+
+
+def retry_job(job_id: str) -> tuple[bool, str]:
+    path = JOBS_DIR / f"{job_id}.json"
+    if not path.exists():
+        return False, "job not found"
+    with flock("jobs"):
+        job = load_job(path)
+        if job.get("state") not in ("failed", "cancelled"):
+            return False, "only failed or cancelled jobs can be retried"
+        cancel_flag(job_id).unlink(missing_ok=True)
+        job["state"] = "queued"
+        job["error"] = None
+        job["resume_at"] = None
+        for prog in job.get("progress", {}).values():
+            prog.pop("error", None)
+            prog.pop("repaired", None)  # allow a fresh repair round
+            for task in prog.get("tasks", {}).values():
+                if task.get("state") in ("failed", "waiting"):
+                    task["state"] = "pending"
+                    task.pop("error", None)
+            if prog.get("step") in ("cancelled",) and not prog.get("cancelled"):
+                prog.pop("step", None)
+        save_job(job)
+    return True, "requeued"
+
+
+# ---------- reprocess approval / versioning ----------
+
+def juan_translated(work: str, juan: int) -> bool:
+    md = juan_paths(work, juan)["md"]
+    if not md.exists():
+        return False
+    try:
+        return any(e.translation.strip() for e in bth.parse_entries(md.read_text(encoding="utf-8")))
+    except ValueError:
+        return False
+
+
+def archive_version(work: str, juan: int) -> int:
+    """Move the current translation aside as v<N>; drafts go stale and are removed."""
+    paths = juan_paths(work, juan)
+    VERSIONS_DIR.mkdir(exist_ok=True)
+    stem = paths["md"].stem
+    n = 1 + max((int(m.group(1)) for p in VERSIONS_DIR.glob(f"{stem}.v*.md")
+                 if (m := re.search(r"\.v(\d+)\.md$", p.name))), default=0)
+    shutil.move(paths["md"], VERSIONS_DIR / f"{stem}.v{n}.md")
+    for key in ("draft_codex", "draft_glm"):
+        paths[key].unlink(missing_ok=True)
+    return n
+
+
+def approve_job(job_id: str) -> tuple[bool, str]:
+    path = JOBS_DIR / f"{job_id}.json"
+    if not path.exists():
+        return False, "job not found"
+    with flock("jobs"):
+        job = load_job(path)
+        if job.get("state") != "awaiting_approval":
+            return False, "job is not awaiting approval"
+        archived = []
+        for juan in job.get("needs_approval", []):
+            if juan_translated(job["work"], juan):
+                archived.append(f"卷{juan}→v{archive_version(job['work'], juan)}")
+        job["state"] = "queued"
+        job["approved"] = now_iso()
+        save_job(job)
+    return True, "已核准重跑；" + ("、".join(archived) if archived else "無需封存")
+
+
 def resume_time(result: llm.LLMResult) -> datetime:
     now = datetime.now().astimezone()
     if result.resume_at and now < result.resume_at <= now + timedelta(hours=6):
@@ -247,6 +365,10 @@ def resume_time(result: llm.LLMResult) -> datetime:
 
 
 def probe_dual_models(job: dict, juan: int, prog: dict) -> dict[str, str]:
+    """Probe every model the job's stage config references; resolve each stage
+    to primary-if-available else fallback-if-available. Draft stages with no
+    usable model are skipped (one draft is enough); no usable review model or
+    no usable draft at all holds the job until the earliest known reset."""
     availability = set_task(prog, "availability", "running")
     prog["step"] = "availability"
     save_job(job)
@@ -254,11 +376,12 @@ def probe_dual_models(job: dict, juan: int, prog: dict) -> dict[str, str]:
         availability["models"] = {m: {"state": "available"} for m in ("codex", "glm", "claude")}
         set_task(prog, "availability", "done")
         save_job(job)
-        return {"segment": "echo", "draft_codex": "echo", "draft_glm": "echo",
-                "merge": "echo", "repair": "echo"}
+        return {stage: "echo" for stage in ("segment", "draft_codex", "draft_glm", "merge", "repair")}
 
+    stages = job_stages(job)
+    wanted = {cfg.get(k) for cfg in stages.values() for k in ("primary", "fallback") if cfg.get(k)}
     statuses: dict[str, dict] = {}
-    for model in DUAL_REQUIRED_MODELS + DUAL_OPTIONAL_MODELS:
+    for model in sorted(wanted):
         result = llm.availability_probe(model)
         if result.ok:
             statuses[model] = {"state": "available", "checked": now_iso()}
@@ -272,33 +395,40 @@ def probe_dual_models(job: dict, juan: int, prog: dict) -> dict[str, str]:
     availability["models"] = statuses
     prog["availability"] = statuses
 
-    codex = statuses["codex"]
-    if codex["state"] != "available":
-        resume_at = resume_time(llm.LLMResult(ok=False, limit=codex["state"] == "limited",
-                                              resume_at=datetime.fromisoformat(codex["resume_at"])
-                                              if codex.get("resume_at") else None))
-        job["state"] = "waiting_model"
-        job["resume_at"] = resume_at.isoformat(timespec="seconds")
-        job["error"] = "codex unavailable; waiting before starting next volume"
-        prog["step"] = "waiting_model"
-        set_task(prog, "availability", "waiting", resume_at=job["resume_at"])
-        save_job(job)
-        raise JobHold(f"juan {juan}: codex unavailable, waiting until {job['resume_at']}")
+    def usable(model: str | None) -> bool:
+        return bool(model) and statuses.get(model, {}).get("state") == "available"
 
-    stage_models = {"segment": "codex", "draft_codex": "codex", "merge": "codex", "repair": "codex"}
-    if statuses["glm"]["state"] == "available":
-        stage_models["draft_glm"] = "glm"
-    else:
-        set_task(prog, "draft_glm", "skipped", model="glm", reason="glm unavailable; codex-only draft")
-    if statuses["claude"]["state"] == "available":
-        stage_models["merge"] = "claude"
-        stage_models["repair"] = "claude"
-    else:
-        availability["review_fallback"] = "codex"
-    prog["models"] = stage_models
-    set_task(prog, "availability", "done")
+    stage_models: dict[str, str] = {}
+    for stage, cfg in stages.items():
+        if usable(cfg.get("primary")):
+            stage_models[stage] = cfg["primary"]
+        elif usable(cfg.get("fallback")):
+            stage_models[stage] = cfg["fallback"]
+
+    drafts_ok = [s for s in DUAL_STAGES if s in stage_models]
+    if drafts_ok and "merge" in stage_models:
+        for stage in DUAL_STAGES:
+            if stage not in stage_models:
+                set_task(prog, stage, "skipped", model=stages[stage].get("primary"),
+                         reason="模型不可用，僅以另一份草稿進行")
+        for stage in ("segment", "repair"):  # never blockers: borrow the review model
+            stage_models.setdefault(stage, stage_models["merge"])
+        prog["models"] = stage_models
+        set_task(prog, "availability", "done")
+        save_job(job)
+        return stage_models
+
+    # nothing usable for drafts or review: hold until the earliest known reset
+    resumes = [datetime.fromisoformat(s["resume_at"]) for s in statuses.values() if s.get("resume_at")]
+    resume_at = (min(resumes) + timedelta(minutes=5)) if resumes else (
+        datetime.now().astimezone() + timedelta(minutes=MODEL_WAIT_FALLBACK_MINUTES))
+    job["state"] = "waiting_model"
+    job["resume_at"] = resume_at.isoformat(timespec="seconds")
+    job["error"] = "所需模型均不可用，等待額度重置"
+    prog["step"] = "waiting_model"
+    set_task(prog, "availability", "waiting", resume_at=job["resume_at"])
     save_job(job)
-    return stage_models
+    raise JobHold(f"juan {juan}: no usable models, waiting until {job['resume_at']}")
 
 
 def prompt_text(name: str, **vars) -> str:
@@ -411,25 +541,30 @@ def llm_call(job: dict, prompt: str, stage: str) -> str:
         job["state"] = "waiting_limit"
         job["resume_at"] = resume_at.isoformat(timespec="seconds")
         save_job(job)
+
+    check_cancel(job)
     model = stage_model(job, stage)
-    if stage == "draft_glm" and model == "glm":
+    fallback = stage_fallback(job, stage)
+    if fallback and fallback != model:
+        # one shot on the primary; any failure switches this stage to the fallback
         try:
             result = llm.run_llm(model, prompt)
         except (llm.LLMError, FileNotFoundError) as err:
             result = llm.LLMResult(ok=False, error=str(err))
         if result.ok:
             return result.text
-        raise OptionalModelUnavailable(f"glm unavailable during draft: {result.error}")
-    if stage in ("merge", "repair") and model == "claude":
+        log(job, f"[{model}] {stage} failed ({result.error[:160]}), falling back to {fallback}")
+        job.setdefault("_stage_models", {})[stage] = fallback
+        model = fallback
+    elif stage in DUAL_STAGES and is_dual(job):
+        # draft without fallback: one shot, then skip this draft (the other one carries)
         try:
             result = llm.run_llm(model, prompt)
         except (llm.LLMError, FileNotFoundError) as err:
             result = llm.LLMResult(ok=False, error=str(err))
         if result.ok:
             return result.text
-        log(job, f"[claude] review unavailable, falling back to codex: {result.error[:200]}")
-        job.setdefault("_stage_models", {})[stage] = "codex"
-        model = "codex"
+        raise OptionalModelUnavailable(f"{model} unavailable during {stage}: {result.error[:300]}")
     text = llm.call_with_limit_retry(model, prompt, on_wait=on_wait, log=lambda m: log(job, m))
     if job["state"] == "waiting_limit":
         job["state"] = "running"
@@ -570,13 +705,7 @@ def run_checks(job: dict, juan: int, md_path: Path, data_path: Path,
 
 
 def build_html(job: dict, md_path: Path) -> None:
-    text = md_path.read_text(encoding="utf-8")
-    entries = bth.parse_entries(text)
-    juan = bth.infer_juan(md_path)
-    output = bth.translation_output_path(md_path, None)
-    output.parent.mkdir(parents=True, exist_ok=True)
-    output.write_text(bth.render(entries, md_path, juan, bth.infer_title(text, juan)),
-                      encoding="utf-8")
+    bth.build_page(md_path)  # latest + any archived versions (version selector)
     bsh.main()  # refresh section pages + index (includes new translation link)
     import build_search_index
     build_search_index.main()
@@ -683,6 +812,9 @@ def run_juan(job: dict, juan: int) -> None:
             for stage in draft_stages:
                 run_draft(stage)
 
+        if all(task_state(prog, s).get("state") == "skipped" for s in DUAL_STAGES):
+            raise RuntimeError(f"juan {juan}: 兩份草稿的模型都不可用")
+
         review_task = task_state(prog, "review")
         if review_task.get("state") != "done":
             reset_task_progress(review_task, resume_step, "merge")
@@ -772,12 +904,20 @@ def run_job(job: dict) -> None:
             held = True
             log(job, str(err))
             break
+        except JobCancelled:
+            cancel_flag(job["id"]).unlink(missing_ok=True)
+            job["state"] = "cancelled"
+            job["error"] = None
+            save_job(job)
+            log(job, "job cancelled by user")
+            return
         except Exception as err:  # noqa: BLE001 — job must survive a bad juan
             failed.append(juan)
             job["progress"].setdefault(str(juan), {})["error"] = str(err)[:500]
             log(job, f"juan {juan} FAILED: {err}")
     if held:
         return
+    cancel_flag(job["id"]).unlink(missing_ok=True)
     job["state"] = "failed" if failed else "done"
     job["error"] = f"juans failed: {failed}" if failed else None
     save_job(job)

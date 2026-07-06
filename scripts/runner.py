@@ -343,6 +343,16 @@ def mark_failed_running_task(prog: dict, error: str) -> None:
         set_task(prog, task_name, "failed", error=error[:500])
 
 
+def mark_juan_done(prog: dict) -> None:
+    for key in ("error", "resume_at", "cancelled"):
+        prog.pop(key, None)
+    for task in prog.get("tasks", {}).values():
+        if task.get("state") == "done":
+            task.pop("error", None)
+            task.pop("resume_at", None)
+    prog["step"] = "done"
+
+
 def mark_cancelled_tasks(prog: dict) -> None:
     for name in DUAL_TASKS:
         task = task_state(prog, name)
@@ -1169,7 +1179,7 @@ def run_juan(job: dict, juan: int) -> None:
             git_commit_push(job, juan)
             set_task(prog, "commit", "done")
 
-    prog["step"] = "done"
+    mark_juan_done(prog)
     save_job(job)
 
 

@@ -635,6 +635,7 @@ __WORK_OPTIONS__
       return `<span class="chip ${cls}" title="${esc(detail)}"><span class="dot"></span>${esc(taskLabels[name] || name)}${esc(progress)}${state === "running" ? esc(model) : ""}</span>`;
     }
     function latestVolumeError(job, volume, juan) {
+      if (volume?.step === "done") return "";
       if (volume?.error) return `卷 ${juan}: ${volume.error}`;
       if (job?.state === "failed" && job?.error?.includes(String(juan))) return `卷 ${juan}: ${job.error}`;
       return "";
@@ -665,8 +666,9 @@ __WORK_OPTIONS__
       const volume = (job.progress || {})[String(juan)] || {step: "queued", tasks: {}};
       const step = volume.step || "queued";
       const state = volume.cancelled ? "cancelled"
-        : (["waiting_model", "waiting_limit", "waiting"].includes(step) ? step : (volume.error ? "failed" : step));
-      const chips = taskOrder.map(name => chipFor(name, (volume.tasks || {})[name], volume.error || "")).join("");
+        : (step === "done" ? "done" : (["waiting_model", "waiting_limit", "waiting"].includes(step) ? step : (volume.error ? "failed" : step)));
+      const activeError = state === "done" ? "" : (volume.error || "");
+      const chips = taskOrder.map(name => chipFor(name, (volume.tasks || {})[name], activeError)).join("");
       const actions = [];
       if (state !== "done") {
         actions.push(`<button class="force-btn" type="button" data-action="force-volume" data-job="${esc(job.id)}" data-juan="${esc(juan)}">強制啟動</button>`);
@@ -677,7 +679,7 @@ __WORK_OPTIONS__
         actions.push(`<button class="retry-btn" type="button" data-action="retry-volume" data-job="${esc(job.id)}" data-juan="${esc(juan)}">重試</button>`);
       }
       const actionHtml = actions.length ? `<div class="volume-actions">${actions.join("")}</div>` : "<span></span>";
-      const error = volume.error ? `<span class="volume-error">${esc(volume.error)}</span>` : "";
+      const error = activeError ? `<span class="volume-error">${esc(activeError)}</span>` : "";
       const events = modelEventsDetail(volume);
       return `<div class="volume-row ${volumeStateClass(state)}">
         <strong>卷 ${esc(juan)}</strong>${statusPill(state)}${actionHtml}<div class="volume-chips">${chips}</div>${error}${events}

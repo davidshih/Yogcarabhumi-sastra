@@ -225,6 +225,33 @@ class RunnerParallelTests(unittest.TestCase):
         self.assertEqual(checks["state"], "failed")
         self.assertEqual(checks["error"], "bad range")
 
+    def test_mark_juan_done_clears_stale_error_state(self):
+        prog = {
+            "step": "checks",
+            "error": "old error",
+            "resume_at": "2099-01-01T00:00:00+00:00",
+            "tasks": {
+                "checks": {
+                    "state": "done",
+                    "error": "old check error",
+                    "resume_at": "2099-01-01T00:00:00+00:00",
+                },
+                "draft_codex": {
+                    "state": "done",
+                    "reason": "kept for history",
+                },
+            },
+        }
+
+        runner.mark_juan_done(prog)
+
+        self.assertEqual(prog["step"], "done")
+        self.assertNotIn("error", prog)
+        self.assertNotIn("resume_at", prog)
+        self.assertNotIn("error", prog["tasks"]["checks"])
+        self.assertNotIn("resume_at", prog["tasks"]["checks"])
+        self.assertEqual(prog["tasks"]["draft_codex"]["reason"], "kept for history")
+
 
 if __name__ == "__main__":
     unittest.main()

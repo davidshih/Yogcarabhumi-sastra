@@ -18,6 +18,7 @@ class RunnerParallelTests(unittest.TestCase):
         self.tmp = tempfile.TemporaryDirectory()
         base = Path(self.tmp.name)
         self.jobs = base / "jobs"
+        self.archived_jobs = self.jobs / "archive"
         self.locks = base / "locks"
         self.status = base / "docs" / "status.json"
         self.jobs.mkdir()
@@ -25,6 +26,7 @@ class RunnerParallelTests(unittest.TestCase):
         self.status.parent.mkdir()
         self.patches = [
             mock.patch.object(runner, "JOBS_DIR", self.jobs),
+            mock.patch.object(runner, "ARCHIVED_JOBS_DIR", self.archived_jobs),
             mock.patch.object(runner, "LOCKS_DIR", self.locks),
             mock.patch.object(runner, "STATUS_JSON", self.status),
         ]
@@ -251,6 +253,54 @@ class RunnerParallelTests(unittest.TestCase):
         self.assertNotIn("error", prog["tasks"]["checks"])
         self.assertNotIn("resume_at", prog["tasks"]["checks"])
         self.assertEqual(prog["tasks"]["draft_codex"]["reason"], "kept for history")
+
+    def test_archive_job_moves_completed_job_out_of_active_queue(self):
+        job = self.job([1], parallel=2)
+        job["state"] = "done"
+        job["progress"] = {"1": {"step": "done"}}
+        runner.save_job(job)
+
+        ok, message = runner.archive_job(job["id"])
+
+        self.assertTrue(ok, message)
+        self.assertFalse((self.jobs / f"{job['id']}.json").exists())
+        archived = self.archived_jobs / f"{job['id']}.json"
+        self.assertTrue(archived.exists())
+        saved = runner.load_job(archived)
+        self.assertEqual(saved["state"], "done")
+        self.assertIn("archived_at", saved)
+        status = runner.load_job(self.status)
+        self.assertEqual(status["jobs"], [])
+
+    def test_archive_job_rejects_active_job(self):
+        job = self.job([1], parallel=2)
+        job["state"] = "running"
+        runner.save_job(job)
+
+        ok, message = runner.archive_job(job["id"])
+
+        self.assertFalse(ok)
+        self.assertEqual(message, "只能封存已完成或已取消的批次")
+        self.assertTrue((self.jobs / f"{job['id']}.json").exists())
+
+    def test_build_site_index_links_generated_work_indexes(self):
+        base = Path(self.tmp.name)
+        docs = base / "docs"
+        (docs / "T1558").mkdir(parents=True)
+        (docs / "T1558" / "index.html").write_text("work index", encoding="utf-8")
+        works = base / "works.json"
+        works.write_text(
+            '{"works":[{"id":"T1558","title":"阿毘達磨俱舍論","subtitle":"世親 / 玄奘"},'
+            '{"id":"T1585","title":"成唯識論","subtitle":"護法 / 玄奘"}]}',
+            encoding="utf-8",
+        )
+
+        with mock.patch.object(runner, "ROOT", base), mock.patch.object(runner, "WORKS_PATH", works):
+            runner.build_site_index()
+
+        html = (docs / "index.html").read_text(encoding="utf-8")
+        self.assertIn('<a href="T1558/index.html">阿毘達磨俱舍論（T1558）</a>', html)
+        self.assertIn("成唯識論（T1585）<span>護法 / 玄奘・準備中</span>", html)
 
 
 if __name__ == "__main__":

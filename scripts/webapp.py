@@ -430,7 +430,7 @@ FORM_PAGE = """<!doctype html>
       gap: 6px;
       flex-wrap: wrap;
     }
-    .retry-btn, .approve-btn, .force-btn {
+    .retry-btn, .approve-btn, .force-btn, .archive-btn {
       min-height: 34px;
       border-radius: 8px;
       padding: 0 12px;
@@ -445,6 +445,11 @@ FORM_PAGE = """<!doctype html>
       background: rgba(34, 197, 94, .16);
       border-color: rgba(34, 197, 94, .5);
       color: var(--ops-accent);
+    }
+    .archive-btn {
+      color: var(--ops-muted);
+      border-color: var(--ops-border);
+      background: var(--ops-surface-2);
     }
     .approve-btn {
       background: var(--ops-accent);
@@ -696,6 +701,9 @@ __WORK_OPTIONS__
       if (!["done", "cancelled"].includes(job.state)) {
         actions.push(`<button class="cancel-btn" type="button" data-action="cancel" data-job="${esc(job.id)}">取消</button>`);
       }
+      if (["done", "cancelled", "deleted"].includes(job.state)) {
+        actions.push(`<button class="archive-btn" type="button" data-action="archive" data-job="${esc(job.id)}">封存批次</button>`);
+      }
       return `<div class="job-actions">${actions.join("")}</div>`;
     }
     function jobCard(job) {
@@ -926,6 +934,8 @@ class Handler(SimpleHTTPRequestHandler):
                 ok, message = runner.retry_job(job_id)
             elif action == "approve":
                 ok, message = runner.approve_job(job_id)
+            elif action == "archive":
+                ok, message = runner.archive_job(job_id)
             else:
                 self.send_error(404)
                 return

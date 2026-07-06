@@ -40,6 +40,7 @@ from check_translation_terms import validate_glossary, check_translation_terms a
 from check_translation_coverage import parse_ranges, data_line_ids, check_ranges
 
 JOBS_DIR = ROOT / "jobs"
+ARCHIVED_JOBS_DIR = JOBS_DIR / "archive"
 LOCKS_DIR = ROOT / "locks"
 PROMPTS_DIR = ROOT / "prompts"
 WORKS_PATH = ROOT / "works.json"
@@ -210,6 +211,56 @@ def publish_status() -> None:
             job.pop("pid", None)
             jobs.append(job)
         atomic_write(STATUS_JSON, json.dumps({"generated": now_iso(), "jobs": jobs}, ensure_ascii=False))
+
+
+def build_site_index() -> None:
+    works = json.loads(WORKS_PATH.read_text(encoding="utf-8"))["works"]
+    items = []
+    for work in works:
+        work_id = work["id"]
+        title = f"{work['title']}（{work_id}）"
+        if work.get("scope"):
+            title = f"{title}{work['scope']}"
+        subtitle = work.get("subtitle", "")
+        work_index = ROOT / "docs" / work_id / "index.html"
+        if work_index.exists():
+            items.append(
+                f'      <li class="level-0"><a href="{work_id}/index.html">{title}</a>'
+                f"<span>{subtitle}</span></li>"
+            )
+        else:
+            note = f"{subtitle}・準備中" if subtitle else "準備中"
+            items.append(f'      <li class="level-0">{title}<span>{note}</span></li>')
+    out = ROOT / "docs" / "index.html"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(f"""<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>佛典白話翻譯</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="theme.js"></script>
+</head>
+<body>
+  <div class="topbar">
+    <a class="topbar-brand" href="index.html">佛典白話翻譯</a>
+    <a class="topbar-link" href="status.html">翻譯進度</a>
+    <button class="theme-toggle" type="button" aria-label="切換深色或淺色模式"></button>
+  </div>
+  <header class="site-header">
+    <div class="kicker">CBETA 白話對照</div>
+    <h1>佛典白話翻譯</h1>
+    <p>以 CBETA 底本逐段白話翻譯，經術語、義理、平行文獻三線審校。</p>
+  </header>
+  <main class="index-list">
+    <ol>
+{chr(10).join(items)}
+    </ol>
+  </main>
+</body>
+</html>
+""", encoding="utf-8")
 
 
 def log(job: dict, msg: str) -> None:
@@ -413,6 +464,27 @@ def cancel_job(job_id: str) -> tuple[bool, str]:
         # running / waiting: raise the flag; the runner cancels at the next section
         cancel_flag(job_id).touch()
         return True, "cancel requested; stops at the next section"
+
+
+def archive_job(job_id: str) -> tuple[bool, str]:
+    path = JOBS_DIR / f"{job_id}.json"
+    if not path.exists():
+        return False, "job not found"
+    with flock("jobs"):
+        job = load_job(path)
+        state = job.get("state")
+        if state not in ("done", "cancelled", "deleted"):
+            return False, "只能封存已完成或已取消的批次"
+        job["archived_at"] = now_iso()
+        ARCHIVED_JOBS_DIR.mkdir(parents=True, exist_ok=True)
+        atomic_write(ARCHIVED_JOBS_DIR / f"{job_id}.json",
+                     json.dumps(job, ensure_ascii=False, indent=1))
+        path.unlink()
+        cancel_flag(job_id).unlink(missing_ok=True)
+        for stale in JOBS_DIR.glob(f"{job_id}.*.cancel"):
+            stale.unlink(missing_ok=True)
+        publish_status()
+    return True, "已封存批次"
 
 
 def reset_juan(prog: dict) -> None:
@@ -999,6 +1071,7 @@ def build_html(job: dict, md_path: Path) -> None:
         bsh.main()  # refresh section pages + index (includes new translation link)
     else:
         build_simple_work_index(job["work"])
+    build_site_index()
     import build_search_index
     build_search_index.main()
 

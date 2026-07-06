@@ -277,7 +277,7 @@ FORM_PAGE = """<!doctype html>
     }
     .volume-row {
       display: grid;
-      grid-template-columns: 3.6em 7.4em minmax(430px, 1fr) minmax(170px, auto);
+      grid-template-columns: 3.6em 7.4em minmax(170px, auto) minmax(360px, 1fr);
       align-items: center;
       gap: 4px 6px;
       border: 1px solid var(--ops-border);
@@ -441,9 +441,12 @@ FORM_PAGE = """<!doctype html>
     }
     .job-log pre { font-size:.75rem; color:var(--ops-muted); white-space:pre-wrap; max-height:14em; overflow-y:auto; margin:0; }
     .job-log summary { cursor:pointer; font-size:.85rem; color:var(--ops-muted); }
-    @media (max-width: 840px) {
+    @media (max-width: 1100px) {
       .ops-grid {
         grid-template-columns: 1fr;
+      }
+      .ops-panel {
+        position: static;
       }
       .job-top, .volume-top {
         align-items: flex-start;
@@ -620,7 +623,7 @@ __WORK_OPTIONS__
       const error = volume.error ? `<span class="volume-error">${esc(volume.error)}</span>` : "";
       const events = modelEvents(volume);
       return `<div class="volume-row ${volumeStateClass(state)}">
-        <strong>卷 ${esc(juan)}</strong>${statusPill(state)}<div class="volume-chips">${chips}</div>${actionHtml}${error}${events}
+        <strong>卷 ${esc(juan)}</strong>${statusPill(state)}${actionHtml}<div class="volume-chips">${chips}</div>${error}${events}
       </div>`;
     }
     function jobActions(job) {

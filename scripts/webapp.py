@@ -112,7 +112,7 @@ FORM_PAGE = """<!doctype html>
       color: var(--ops-text);
     }
     [hidden] { display: none !important; }
-    .job-form input[type=text] {
+    .job-form input[type=text], .job-form input[type=number], .job-form select {
       min-height: 44px;
       border: 1px solid var(--ops-border);
       border-radius: 8px;
@@ -121,7 +121,8 @@ FORM_PAGE = """<!doctype html>
       background: var(--ops-bg);
       color: var(--ops-text);
     }
-    .job-form input[type=text]:focus, button:focus-visible {
+    .job-form input[type=text]:focus, .job-form input[type=number]:focus,
+    .job-form select:focus, button:focus-visible {
       outline: 3px solid var(--ops-ring);
       outline-offset: 2px;
     }
@@ -329,6 +330,12 @@ FORM_PAGE = """<!doctype html>
       font-size: .8rem;
       overflow-wrap: anywhere;
     }
+    .volume-model-events {
+      grid-column: 1 / -1;
+      color: var(--ops-muted);
+      font-size: .78rem;
+      overflow-wrap: anywhere;
+    }
     .chip { justify-content: center; }
     .stage-config summary {
       cursor: pointer;
@@ -440,6 +447,9 @@ __WORK_OPTIONS__
           <label>卷號範圍（同一部經可多卷）
             <input type="text" name="juans" placeholder="13-15 或 13,15" required>
           </label>
+          <label>同時處理卷數
+            <input type="number" name="parallel_juans" min="1" max="5" value="2" required>
+          </label>
           <details class="stage-config" open>
             <summary>各階段模型（主用 → 備援）</summary>
             <div class="profile-row">
@@ -536,6 +546,13 @@ __WORK_OPTIONS__
         .filter(Boolean).join(" ｜ ");
       return `<span class="chip ${cls}" title="${esc(detail)}"><span class="dot"></span>${esc(taskLabels[name] || name)}${esc(progress)}${state === "running" ? esc(model) : ""}</span>`;
     }
+    function modelEvents(volume) {
+      const events = volume.model_events || [];
+      if (!events.length) return "";
+      return `<span class="volume-model-events">模型切換：${events.map(e =>
+        `${esc(e.stage)} ${esc(e.from)}→${esc(e.to)}（${esc(e.reason || "")}）`
+      ).join("；")}</span>`;
+    }
     function volumeRow(job, juan) {
       const volume = (job.progress || {})[String(juan)] || {step: "queued", tasks: {}};
       const state = volume.cancelled ? "cancelled" : (volume.error ? "failed" : volume.step || "queued");
@@ -549,8 +566,9 @@ __WORK_OPTIONS__
         action = "<span></span>";
       }
       const error = volume.error ? `<span class="volume-error">${esc(volume.error)}</span>` : "";
+      const events = modelEvents(volume);
       return `<div class="volume-row ${volumeStateClass(state)}">
-        <strong>卷 ${esc(juan)}</strong>${statusPill(state)}${chips}${action}${error}
+        <strong>卷 ${esc(juan)}</strong>${statusPill(state)}${chips}${action}${error}${events}
       </div>`;
     }
     function jobActions(job) {
@@ -579,7 +597,7 @@ __WORK_OPTIONS__
         <div class="job-top">
           <div class="job-title">
             <strong>${esc(job.work)} 卷 ${(job.juans || []).map(esc).join(", ")}</strong>
-            <span class="job-id">${esc(job.id)}</span>
+            <span class="job-id">${esc(job.id)} · parallel=${esc(job.parallel_juans || 2)}</span>
           </div>
           <div>${statusPill(job.state, resume)}${jobActions(job)}</div>
         </div>
@@ -807,6 +825,7 @@ class Handler(SimpleHTTPRequestHandler):
             else:
                 work, _ = runner.parse_link(link)
             juans = runner.parse_juans(juans_spec) if juans_spec else None
+            parallel_juans = runner.parse_parallel_juans(form.get("parallel_juans", ["2"])[0])
             runner.get_work(work)
             if not juans:
                 raise ValueError("請給卷號範圍")
@@ -838,7 +857,7 @@ class Handler(SimpleHTTPRequestHandler):
             "needs_approval": needs_approval,
             "created": runner.now_iso(), "updated": runner.now_iso(),
             "pid": None, "resume_at": None, "error": None,
-            "push": True, "summary": False, "progress": {},
+            "push": True, "summary": False, "parallel_juans": parallel_juans, "progress": {},
         }
         runner.JOBS_DIR.mkdir(exist_ok=True)
         runner.save_job(job)

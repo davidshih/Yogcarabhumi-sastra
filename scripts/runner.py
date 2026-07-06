@@ -22,7 +22,7 @@ import threading
 import time
 import uuid
 import shutil
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, wait
 from contextlib import contextmanager
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -47,7 +47,10 @@ STATUS_JSON = ROOT / "docs" / "status.json"
 REVIEW_PASSES = ("review_terms", "review_doctrine", "review_parallel")
 POLL_SECONDS = 10
 MODEL_WAIT_FALLBACK_MINUTES = 15
+DEFAULT_PARALLEL_JUANS = 2
+MAX_PARALLEL_JUANS = 5
 JOB_WRITE_LOCK = threading.RLock()
+PUBLISH_LOCK = threading.RLock()
 VERSIONS_DIR = ROOT / "translations" / "versions"
 DUAL_TASKS = ("availability", "segment", "skeleton", "draft_codex", "draft_glm",
               "review", "checks", "repair", "html", "commit")
@@ -84,6 +87,9 @@ DUAL_ROUTING = {
 DUAL_STAGES = ("draft_codex", "draft_glm")
 QUEUES = llm.MODELS + ("mix", "dual") + llm.FAKE_MODELS + ("dual-echo",)
 WORK_ID_RE = re.compile(r"^[A-Za-z][A-Za-z0-9._-]*$")
+MODEL_GATE = threading.Condition()
+MODEL_ACTIVE = {model: 0 for model in llm.MODELS + llm.FAKE_MODELS}
+ACTIVE_JOB_PARALLEL: dict[str, int] = {}
 
 
 def work_info(work_id: str) -> dict:
@@ -109,14 +115,28 @@ def job_stages(job: dict) -> dict:
     return {**DEFAULT_STAGES, **(job.get("stages") or {})}
 
 
+def parse_parallel_juans(value) -> int:
+    try:
+        parallel = int(value)
+    except (TypeError, ValueError):
+        raise ValueError("parallel_juans must be an integer")
+    if not 1 <= parallel <= MAX_PARALLEL_JUANS:
+        raise ValueError(f"parallel_juans must be between 1 and {MAX_PARALLEL_JUANS}")
+    return parallel
+
+
+def job_parallel_juans(job: dict) -> int:
+    return parse_parallel_juans(job.get("parallel_juans", DEFAULT_PARALLEL_JUANS))
+
+
 def stage_fallback(job: dict, stage: str) -> str | None:
     if job["model"] == "dual-echo":
         return None
     return job_stages(job).get(stage, {}).get("fallback")
 
 
-def stage_model(job: dict, stage: str) -> str:
-    runtime = job.get("_stage_models", {})
+def stage_model(job: dict, stage: str, prog: dict | None = None) -> str:
+    runtime = (prog or {}).get("models", {})
     if stage in runtime:
         return runtime[stage]
     model = job["model"]
@@ -131,6 +151,10 @@ def stage_model(job: dict, stage: str) -> str:
 
 def is_dual(job: dict) -> bool:
     return job["model"] in ("dual", "dual-echo")
+
+
+def task_name_for_stage(stage: str) -> str:
+    return "review" if stage == "merge" else stage
 
 TRANSLATION_BLOCK_RE = re.compile(r"(Translation:\n<<<\n)(.*?)(\n?>>>)", re.DOTALL)
 NOTE_BLOCK_RE = re.compile(r"(Note:\n<<<\n)(.*?)(\n?>>>)", re.DOTALL)
@@ -190,9 +214,63 @@ def publish_status() -> None:
 
 def log(job: dict, msg: str) -> None:
     print(f"{now_iso()} [{job['id']}] {msg}", flush=True)
-    ring = job.setdefault("log", [])
-    ring.append(f"{now_iso()} {msg}")
-    del ring[:-50]  # keep only the last 50 entries; persisted by the next save_job
+    with JOB_WRITE_LOCK:
+        ring = job.setdefault("log", [])
+        ring.append(f"{now_iso()} {msg}")
+        del ring[:-50]  # keep only the last 50 entries; persisted by the next save_job
+
+
+def effective_model_limit() -> int:
+    return max(ACTIVE_JOB_PARALLEL.values(), default=DEFAULT_PARALLEL_JUANS)
+
+
+@contextmanager
+def model_gate(model: str):
+    if model not in MODEL_ACTIVE:
+        yield
+        return
+    with MODEL_GATE:
+        while MODEL_ACTIVE[model] >= effective_model_limit():
+            MODEL_GATE.wait()
+        MODEL_ACTIVE[model] += 1
+    try:
+        yield
+    finally:
+        with MODEL_GATE:
+            MODEL_ACTIVE[model] -= 1
+            MODEL_GATE.notify_all()
+
+
+def register_job_parallel(job_id: str, parallel: int) -> None:
+    with MODEL_GATE:
+        ACTIVE_JOB_PARALLEL[job_id] = parallel
+        MODEL_GATE.notify_all()
+
+
+def unregister_job_parallel(job_id: str) -> None:
+    with MODEL_GATE:
+        ACTIVE_JOB_PARALLEL.pop(job_id, None)
+        MODEL_GATE.notify_all()
+
+
+def run_llm_guarded(model: str, prompt: str, timeout: int = llm.TIMEOUT) -> llm.LLMResult:
+    with model_gate(model):
+        return llm.run_llm(model, prompt, timeout=timeout)
+
+
+def record_model_event(prog: dict | None, stage: str, primary: str, fallback: str,
+                       reason: str) -> None:
+    if prog is None:
+        return
+    event = {
+        "stage": stage,
+        "from": primary,
+        "to": fallback,
+        "reason": reason[:300],
+        "updated": now_iso(),
+    }
+    prog.setdefault("model_events", []).append(event)
+    task_state(prog, task_name_for_stage(stage)).setdefault("model_events", []).append(event)
 
 
 MODEL_STATUS_PATH = LOCKS_DIR / "model-status.json"  # not jobs/: that dir is globbed as jobs
@@ -429,9 +507,10 @@ def probe_dual_models(job: dict, juan: int, prog: dict) -> dict[str, str]:
     save_job(job)
     if job["model"] == "dual-echo":
         availability["models"] = {m: {"state": "available"} for m in ("codex", "glm", "claude")}
+        prog["models"] = {stage: "echo" for stage in ("segment", "draft_codex", "draft_glm", "merge", "repair")}
         set_task(prog, "availability", "done")
         save_job(job)
-        return {stage: "echo" for stage in ("segment", "draft_codex", "draft_glm", "merge", "repair")}
+        return prog["models"]
 
     stages = job_stages(job)
     wanted = {cfg.get(k) for cfg in stages.values() for k in ("primary", "fallback") if cfg.get(k)}
@@ -483,13 +562,12 @@ def probe_dual_models(job: dict, juan: int, prog: dict) -> dict[str, str]:
     resumes = [datetime.fromisoformat(s["resume_at"]) for s in statuses.values() if s.get("resume_at")]
     resume_at = (min(resumes) + timedelta(minutes=5)) if resumes else (
         datetime.now().astimezone() + timedelta(minutes=MODEL_WAIT_FALLBACK_MINUTES))
-    job["state"] = "waiting_model"
-    job["resume_at"] = resume_at.isoformat(timespec="seconds")
-    job["error"] = "所需模型均不可用，等待額度重置"
+    prog["resume_at"] = resume_at.isoformat(timespec="seconds")
+    prog["error"] = "所需模型均不可用，等待額度重置"
     prog["step"] = "waiting_model"
-    set_task(prog, "availability", "waiting", resume_at=job["resume_at"])
+    set_task(prog, "availability", "waiting", resume_at=prog["resume_at"])
     save_job(job)
-    raise JobHold(f"juan {juan}: no usable models, waiting until {job['resume_at']}")
+    raise JobHold(f"juan {juan}: no usable models, waiting until {prog['resume_at']}")
 
 
 def prompt_text(name: str, **vars) -> str:
@@ -607,36 +685,56 @@ def parse_llm_blocks(raw: str) -> tuple[str, str | None]:
 # ---------- pipeline steps ----------
 
 def llm_call(job: dict, prompt: str, stage: str, juan: int | None = None) -> str:
+    prog = job["progress"].setdefault(str(juan), {}) if juan is not None else None
+    task_name = task_name_for_stage(stage)
+
     def on_wait(resume_at):
-        job["state"] = "waiting_limit"
-        job["resume_at"] = resume_at.isoformat(timespec="seconds")
+        if prog is not None:
+            prog["step"] = "waiting_limit"
+            prog["resume_at"] = resume_at.isoformat(timespec="seconds")
+            set_task(prog, task_name, "waiting", model=model, resume_at=prog["resume_at"])
+        else:
+            job["state"] = "waiting_limit"
+            job["resume_at"] = resume_at.isoformat(timespec="seconds")
         save_job(job)
 
     check_cancel(job, juan)
-    model = stage_model(job, stage)
+    model = stage_model(job, stage, prog)
     fallback = stage_fallback(job, stage)
     if fallback and fallback != model:
         # one shot on the primary; any failure switches this stage to the fallback
         try:
-            result = llm.run_llm(model, prompt)
+            result = run_llm_guarded(model, prompt)
         except (llm.LLMError, FileNotFoundError) as err:
             result = llm.LLMResult(ok=False, error=str(err))
         if result.ok:
             return result.text
         log(job, f"[{model}] {stage} failed ({result.error[:160]}), falling back to {fallback}")
-        job.setdefault("_stage_models", {})[stage] = fallback
+        record_model_event(prog, stage, model, fallback, result.error)
+        if prog is not None:
+            prog.setdefault("models", {})[stage] = fallback
+            set_task(prog, task_name, task_state(prog, task_name).get("state", "running"),
+                     model=fallback)
+            save_job(job)
         model = fallback
     elif stage in DUAL_STAGES and is_dual(job):
         # draft without fallback: one shot, then skip this draft (the other one carries)
         try:
-            result = llm.run_llm(model, prompt)
+            result = run_llm_guarded(model, prompt)
         except (llm.LLMError, FileNotFoundError) as err:
             result = llm.LLMResult(ok=False, error=str(err))
         if result.ok:
             return result.text
         raise OptionalModelUnavailable(f"{model} unavailable during {stage}: {result.error[:300]}")
-    text = llm.call_with_limit_retry(model, prompt, on_wait=on_wait, log=lambda m: log(job, m))
-    if job["state"] == "waiting_limit":
+    text = llm.call_with_limit_retry(model, prompt, on_wait=on_wait, log=lambda m: log(job, m),
+                                     run_fn=run_llm_guarded)
+    if prog is not None and task_state(prog, task_name).get("state") == "waiting":
+        set_task(prog, task_name, "running", model=model)
+        prog.pop("resume_at", None)
+        if prog.get("step") == "waiting_limit":
+            prog["step"] = stage
+        save_job(job)
+    elif job["state"] == "waiting_limit":
         job["state"] = "running"
         job["resume_at"] = None
         save_job(job)
@@ -851,6 +949,7 @@ def git_commit_push(job: dict, juan: int) -> None:
 
 
 def run_juan(job: dict, juan: int) -> None:
+    check_cancel(job, juan)
     work = job["work"]
     paths = juan_paths(work, juan)
     prog = job["progress"].setdefault(str(juan), {})
@@ -864,10 +963,9 @@ def run_juan(job: dict, juan: int) -> None:
     resume_step = prog.get("step")  # step saved before a crash/restart, if any
 
     if is_dual(job):
-        stage_models = probe_dual_models(job, juan, prog)
-        job["_stage_models"] = stage_models
+        probe_dual_models(job, juan, prog)
     else:
-        job["_stage_models"] = {}
+        prog["models"] = {}
 
     prog["step"] = "fetch"
     save_job(job)
@@ -877,7 +975,7 @@ def run_juan(job: dict, juan: int) -> None:
 
     if not paths["tsv"].exists() and not paths["md"].exists():
         # segmentation only feeds the skeleton; an existing md makes it moot
-        set_task(prog, "segment", "running", model=stage_model(job, "segment"))
+        set_task(prog, "segment", "running", model=stage_model(job, "segment", prog))
         prog["step"] = "segment"
         save_job(job)
         llm_segment(job, juan, lines, paths["tsv"])
@@ -906,13 +1004,13 @@ def run_juan(job: dict, juan: int) -> None:
             if task.get("state") == "done":
                 return
             reset_task_progress(task, resume_step, stage)
-            set_task(prog, stage, "running", model=stage_model(job, stage))
+            set_task(prog, stage, "running", model=stage_model(job, stage, prog))
             prog["step"] = stage
             save_job(job)
             try:
                 translate_sections(job, juan, draft, task, stage=stage)
             except OptionalModelUnavailable as err:
-                set_task(prog, stage, "skipped", model=stage_model(job, stage), reason=str(err)[:500])
+                set_task(prog, stage, "skipped", model=stage_model(job, stage, prog), reason=str(err)[:500])
                 save_job(job)
                 return
             except Exception as err:
@@ -922,7 +1020,7 @@ def run_juan(job: dict, juan: int) -> None:
             set_task(prog, stage, "done")
             save_job(job)
 
-        draft_stages = [stage for stage in DUAL_STAGES if stage in job["_stage_models"]]
+        draft_stages = [stage for stage in DUAL_STAGES if stage in prog.get("models", {})]
         if len(draft_stages) > 1:
             with ThreadPoolExecutor(max_workers=len(draft_stages)) as pool:
                 futures = [pool.submit(run_draft, stage) for stage in draft_stages]
@@ -938,7 +1036,7 @@ def run_juan(job: dict, juan: int) -> None:
         review_task = task_state(prog, "review")
         if review_task.get("state") != "done":
             reset_task_progress(review_task, resume_step, "merge")
-            set_task(prog, "review", "running", model=stage_model(job, "merge"))
+            set_task(prog, "review", "running", model=stage_model(job, "merge", prog))
             prog["step"] = "merge"
             save_job(job)
             try:
@@ -977,7 +1075,7 @@ def run_juan(job: dict, juan: int) -> None:
         prog["repaired"] = True
         repair_task = task_state(prog, "repair")
         repair_task["section"] = 0
-        set_task(prog, "repair", "running", model=stage_model(job, "repair"))
+        set_task(prog, "repair", "running", model=stage_model(job, "repair", prog))
         save_job(job)
         translate_sections(job, juan, paths["md"], repair_task, only_titles=bad_titles,
                            extra=("重要：前次譯文未通過術語檢查。以下每一條「lacks one of」後列出的詞，"
@@ -991,92 +1089,169 @@ def run_juan(job: dict, juan: int) -> None:
         raise RuntimeError(f"juan {juan} checks failed: " + "; ".join(issues[:10]))
     set_task(prog, "checks", "done")
 
-    set_task(prog, "html", "running")
-    prog["step"] = "html"
-    save_job(job)
-    build_html(job, paths["md"])
-    set_task(prog, "html", "done")
+    with PUBLISH_LOCK:
+        with flock("publish"):
+            set_task(prog, "html", "running")
+            prog["step"] = "html"
+            save_job(job)
+            build_html(job, paths["md"])
+            set_task(prog, "html", "done")
 
-    set_task(prog, "commit", "running")
-    prog["step"] = "commit"
-    save_job(job)
-    git_commit_push(job, juan)
-    set_task(prog, "commit", "done")
+            set_task(prog, "commit", "running")
+            prog["step"] = "commit"
+            save_job(job)
+            git_commit_push(job, juan)
+            set_task(prog, "commit", "done")
 
     prog["step"] = "done"
     save_job(job)
 
 
+def run_juan_with_retries(job: dict, juan: int) -> dict:
+    try:
+        run_juan(job, juan)
+        return {"state": "done", "juan": juan}
+    except JobHold as err:
+        log(job, str(err))
+        return {"state": "held", "juan": juan, "error": str(err)}
+    except VolumeCancelled:
+        prog = job["progress"].setdefault(str(juan), {})
+        prog["cancelled"] = True
+        prog["step"] = "cancelled"
+        mark_cancelled_tasks(prog)
+        cancel_flag(job["id"], juan).unlink(missing_ok=True)
+        save_job(job)
+        log(job, f"juan {juan} cancelled by user")
+        return {"state": "cancelled", "juan": juan}
+    except JobCancelled:
+        log(job, "job cancelled by user")
+        return {"state": "job_cancelled", "juan": juan}
+    except Exception as err:  # noqa: BLE001 — job must survive a bad juan
+        prog = job["progress"].setdefault(str(juan), {})
+        raw_retried = prog.get("auto_retried", 0)
+        retried = int(raw_retried) if isinstance(raw_retried, int) else int(bool(raw_retried))
+        while retried < 2:
+            retried += 1
+            prog["auto_retried"] = retried
+            prog.pop("error", None)
+            prog.pop("repaired", None)  # fresh repair budget on each rerun
+            prog.pop("resume_at", None)
+            for task in prog.get("tasks", {}).values():
+                if task.get("state") == "failed":
+                    task["state"] = "pending"
+                    task.pop("error", None)
+            if retried >= 2:
+                prog["force_fallback"] = True  # probe_dual_models prefers fallbacks
+            group = "備援模型組" if prog.get("force_fallback") else "同組模型"
+            save_job(job)
+            log(job, f"juan {juan} failed ({str(err)[:200]}); auto-retry #{retried} 用{group}")
+            try:
+                run_juan(job, juan)
+                return {"state": "done", "juan": juan}
+            except JobHold as err2:
+                log(job, str(err2))
+                return {"state": "held", "juan": juan, "error": str(err2)}
+            except VolumeCancelled:
+                prog["cancelled"] = True
+                prog["step"] = "cancelled"
+                mark_cancelled_tasks(prog)
+                cancel_flag(job["id"], juan).unlink(missing_ok=True)
+                save_job(job)
+                log(job, f"juan {juan} cancelled by user")
+                return {"state": "cancelled", "juan": juan}
+            except JobCancelled:
+                log(job, "job cancelled by user")
+                return {"state": "job_cancelled", "juan": juan}
+            except Exception as err2:  # noqa: BLE001
+                err = err2
+        prog["error"] = str(err)[:500]
+        save_job(job)
+        log(job, f"juan {juan} FAILED after {retried} retries: {err}")
+        return {"state": "failed", "juan": juan, "error": str(err)}
+
+
+def runnable_juans(job: dict) -> list[int]:
+    juans = []
+    for juan in job["juans"]:
+        prog = job["progress"].setdefault(str(juan), {})
+        if prog.get("cancelled") or prog.get("step") in ("cancelled", "done"):
+            continue
+        prog.setdefault("step", "queued")
+        juans.append(juan)
+    return juans
+
+
+def earliest_resume(progress: dict) -> str | None:
+    resumes = [p.get("resume_at") for p in progress.values() if p.get("resume_at")]
+    return min(resumes) if resumes else None
+
+
 def run_job(job: dict) -> None:
+    parallel = job_parallel_juans(job)
+    register_job_parallel(job["id"], parallel)
+    try:
+        run_job_registered(job, parallel)
+    finally:
+        unregister_job_parallel(job["id"])
+
+
+def run_job_registered(job: dict, parallel: int) -> None:
     job["state"] = "running"
     job["pid"] = os.getpid()
     job["resume_at"] = None
     job["error"] = None
+    job["parallel_juans"] = parallel
+    juans = runnable_juans(job)
     save_job(job)
     if job.get("summary"):
         log(job, "summary: not implemented")
     failed = []
-    held = False
-    for juan in job["juans"]:
-        if job["progress"].get(str(juan), {}).get("cancelled"):
-            continue
-        try:
-            run_juan(job, juan)
-        except JobHold as err:
-            held = True
-            log(job, str(err))
-            break
-        except VolumeCancelled:
-            prog = job["progress"].setdefault(str(juan), {})
-            prog["cancelled"] = True
-            prog["step"] = "cancelled"
-            mark_cancelled_tasks(prog)
-            cancel_flag(job["id"], juan).unlink(missing_ok=True)
-            save_job(job)
-            log(job, f"juan {juan} cancelled by user")
-            continue  # the rest of the batch keeps going
-        except JobCancelled:
-            cancel_flag(job["id"]).unlink(missing_ok=True)
-            job["state"] = "cancelled"
-            job["error"] = None
-            save_job(job)
-            log(job, "job cancelled by user")
-            return
-        except Exception as err:  # noqa: BLE001 — job must survive a bad juan
-            prog = job["progress"].setdefault(str(juan), {})
-            # up to two automatic retries: #1 same model group, #2 forced fallback.
-            # auto_retried is an int counter (old data may store bool True -> 1).
-            retried = int(bool(prog.get("auto_retried")))
-            while retried < 2:
-                retried += 1
-                prog["auto_retried"] = retried
-                prog.pop("error", None)
-                prog.pop("repaired", None)  # fresh repair budget on each rerun
-                for task in prog.get("tasks", {}).values():
-                    if task.get("state") == "failed":
-                        task["state"] = "pending"
-                        task.pop("error", None)
-                if retried >= 2:
-                    prog["force_fallback"] = True  # probe_dual_models prefers fallbacks
-                group = "備援模型組" if prog.get("force_fallback") else "同組模型"
-                save_job(job)
-                log(job, f"juan {juan} failed ({str(err)[:200]}); auto-retry #{retried} 用{group}")
-                try:
-                    run_juan(job, juan)
+    held = []
+    job_cancelled = False
+    next_idx = 0
+    active = {}
+    with ThreadPoolExecutor(max_workers=parallel) as pool:
+        while next_idx < len(juans) or active:
+            while not job_cancelled and next_idx < len(juans) and len(active) < parallel:
+                if cancel_flag(job["id"]).exists():
+                    job_cancelled = True
                     break
-                except (JobHold, JobCancelled, VolumeCancelled):
-                    raise
-                except Exception as err2:  # noqa: BLE001
-                    err = err2
-            else:
-                failed.append(juan)
-                prog["error"] = str(err)[:500]
-                log(job, f"juan {juan} FAILED after {retried} retries: {err}")
-    if held:
+                juan = juans[next_idx]
+                next_idx += 1
+                active[pool.submit(run_juan_with_retries, job, juan)] = juan
+            if not active:
+                break
+            done, _ = wait(active, return_when=FIRST_COMPLETED)
+            for future in done:
+                active.pop(future, None)
+                result = future.result()
+                state = result["state"]
+                if state == "failed":
+                    failed.append(result["juan"])
+                elif state == "held":
+                    held.append(result["juan"])
+                elif state == "job_cancelled":
+                    job_cancelled = True
+            if job_cancelled:
+                next_idx = len(juans)
+    if job_cancelled or cancel_flag(job["id"]).exists():
+        cancel_flag(job["id"]).unlink(missing_ok=True)
+        job["state"] = "cancelled"
+        job["error"] = None
+        save_job(job)
+        log(job, "job finished: cancelled")
         return
     cancel_flag(job["id"]).unlink(missing_ok=True)
-    job["state"] = "failed" if failed else "done"
-    job["error"] = f"juans failed: {failed}" if failed else None
+    if failed:
+        job["state"] = "failed"
+        job["error"] = f"juans failed: {failed}"
+    elif held:
+        job["state"] = "waiting_model"
+        job["resume_at"] = earliest_resume(job.get("progress", {}))
+        job["error"] = f"juans waiting: {held}"
+    else:
+        job["state"] = "done"
+        job["error"] = None
     save_job(job)
     log(job, f"job finished: {job['state']}")
 
@@ -1091,7 +1266,7 @@ def claimable(job: dict, model: str) -> bool:
         return True
     if state in ("running", "waiting_limit", "waiting_model"):
         pid = job.get("pid")
-        if pid == os.getpid():
+        if pid == os.getpid() and state == "running":
             return False  # owned by another thread in this process
         try:
             if pid:
@@ -1121,6 +1296,7 @@ def worker(model: str) -> None:
                 if wait > 0:
                     print(f"{now_iso()} [{job['id']}] resuming at {resume_at}", flush=True)
                     time.sleep(min(wait + 300, 3600))  # 5 min past the reset, chunked by the loop
+                    continue
             run_job(job)
         else:
             time.sleep(POLL_SECONDS)
@@ -1170,6 +1346,10 @@ def parse_link(link: str) -> tuple[str, int | None]:
 def cmd_enqueue(args) -> None:
     work = args.work
     juans = parse_juans(args.juans) if args.juans else None
+    try:
+        parallel_juans = parse_parallel_juans(args.parallel_juans)
+    except ValueError as err:
+        raise SystemExit(str(err))
     if args.link:
         work, link_juan = parse_link(args.link)
         if juans is None and link_juan:
@@ -1187,6 +1367,7 @@ def cmd_enqueue(args) -> None:
         "state": "queued", "created": now_iso(), "updated": now_iso(),
         "pid": None, "resume_at": None, "error": None,
         "push": not args.no_push, "summary": args.summary,
+        "parallel_juans": parallel_juans,
         "progress": {},
     }
     save_job(job)
@@ -1201,6 +1382,8 @@ def main() -> int:
     enq.add_argument("--link", help="CBETA link, e.g. https://cbetaonline.dila.edu.tw/zh/T1579_013")
     enq.add_argument("--juans", help="e.g. 13, 13-15, or 13,15")
     enq.add_argument("--model", required=True, choices=QUEUES)
+    enq.add_argument("--parallel-juans", type=int, default=DEFAULT_PARALLEL_JUANS,
+                     help=f"number of juans to process concurrently (1-{MAX_PARALLEL_JUANS})")
     enq.add_argument("--no-push", action="store_true")
     enq.add_argument("--summary", action="store_true", help="also build a summary page (not implemented)")
     sub.add_parser("run")

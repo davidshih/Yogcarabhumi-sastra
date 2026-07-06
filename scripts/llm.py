@@ -222,7 +222,7 @@ def run_llm(model: str, prompt: str, timeout: int = TIMEOUT) -> LLMResult:
     return classify_output(proc.returncode, stdout, proc.stderr, naive_tz)
 
 
-def call_with_limit_retry(model: str, prompt: str, on_wait=None, log=print) -> str:
+def call_with_limit_retry(model: str, prompt: str, on_wait=None, log=print, run_fn=run_llm) -> str:
     """Blocking call that sleeps through rate limits and retries transient errors.
 
     on_wait(resume_at) is called before sleeping so callers can persist state.
@@ -231,7 +231,7 @@ def call_with_limit_retry(model: str, prompt: str, on_wait=None, log=print) -> s
     transient = 0
     limit_waits = 0
     while True:
-        result = run_llm(model, prompt)
+        result = run_fn(model, prompt)
         if result.ok:
             return result.text
         if result.limit:

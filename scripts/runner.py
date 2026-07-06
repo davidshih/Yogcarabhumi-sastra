@@ -43,7 +43,6 @@ JOBS_DIR = ROOT / "jobs"
 LOCKS_DIR = ROOT / "locks"
 PROMPTS_DIR = ROOT / "prompts"
 WORKS_PATH = ROOT / "works.json"
-GLOSSARY_PATH = ROOT / "translations" / "glossary" / "T1579-terms.json"
 STATUS_JSON = ROOT / "docs" / "status.json"
 REVIEW_PASSES = ("review_terms", "review_doctrine", "review_parallel")
 POLL_SECONDS = 10
@@ -84,21 +83,21 @@ DUAL_ROUTING = {
 }
 DUAL_STAGES = ("draft_codex", "draft_glm")
 QUEUES = llm.MODELS + ("mix", "dual") + llm.FAKE_MODELS + ("dual-echo",)
+WORK_ID_RE = re.compile(r"^[A-Za-z][A-Za-z0-9._-]*$")
 
 
 def work_info(work_id: str) -> dict:
+    if not WORK_ID_RE.fullmatch(work_id):
+        raise ValueError(f"無效的經典代號：{work_id}")
     works = json.loads(WORKS_PATH.read_text(encoding="utf-8"))["works"]
     match = next((w for w in works if w["id"] == work_id), None)
     if match is None:
-        raise ValueError(f"未收錄的經典：{work_id}（先在 works.json 建檔）")
-    return match
+        return {"id": work_id, "file_id": work_id, "title": work_id, "pipeline_ready": True}
+    return {**match, "pipeline_ready": True}
 
 
 def get_work(work_id: str) -> dict:
-    match = work_info(work_id)
-    if not match.get("pipeline_ready"):
-        raise ValueError(f"{work_id} {match['title']} 已建檔，但 pipeline 尚未支援（排程任務後續處理）")
-    return match
+    return work_info(work_id)
 
 
 def prompt_vars(job: dict) -> dict:
@@ -525,8 +524,15 @@ def juan_bounds(lines: dict[str, str]) -> tuple[str, str]:
 
 # ---------- glossary ----------
 
-def load_glossary() -> dict:
-    return json.loads(GLOSSARY_PATH.read_text(encoding="utf-8"))
+def glossary_path(work: str) -> Path:
+    return ROOT / "translations" / "glossary" / f"{work}-terms.json"
+
+
+def load_glossary(work: str) -> dict:
+    path = glossary_path(work)
+    if not path.exists():
+        return {"work": work, "terms": []}
+    return json.loads(path.read_text(encoding="utf-8"))
 
 
 def glossary_subset_json(glossary: dict, source: str) -> str:
@@ -542,12 +548,14 @@ def append_new_terms(raw_json: str, job: dict) -> None:
         log(job, "NEW_TERMS unparsable, discarded")
         return
     with flock("glossary"):
-        glossary = load_glossary()
+        glossary = load_glossary(job["work"])
         existing = {t["id"] for t in glossary["terms"]}
         added = [t for t in new_terms if isinstance(t, dict) and t.get("id") not in existing]
         candidate = {**glossary, "terms": glossary["terms"] + added}
         if added and not validate_glossary(candidate):
-            atomic_write(GLOSSARY_PATH, json.dumps(candidate, ensure_ascii=False, indent=2))
+            path = glossary_path(job["work"])
+            path.parent.mkdir(parents=True, exist_ok=True)
+            atomic_write(path, json.dumps(candidate, ensure_ascii=False, indent=2))
             log(job, f"glossary +{len(added)} terms: {[t['id'] for t in added]}")
         elif added:
             log(job, "NEW_TERMS failed glossary validation, discarded")
@@ -683,7 +691,7 @@ def llm_segment(job: dict, juan: int, lines: dict[str, str], tsv_path: Path) -> 
 def translate_sections(job: dict, juan: int, md_path: Path, prog: dict,
                        only_titles: set[str] | None = None, extra: str = "",
                        stage: str = "translate") -> None:
-    glossary = load_glossary()
+    glossary = load_glossary(job["work"])
     entries = bth.parse_entries(md_path.read_text(encoding="utf-8"))
     prog["sections_total"] = len(entries)
     for idx, entry in enumerate(entries):
@@ -705,7 +713,7 @@ def translate_sections(job: dict, juan: int, md_path: Path, prog: dict,
 
 def merge_sections(job: dict, juan: int, paths: dict[str, Path], prog: dict) -> None:
     """Review available drafts against the source and settle the final text."""
-    glossary = load_glossary()
+    glossary = load_glossary(job["work"])
     entries = bth.parse_entries(paths["md"].read_text(encoding="utf-8"))
     draft_a = bth.parse_entries(paths["draft_codex"].read_text(encoding="utf-8"))
     draft_b = (bth.parse_entries(paths["draft_glm"].read_text(encoding="utf-8"))
@@ -731,7 +739,7 @@ def merge_sections(job: dict, juan: int, paths: dict[str, Path], prog: dict) -> 
 
 
 def review_pass(job: dict, juan: int, md_path: Path, pass_name: str, prog: dict) -> None:
-    glossary = load_glossary()
+    glossary = load_glossary(job["work"])
     entries = bth.parse_entries(md_path.read_text(encoding="utf-8"))
     start_at = prog.get("section", 0)
     for idx, entry in enumerate(entries):
@@ -746,7 +754,7 @@ def review_pass(job: dict, juan: int, md_path: Path, pass_name: str, prog: dict)
         new_terms = NEW_TERMS_RE.search(raw)
         if pass_name == "review_terms" and new_terms:
             append_new_terms(new_terms.group(1), job)
-            glossary = load_glossary()
+            glossary = load_glossary(job["work"])
         if raw.strip() != "OK" and OUT_TRANSLATION_RE.search(raw):
             translation, note = parse_llm_blocks(raw)
             splice(md_path, idx, translation, note)
@@ -760,15 +768,63 @@ def run_checks(job: dict, juan: int, md_path: Path, data_path: Path,
                start: str, end: str) -> list[str]:
     issues = list(check_ranges(parse_ranges(md_path.read_text(encoding="utf-8")),
                                data_line_ids(data_path), start, end))
-    glossary = load_glossary()
-    issues += validate_glossary(glossary) or term_issues(
-        glossary, parse_term_entries(md_path.read_text(encoding="utf-8")))
+    glossary = load_glossary(job["work"])
+    if glossary.get("terms"):
+        issues += validate_glossary(glossary) or term_issues(
+            glossary, parse_term_entries(md_path.read_text(encoding="utf-8")))
     return issues
+
+
+def build_simple_work_index(work: str) -> None:
+    info = work_info(work)
+    pages = []
+    for md in sorted((ROOT / "translations").glob(f"{work}-*-baihua.md")):
+        try:
+            _work, juan = bth.infer_work_juan(md)
+        except ValueError:
+            continue
+        pages.append((juan, f"translations/{md.stem}.html"))
+    items = "\n".join(
+        f"      <li class=\"level-0\"><a href=\"{href}\">{info['title']} 卷第{juan}</a></li>"
+        for juan, href in pages
+    )
+    out_dir = ROOT / "docs" / work
+    out_dir.mkdir(parents=True, exist_ok=True)
+    (out_dir / "index.html").write_text(f"""<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{info['title']}（{work}）</title>
+  <link rel="stylesheet" href="../style.css">
+  <script src="../theme.js"></script>
+</head>
+<body>
+  <div class="topbar">
+    <a class="topbar-brand" href="../index.html">總目錄</a>
+    <button class="theme-toggle" type="button" aria-label="切換深色或淺色模式"></button>
+  </div>
+  <header class="site-header">
+    <div class="kicker">CBETA {work}</div>
+    <h1>{info['title']}</h1>
+    <p>{info.get('subtitle', '')}</p>
+  </header>
+  <main class="toc-list">
+    <ol>
+{items}
+    </ol>
+  </main>
+</body>
+</html>
+""", encoding="utf-8")
 
 
 def build_html(job: dict, md_path: Path) -> None:
     bth.build_page(md_path)  # latest + any archived versions (version selector)
-    bsh.main()  # refresh section pages + index (includes new translation link)
+    if job["work"] == "T1579":
+        bsh.main()  # refresh section pages + index (includes new translation link)
+    else:
+        build_simple_work_index(job["work"])
     import build_search_index
     build_search_index.main()
 
@@ -833,7 +889,9 @@ def run_juan(job: dict, juan: int) -> None:
         save_job(job)
         segments = read_segments(paths["tsv"])
         paths["md"].parent.mkdir(exist_ok=True)
-        atomic_write(paths["md"], render_skeleton(juan, start, end, segments, lines))
+        info = work_info(work)
+        atomic_write(paths["md"], render_skeleton(
+            juan, start, end, segments, lines, work=work, work_title=info["title"]))
         set_task(prog, "skeleton", "done")
         save_job(job)
 
@@ -1103,7 +1161,7 @@ def parse_juans(spec: str) -> list[int]:
 
 
 def parse_link(link: str) -> tuple[str, int | None]:
-    match = re.search(r"/([A-Z]+\d+[a-z]?)(?:_(\d{1,3}))?/?$", link.strip())
+    match = re.search(r"/([A-Za-z][A-Za-z0-9.-]*)(?:_(\d{1,3}))?/?$", link.strip())
     if not match:
         raise ValueError(f"cannot parse CBETA link: {link}")
     return match.group(1), int(match.group(2)) if match.group(2) else None

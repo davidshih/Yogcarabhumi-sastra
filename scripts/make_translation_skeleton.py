@@ -12,7 +12,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-LINE_ID_RE = re.compile(r"T30n1579_p(\d{4}[abc]\d{2})")
+LINE_ID_RE = re.compile(r"([A-Za-z0-9._-]+)_p(\d{4}[abc]\d{2})")
 CHINESE_DIGITS = ["零", "一", "二", "三", "四", "五", "六", "七", "八", "九"]
 
 
@@ -30,6 +30,7 @@ class LineTextParser(HTMLParser):
         super().__init__()
         self.lines: dict[str, list[str]] = {}
         self.current_line: str | None = None
+        self.current_prefix = ""
         self.skip_depth = 0
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
@@ -40,10 +41,13 @@ class LineTextParser(HTMLParser):
             line_id = attr.get("id")
             if line_id and LINE_ID_RE.fullmatch(line_id):
                 self.current_line = line_id
+                self.current_prefix = line_id.split("_p", 1)[0]
                 self.lines.setdefault(line_id, [])
             return
         if tag == "span" and "t" in classes and attr.get("l"):
-            self.current_line = f"T30n1579_p{attr['l']}"
+            if not self.current_prefix:
+                return
+            self.current_line = f"{self.current_prefix}_p{attr['l']}"
             self.lines.setdefault(self.current_line, [])
         if tag == "p" and self.current_line:
             self.lines.setdefault(self.current_line, [])
@@ -64,16 +68,27 @@ def line_key(line_id: str) -> tuple[int, int, int]:
     match = LINE_ID_RE.fullmatch(line_id)
     if not match:
         raise ValueError(f"Invalid line id: {line_id}")
-    label = match.group(1)
+    label = match.group(2)
     return int(label[:4]), {"a": 0, "b": 1, "c": 2}[label[4]], int(label[5:])
 
 
 def parse_range(raw_range: str) -> tuple[str, str]:
-    match = re.fullmatch(r"(T30n1579_p\d{4}[abc]\d{2})(?:-(?:T30n1579_)?p?(\d{4}[abc]\d{2}))?", raw_range)
-    if not match:
+    if "-" in raw_range:
+        start, end_part = raw_range.split("-", 1)
+    else:
+        start, end_part = raw_range, ""
+    if not LINE_ID_RE.fullmatch(start):
         raise ValueError(f"Invalid range: {raw_range}")
-    start = match.group(1)
-    end = f"T30n1579_p{match.group(2)}" if match.group(2) else start
+    if not end_part:
+        end = start
+    elif LINE_ID_RE.fullmatch(end_part):
+        end = end_part
+    else:
+        prefix = start.split("_p", 1)[0]
+        suffix = end_part[1:] if end_part.startswith("p") else end_part
+        end = f"{prefix}_p{suffix}"
+        if not LINE_ID_RE.fullmatch(end):
+            raise ValueError(f"Invalid range: {raw_range}")
     return start, end
 
 
@@ -130,18 +145,28 @@ def source_for_segment(lines: dict[str, str], segment: Segment) -> str:
     return "\n".join(selected)
 
 
-def render(juan: int, start: str, end: str, segments: list[Segment], lines: dict[str, str]) -> str:
+def compact_range(start: str, end: str) -> str:
+    prefix = start.split("_p", 1)[0]
+    if start == end:
+        return start
+    if end.startswith(prefix + "_p"):
+        return f"{start}-p{end.split('_p', 1)[1]}"
+    return f"{start}-{end}"
+
+
+def render(juan: int, start: str, end: str, segments: list[Segment], lines: dict[str, str],
+           work: str = "WORK", work_title: str = "經典") -> str:
     chinese_juan = chinese_number(juan)
     out = [
-        f"# 瑜伽師地論卷第{chinese_juan}白話對照來源稿",
+        f"# {work_title}卷第{chinese_juan}白話對照來源稿",
         "",
-        f"底本：CBETA T1579《瑜伽師地論》卷第{chinese_juan}。範圍為 `{start}` 至 `{end}`。",
+        f"底本：CBETA {work}《{work_title}》卷第{chinese_juan}。範圍為 `{start}` 至 `{end}`。",
         "",
         "翻譯原則：以玄奘譯語為準，白話詞與玄奘詞雙軌並列；先求正確精準，再求通順。校註只記錄會影響理解或譯法的重點。",
         "",
     ]
     for segment in segments:
-        range_label = segment.start if segment.start == segment.end else f"{segment.start}-p{segment.end.removeprefix('T30n1579_p')}"
+        range_label = compact_range(segment.start, segment.end)
         out.extend(
             [
                 f"## {segment.number:02d} {segment.title}",
@@ -175,6 +200,8 @@ def main() -> int:
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--start", required=True)
     parser.add_argument("--end", required=True)
+    parser.add_argument("--work", default="WORK")
+    parser.add_argument("--work-title", default="經典")
     parser.add_argument("--force", action="store_true", help="overwrite output even if it already exists")
     args = parser.parse_args()
 
@@ -187,7 +214,8 @@ def main() -> int:
 
     lines = extract_lines(data)
     segments = read_segments(segment_path)
-    output.write_text(render(args.juan, args.start, args.end, segments, lines), encoding="utf-8")
+    output.write_text(render(args.juan, args.start, args.end, segments, lines,
+                             work=args.work, work_title=args.work_title), encoding="utf-8")
     print(f"Wrote {output}")
     return 0
 

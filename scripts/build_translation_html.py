@@ -19,6 +19,7 @@ DEFAULT_SOURCE = ROOT / "translations" / "T1579-033-baihua.md"
 VERSION_N_RE = re.compile(r"\.v(\d+)\.md$")
 DEFAULT_OUTPUT_DIR = ROOT / "docs" / "T1579" / "translations"
 REPO_BLOB = "https://github.com/davidshih/Yogcarabhumi-sastra/blob/main"  # Pages only serves docs/; repo files link out
+TRANSLATION_NAME_RE = re.compile(r"(?P<work>[A-Za-z][A-Za-z0-9._-]*)-(?P<juan>\d{3})-baihua")
 
 
 @dataclass
@@ -63,11 +64,14 @@ def render_text(text: str) -> str:
     return "\n".join(paragraphs)
 
 
-@lru_cache(maxsize=1)
-def term_tips() -> tuple[tuple[str, str], ...]:
+@lru_cache(maxsize=None)
+def term_tips(work: str) -> tuple[tuple[str, str], ...]:
     """Glossary words -> hover-tip text, longest word first (avoids partial shadowing)."""
+    path = ROOT / "translations" / "glossary" / f"{work}-terms.json"
+    if not path.exists() and work == "T1579":
+        path = GLOSSARY_PATH
     try:
-        glossary = json.loads(GLOSSARY_PATH.read_text(encoding="utf-8"))
+        glossary = json.loads(path.read_text(encoding="utf-8"))
     except (FileNotFoundError, json.JSONDecodeError):
         return ()
     tips: dict[str, str] = {}
@@ -84,9 +88,28 @@ def term_tips() -> tuple[tuple[str, str], ...]:
     return tuple(sorted(tips.items(), key=lambda kv: -len(kv[0])))
 
 
-def wrap_terms(rendered_html: str) -> str:
+def works_by_id() -> dict[str, dict]:
+    try:
+        works = json.loads((ROOT / "works.json").read_text(encoding="utf-8"))["works"]
+    except (FileNotFoundError, json.JSONDecodeError, KeyError):
+        return {}
+    return {w["id"]: w for w in works if isinstance(w, dict) and "id" in w}
+
+
+def infer_work_juan(source: Path) -> tuple[str, int]:
+    match = TRANSLATION_NAME_RE.search(source.name)
+    if not match:
+        raise ValueError(f"Could not infer work and juan from filename: {source}")
+    return match.group("work"), int(match.group("juan"))
+
+
+def work_title(work: str) -> str:
+    return works_by_id().get(work, {}).get("title", work)
+
+
+def wrap_terms(rendered_html: str, work: str) -> str:
     """Wrap glossary terms in already-escaped HTML with tooltip spans (text nodes only)."""
-    tips = term_tips()
+    tips = term_tips(work)
     if not tips:
         return rendered_html
     tipmap = dict(tips)
@@ -123,11 +146,11 @@ def version_select_html(source: Path) -> str:
             "onchange=\"location.href=this.value\">" + "".join(options) + "</select></label>")
 
 
-def juan_neighbors(source: Path, juan: int) -> tuple[int | None, int | None]:
+def juan_neighbors(source: Path, work: str, juan: int) -> tuple[int | None, int | None]:
     juans = sorted(
         int(m.group(1))
-        for p in source.parent.glob("T1579-*-baihua.md")
-        if (m := re.search(r"T1579-(\d{3})-baihua", p.name))
+        for p in source.parent.glob(f"{work}-*-baihua.md")
+        if (m := re.search(rf"{re.escape(work)}-(\d{{3}})-baihua", p.name))
     )
     prev = max((j for j in juans if j < juan), default=None)
     nxt = min((j for j in juans if j > juan), default=None)
@@ -137,24 +160,22 @@ def juan_neighbors(source: Path, juan: int) -> tuple[int | None, int | None]:
 def translation_output_path(source: Path, output: Path | None) -> Path:
     if output:
         return output
-    return DEFAULT_OUTPUT_DIR / f"{source.stem}.html"
+    work, _juan = infer_work_juan(source)
+    return ROOT / "docs" / work / "translations" / f"{source.stem}.html"
 
 
 def infer_juan(source: Path) -> int:
-    match = re.search(r"T1579-(\d{3})-baihua", source.name)
-    if not match:
-        raise ValueError(f"Could not infer juan from filename: {source}")
-    return int(match.group(1))
+    return infer_work_juan(source)[1]
 
 
-def infer_title(text: str, juan: int) -> str:
+def infer_title(text: str, work: str, juan: int) -> str:
     first_line = text.splitlines()[0].lstrip("#").strip()
     if "白話" in first_line:
         return first_line.replace("來源稿", "").replace("白話對照", "白話對照").strip()
-    return f"瑜伽師地論卷第{juan}白話對照"
+    return f"{work_title(work)}卷第{juan}白話對照"
 
 
-def render(entries: list[Entry], source: Path, juan: int, title: str) -> str:
+def render(entries: list[Entry], source: Path, work: str, juan: int, title: str) -> str:
     pairs = []
     toc_items = []
     for entry in entries:
@@ -168,7 +189,7 @@ def render(entries: list[Entry], source: Path, juan: int, title: str) -> str:
       <h2>{html.escape(entry.title)}</h2>
       <div class="translation-text">
         <span class="line-range">白話譯文</span>
-{wrap_terms(render_text(entry.translation))}
+{wrap_terms(render_text(entry.translation), work)}
       </div>
       <div class="source-text" aria-label="文言原文">
         <span class="line-range">文言原文 / {html.escape(entry.range_label)}</span>
@@ -179,11 +200,17 @@ def render(entries: list[Entry], source: Path, juan: int, title: str) -> str:
     first_start, _ = parse_range(entries[0].range_label)
     _, last_end = parse_range(entries[-1].range_label)
     source_link = html.escape(f"{REPO_BLOB}/translations/{source.name}")
-    prev_juan, next_juan = juan_neighbors(source, juan)
-    prev_link = (f"<a class='juan-nav-link' href='T1579-{prev_juan:03d}-baihua.html'>← 卷第{prev_juan}</a>"
+    prev_juan, next_juan = juan_neighbors(source, work, juan)
+    prev_link = (f"<a class='juan-nav-link' href='{work}-{prev_juan:03d}-baihua.html'>← 卷第{prev_juan}</a>"
                  if prev_juan else "<span></span>")
-    next_link = (f"<a class='juan-nav-link' href='T1579-{next_juan:03d}-baihua.html'>卷第{next_juan} →</a>"
+    next_link = (f"<a class='juan-nav-link' href='{work}-{next_juan:03d}-baihua.html'>卷第{next_juan} →</a>"
                  if next_juan else "<span></span>")
+    glossary_path = ROOT / "translations" / "glossary" / f"{work}-terms.json"
+    glossary_link = (f'<a href="{REPO_BLOB}/translations/glossary/{work}-terms.json">術語庫</a>'
+                     if glossary_path.exists() else "")
+    workflow_path = ROOT / "docs" / work / "docs" / "translation-workflow.html"
+    workflow_link = '<a href="../docs/translation-workflow.html">翻譯流程</a>' if workflow_path.exists() else ""
+    brand = html.escape(work_title(work))
     return f"""<!doctype html>
 <html lang="zh-Hant">
 <head>
@@ -196,12 +223,12 @@ def render(entries: list[Entry], source: Path, juan: int, title: str) -> str:
 <body class="source-collapsed">
   <div class="read-progress" id="readProgress"></div>
   <div class="topbar">
-    <a class="topbar-brand" href="../index.html">聲聞地</a>
+    <a class="topbar-brand" href="../index.html">{brand}</a>
     <a class="topbar-link" href="../../index.html">總目錄</a>
     <button class="theme-toggle" type="button" aria-label="切換深色或淺色模式"></button>
   </div>
   <header class="site-header">
-    <div class="kicker">CBETA T1579 / Juan {juan}</div>
+    <div class="kicker">CBETA {html.escape(work)} / Juan {juan}</div>
     <h1>{html.escape(title)}</h1>
     <p>底本範圍：{html.escape(first_start)} 至 {html.escape(last_end)}。</p>
     <p>譯例：核心術語採白話詞（玄奘詞）雙軌，疑難處以精簡校註標示；術語下有虛線者可懸停或點按看註解。</p>
@@ -213,9 +240,9 @@ def render(entries: list[Entry], source: Path, juan: int, title: str) -> str:
       </div>
       {version_select_html(source)}
       <a href="{source_link}">來源稿</a>
-      <a href="{REPO_BLOB}/translations/glossary/T1579-terms.json">術語庫</a>
-      <a href="../docs/translation-workflow.html">翻譯流程</a>
-      <a href="https://cbdata.dila.edu.tw/stable/juans?work=T1579&amp;juan={juan}&amp;toc=1&amp;work_info=1">CBETA API</a>
+      {glossary_link}
+      {workflow_link}
+      <a href="https://cbdata.dila.edu.tw/stable/juans?work={html.escape(work)}&amp;juan={juan}&amp;toc=1&amp;work_info=1">CBETA API</a>
     </nav>
     <nav class="juan-nav">{prev_link}{next_link}</nav>
   </header>
@@ -280,11 +307,23 @@ def render(entries: list[Entry], source: Path, juan: int, title: str) -> str:
 
 
 def parse_range(range_label: str) -> tuple[str, str]:
-    match = re.fullmatch(r"(T30n1579_p[0-9abc]+)(?:-(?:T30n1579_)?p?([0-9abc]+))?", range_label)
-    if not match:
+    line_re = re.compile(r"^[A-Za-z0-9._-]+_p[0-9a-c]+$", re.IGNORECASE)
+    if "-" in range_label:
+        start, end_part = range_label.split("-", 1)
+    else:
+        start, end_part = range_label, ""
+    if not line_re.fullmatch(start):
         raise ValueError(f"Invalid range: {range_label}")
-    start = match.group(1)
-    end = f"T30n1579_p{match.group(2)}" if match.group(2) else start
+    if not end_part:
+        end = start
+    elif line_re.fullmatch(end_part):
+        end = end_part
+    else:
+        prefix = start.split("_p", 1)[0]
+        suffix = end_part[1:] if end_part.startswith("p") else end_part
+        end = f"{prefix}_p{suffix}"
+        if not line_re.fullmatch(end):
+            raise ValueError(f"Invalid range: {range_label}")
     return start, end
 
 
@@ -295,10 +334,10 @@ def build_page(source: Path, output: Path | None = None) -> Path:
         entries = parse_entries(text)
         if not entries:
             raise ValueError(f"No entries found in {path}")
-        juan = infer_juan(path)
+        work, juan = infer_work_juan(path)
         out = translation_output_path(path, output if path == source else None)
         out.parent.mkdir(parents=True, exist_ok=True)
-        out.write_text(render(entries, path, juan, infer_title(text, juan)), encoding="utf-8")
+        out.write_text(render(entries, path, work, juan, infer_title(text, work, juan)), encoding="utf-8")
         print(f"Wrote {out}")
     return translation_output_path(source, output)
 

@@ -431,11 +431,11 @@ FORM_PAGE = """<!doctype html>
           <label>經典
             <select name="work" id="workSelect">
 __WORK_OPTIONS__
-              <option value="__custom__">其他（貼 CBETA 連結）</option>
+              <option value="__custom__">其他（貼 CBETA 連結或經號）</option>
             </select>
           </label>
-          <label id="customLinkRow" hidden>CBETA 連結
-            <input type="text" name="link" placeholder="https://cbetaonline.dila.edu.tw/zh/T1585_001">
+          <label id="customLinkRow" hidden>CBETA 連結或經號
+            <input type="text" name="link" placeholder="https://cbetaonline.dila.edu.tw/zh/T1558_001 或 GA001">
           </label>
           <label>卷號範圍（同一部經可多卷）
             <input type="text" name="juans" placeholder="13-15 或 13,15" required>
@@ -700,10 +700,8 @@ def work_options_html() -> str:
     works = json.loads((ROOT / "works.json").read_text(encoding="utf-8"))["works"]
     options = []
     for w in works:
-        disabled = "" if w.get("pipeline_ready") else " disabled"
-        suffix = "" if w.get("pipeline_ready") else "・準備中"
-        options.append(f'              <option value="{w["id"]}"{disabled}>'
-                       f'{w["title"]}（{w["id"]}）{suffix}</option>')
+        options.append(f'              <option value="{w["id"]}">'
+                       f'{w["title"]}（{w["id"]}）</option>')
     return "\n".join(options)
 
 
@@ -804,7 +802,7 @@ class Handler(SimpleHTTPRequestHandler):
         try:
             if work_choice and work_choice != "__custom__":
                 work = work_choice
-            elif re.fullmatch(r"[A-Z]+\d+[a-z]?", link):
+            elif runner.WORK_ID_RE.fullmatch(link):
                 work = link
             else:
                 work, _ = runner.parse_link(link)

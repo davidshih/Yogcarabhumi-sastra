@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Emit docs/T1579/search.json: one record per translated section + per outline section."""
+"""Emit per-work search.json files for translated sections."""
 
 from __future__ import annotations
 
@@ -13,13 +13,11 @@ sys.path.insert(0, str(ROOT / "scripts"))
 
 import build_translation_html as bth
 
-OUT = ROOT / "docs" / "T1579" / "search.json"
-
-
 def main() -> int:
-    records = []
-    for md in sorted((ROOT / "translations").glob("T1579-*-baihua.md")):
-        juan = bth.infer_juan(md)
+    by_work: dict[str, list[dict]] = {}
+    for md in sorted((ROOT / "translations").glob("*-*-baihua.md")):
+        work, juan = bth.infer_work_juan(md)
+        records = by_work.setdefault(work, [])
         for entry in bth.parse_entries(md.read_text(encoding="utf-8")):
             start, _ = bth.parse_range(entry.range_label)
             records.append({
@@ -28,11 +26,17 @@ def main() -> int:
                 # translation + source both searchable; substring match client-side
                 "x": entry.translation + "\n" + entry.source,
             })
-    index_html = (ROOT / "docs" / "T1579" / "index.html").read_text(encoding="utf-8")
-    for m in re.finditer(r"data-juan='(\d+)'><a href='(sections/[^']+)'>([^<]+)</a>", index_html):
-        records.append({"t": m.group(3), "j": int(m.group(1)), "u": m.group(2), "x": ""})
-    OUT.write_text(json.dumps(records, ensure_ascii=False), encoding="utf-8")
-    print(f"Wrote {OUT} ({len(records)} records)")
+    t1579_index = ROOT / "docs" / "T1579" / "index.html"
+    if t1579_index.exists():
+        records = by_work.setdefault("T1579", [])
+        index_html = t1579_index.read_text(encoding="utf-8")
+        for m in re.finditer(r"data-juan='(\d+)'><a href='(sections/[^']+)'>([^<]+)</a>", index_html):
+            records.append({"t": m.group(3), "j": int(m.group(1)), "u": m.group(2), "x": ""})
+    for work, records in sorted(by_work.items()):
+        out = ROOT / "docs" / work / "search.json"
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(json.dumps(records, ensure_ascii=False), encoding="utf-8")
+        print(f"Wrote {out} ({len(records)} records)")
     return 0
 
 

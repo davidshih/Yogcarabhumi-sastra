@@ -3,7 +3,8 @@
 
 Billing guarantee (correctness requirement, not style):
 - claude  -> Claude Code subscription: ANTHROPIC_* env vars are scrubbed so the
-             CLI uses OAuth login, never metered API billing.
+             CLI uses OAuth login, never metered API billing. The app pins the
+             Claude CLI model with --model so global user settings do not leak in.
 - codex   -> ChatGPT subscription: OPENAI_API_KEY scrubbed, ChatGPT login auth.
 - glm     -> z.ai GLM coding plan: claude CLI pointed at the coding-plan
              endpoint via ANTHROPIC_BASE_URL/ANTHROPIC_AUTH_TOKEN.
@@ -26,6 +27,7 @@ FAKE_MODELS = ("echo", "echo-limit-once")
 ZAI_BASE_URL = "https://api.z.ai/api/anthropic"
 ZAI_KEY_FILE = Path.home() / ".zai_key"
 ZAI_MODEL = os.environ.get("ZAI_MODEL", "glm-5.2")
+CLAUDE_MODEL = os.environ.get("YOGACARA_CLAUDE_MODEL", "sonnet-5")
 # z.ai error payloads carry naive datetimes in Beijing time:
 # "[1308][Usage limit reached for 5 hour. Your limit will reset at 2026-07-06 06:10:27][...]"
 ZAI_TZ = dt.timezone(dt.timedelta(hours=8))
@@ -196,7 +198,9 @@ def run_llm(model: str, prompt: str, timeout: int = TIMEOUT) -> LLMResult:
     SCRATCH.mkdir(parents=True, exist_ok=True)
     if model in FAKE_MODELS:
         return _run_fake(model, prompt)
-    if model in ("claude", "glm"):
+    if model == "claude":
+        cmd = ["claude", "--model", CLAUDE_MODEL, "-p"]
+    elif model == "glm":
         cmd = ["claude", "-p"]
     elif model == "codex":
         out_file = SCRATCH / f"codex-out-{os.getpid()}-{time.monotonic_ns()}.txt"

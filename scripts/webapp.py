@@ -624,12 +624,13 @@ __WORK_OPTIONS__
       if (["waiting_model", "waiting_limit", "queued", "awaiting_approval"].includes(state)) return "vol-waiting";
       return "vol-running";
     }
-    function chipFor(name, task) {
-      const state = task?.state || "pending";
+    function chipFor(name, task, volumeError = "") {
+      const rawState = task?.state || "pending";
+      const state = volumeError && rawState === "running" ? "failed" : rawState;
       const cls = state === "waiting" || state === "waiting_model" ? "state-waiting" : stateClass(state);
       const progress = task?.sections_total ? ` ${task.section || 0}/${task.sections_total}` : "";
       const model = task?.model ? ` · ${task.model}` : "";
-      const detail = [taskFull[name] || name, label(state), task?.model, task?.reason, task?.error]
+      const detail = [taskFull[name] || name, label(state), task?.model, task?.reason, task?.error || volumeError]
         .filter(Boolean).join(" ｜ ");
       return `<span class="chip ${cls}" title="${esc(detail)}"><span class="dot"></span>${esc(taskLabels[name] || name)}${esc(progress)}${state === "running" ? esc(model) : ""}</span>`;
     }
@@ -665,7 +666,7 @@ __WORK_OPTIONS__
       const step = volume.step || "queued";
       const state = volume.cancelled ? "cancelled"
         : (["waiting_model", "waiting_limit", "waiting"].includes(step) ? step : (volume.error ? "failed" : step));
-      const chips = taskOrder.map(name => chipFor(name, (volume.tasks || {})[name])).join("");
+      const chips = taskOrder.map(name => chipFor(name, (volume.tasks || {})[name], volume.error || "")).join("");
       const actions = [];
       if (state !== "done") {
         actions.push(`<button class="force-btn" type="button" data-action="force-volume" data-job="${esc(job.id)}" data-juan="${esc(juan)}">強制啟動</button>`);

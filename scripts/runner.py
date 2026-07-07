@@ -50,6 +50,10 @@ POLL_SECONDS = 10
 MODEL_WAIT_FALLBACK_MINUTES = 15
 DEFAULT_PARALLEL_JUANS = 2
 MAX_PARALLEL_JUANS = 5
+TRANSLATION_OUTPUT_RATIO = 1.9
+DRAFT_BATCH_MAX_SOURCE_CHARS = 4200
+DRAFT_BATCH_MAX_OUTPUT_CHARS = 8000
+DRAFT_BATCH_MAX_SECTIONS = 12
 JOB_WRITE_LOCK = threading.RLock()
 PUBLISH_LOCK = threading.RLock()
 VERSIONS_DIR = ROOT / "translations" / "versions"
@@ -161,6 +165,7 @@ TRANSLATION_BLOCK_RE = re.compile(r"(Translation:\n<<<\n)(.*?)(\n?>>>)", re.DOTA
 NOTE_BLOCK_RE = re.compile(r"(Note:\n<<<\n)(.*?)(\n?>>>)", re.DOTALL)
 OUT_TRANSLATION_RE = re.compile(r"<<<TRANSLATION\n(.*?)\n?>>>", re.DOTALL)
 OUT_NOTE_RE = re.compile(r"<<<NOTE\n(.*?)\n?>>>", re.DOTALL)
+OUT_SECTION_RE = re.compile(r"<<<SECTION\s+(\d+)>>>\s*(.*?)\s*<<<END_SECTION\s+\1>>>", re.DOTALL)
 TSV_RE = re.compile(r"<TSV>\n(.*?)\n?</TSV>", re.DOTALL)
 NEW_TERMS_RE = re.compile(r"^NEW_TERMS:\s*(\[.*\])\s*$", re.MULTILINE)
 
@@ -830,6 +835,73 @@ def parse_llm_blocks(raw: str) -> tuple[str, str | None]:
     return tr.group(1).strip(), (nt.group(1).strip() if nt else None)
 
 
+def draft_section_batches(
+    indexed_entries: list[tuple[int, bth.Entry]],
+    *,
+    max_source_chars: int = DRAFT_BATCH_MAX_SOURCE_CHARS,
+    max_estimated_output_chars: int = DRAFT_BATCH_MAX_OUTPUT_CHARS,
+    max_sections: int = DRAFT_BATCH_MAX_SECTIONS,
+) -> list[list[tuple[int, bth.Entry]]]:
+    batches: list[list[tuple[int, bth.Entry]]] = []
+    current: list[tuple[int, bth.Entry]] = []
+    current_source = 0
+    current_output = 0
+    for idx, entry in indexed_entries:
+        source_chars = len(entry.source)
+        estimated_output = int(source_chars * TRANSLATION_OUTPUT_RATIO + 0.999)
+        would_overflow = (
+            len(current) >= max_sections
+            or current_source + source_chars > max_source_chars
+            or current_output + estimated_output > max_estimated_output_chars
+        )
+        if current and would_overflow:
+            batches.append(current)
+            current = []
+            current_source = 0
+            current_output = 0
+        current.append((idx, entry))
+        current_source += source_chars
+        current_output += estimated_output
+    if current:
+        batches.append(current)
+    return batches
+
+
+def batch_sections_text(glossary: dict, batch: list[tuple[int, bth.Entry]]) -> str:
+    chunks = []
+    for idx, entry in batch:
+        number = idx + 1
+        chunks.append(
+            f"<<<SOURCE_SECTION {number}>>>\n"
+            f"Title: {entry.title}\n"
+            f"Existing note: {entry.note or '（無）'}\n"
+            f"Glossary JSON:\n{glossary_subset_json(glossary, entry.source)}\n"
+            f"Source:\n{entry.source}\n"
+            f"<<<END_SOURCE_SECTION {number}>>>"
+        )
+    return "\n\n".join(chunks)
+
+
+def parse_batch_llm_blocks(raw: str, expected_numbers: set[int]) -> dict[int, tuple[str, str | None]]:
+    parsed: dict[int, tuple[str, str | None]] = {}
+    duplicates = set()
+    for match in OUT_SECTION_RE.finditer(raw):
+        number = int(match.group(1))
+        if number in parsed:
+            duplicates.add(number)
+        if number in expected_numbers:
+            parsed[number] = parse_llm_blocks(match.group(2))
+    missing = sorted(expected_numbers - set(parsed))
+    if duplicates or missing:
+        parts = []
+        if duplicates:
+            parts.append(f"duplicate sections: {sorted(duplicates)}")
+        if missing:
+            parts.append(f"missing sections: {missing}")
+        raise ValueError("; ".join(parts))
+    return parsed
+
+
 # ---------- pipeline steps ----------
 
 def llm_call(job: dict, prompt: str, stage: str, juan: int | None = None) -> str:
@@ -934,6 +1006,20 @@ def llm_segment(job: dict, juan: int, lines: dict[str, str], tsv_path: Path) -> 
     raise RuntimeError(f"juan {juan}: LLM segmentation failed twice")
 
 
+def translate_one_section(job: dict, juan: int, md_path: Path, prog: dict, idx: int,
+                          entry: bth.Entry, glossary: dict, extra: str, stage: str,
+                          total: int) -> None:
+    raw = llm_call(job, prompt_text(
+        "translate", juan=juan, title=entry.title, note=entry.note or "（無）",
+        source=entry.source, glossary=glossary_subset_json(glossary, entry.source),
+        extra=extra, **prompt_vars(job)), stage, juan)
+    translation, note = parse_llm_blocks(raw)
+    splice(md_path, idx, translation, note if note else None)
+    prog["section"] = idx + 1
+    save_job(job)
+    log(job, f"juan {juan}: {stage} {idx + 1}/{total} {entry.title}")
+
+
 def translate_sections(job: dict, juan: int, md_path: Path, prog: dict,
                        only_titles: set[str] | None = None, extra: str = "",
                        stage: str = "translate") -> None:
@@ -945,16 +1031,46 @@ def translate_sections(job: dict, juan: int, md_path: Path, prog: dict,
             continue
         if only_titles is None and entry.translation.strip():
             continue  # never overwrite existing text (human edits win)
-        raw = llm_call(job, prompt_text(
-            "translate", juan=juan, title=entry.title, note=entry.note or "（無）",
-            source=entry.source, glossary=glossary_subset_json(glossary, entry.source),
-            extra=extra, **prompt_vars(job)), stage, juan)
-        translation, note = parse_llm_blocks(raw)
-        splice(md_path, idx, translation, note if note else None)
-        prog["section"] = idx + 1
-        save_job(job)
-        log(job, f"juan {juan}: {stage} {idx + 1}/{len(entries)} {entry.title}")
+        translate_one_section(job, juan, md_path, prog, idx, entry, glossary, extra,
+                              stage, len(entries))
         entries = bth.parse_entries(md_path.read_text(encoding="utf-8"))  # re-read after splice
+
+
+def translate_sections_batched(job: dict, juan: int, md_path: Path, prog: dict,
+                               extra: str = "", stage: str = "translate") -> None:
+    glossary = load_glossary(job["work"])
+    entries = bth.parse_entries(md_path.read_text(encoding="utf-8"))
+    total = len(entries)
+    prog["sections_total"] = total
+    pending = [(idx, entry) for idx, entry in enumerate(entries) if not entry.translation.strip()]
+    for batch in draft_section_batches(pending):
+        first = batch[0][0] + 1
+        last = batch[-1][0] + 1
+        if len(batch) == 1:
+            idx, entry = batch[0]
+            translate_one_section(job, juan, md_path, prog, idx, entry, glossary, extra,
+                                  stage, total)
+            continue
+        try:
+            raw = llm_call(job, prompt_text(
+                "translate_batch", juan=juan, sections=batch_sections_text(glossary, batch),
+                section_count=len(batch), extra=extra, **prompt_vars(job)), stage, juan)
+            parsed = parse_batch_llm_blocks(raw, {idx + 1 for idx, _entry in batch})
+        except ValueError as err:
+            log(job, f"juan {juan}: {stage} batch {first}-{last}/{total} invalid ({err}); falling back to sections")
+            for idx, entry in batch:
+                refreshed = bth.parse_entries(md_path.read_text(encoding="utf-8"))[idx]
+                if refreshed.translation.strip():
+                    continue
+                translate_one_section(job, juan, md_path, prog, idx, refreshed, glossary,
+                                      extra, stage, total)
+            continue
+        for idx, _entry in batch:
+            translation, note = parsed[idx + 1]
+            splice(md_path, idx, translation, note if note else None)
+        prog["section"] = last
+        save_job(job)
+        log(job, f"juan {juan}: {stage} batch {first}-{last}/{total}")
 
 
 def merge_sections(job: dict, juan: int, paths: dict[str, Path], prog: dict) -> None:
@@ -1157,7 +1273,7 @@ def run_juan(job: dict, juan: int) -> None:
             prog["step"] = stage
             save_job(job)
             try:
-                translate_sections(job, juan, draft, task, stage=stage)
+                translate_sections_batched(job, juan, draft, task, stage=stage)
             except OptionalModelUnavailable as err:
                 set_task(prog, stage, "skipped", model=stage_model(job, stage, prog), reason=str(err)[:500])
                 save_job(job)

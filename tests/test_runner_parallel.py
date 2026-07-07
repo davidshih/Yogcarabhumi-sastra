@@ -254,6 +254,60 @@ class RunnerParallelTests(unittest.TestCase):
         self.assertNotIn("resume_at", prog["tasks"]["checks"])
         self.assertEqual(prog["tasks"]["draft_codex"]["reason"], "kept for history")
 
+    def test_draft_section_batches_keep_sections_whole(self):
+        entries = [
+            (0, runner.bth.Entry("s1", "r1", "a" * 1500, "", "")),
+            (1, runner.bth.Entry("s2", "r2", "b" * 1500, "", "")),
+            (2, runner.bth.Entry("s3", "r3", "c" * 1500, "", "")),
+        ]
+
+        batches = runner.draft_section_batches(entries)
+
+        self.assertEqual([[idx for idx, _entry in batch] for batch in batches], [[0, 1], [2]])
+
+    def test_draft_section_batches_allow_single_oversized_section(self):
+        entries = [
+            (0, runner.bth.Entry("large", "r1", "a" * 5000, "", "")),
+            (1, runner.bth.Entry("small", "r2", "b" * 100, "", "")),
+        ]
+
+        batches = runner.draft_section_batches(entries)
+
+        self.assertEqual([[idx for idx, _entry in batch] for batch in batches], [[0], [1]])
+
+    def test_translate_sections_batched_splices_batch_output(self):
+        md_path = Path(self.tmp.name) / "draft.md"
+        md_path.write_text(
+            "# Test\n\n"
+            "## s1\nRange: r1\n\nSource:\n<<<\n" + ("a" * 1500) + "\n>>>\n\nTranslation:\n<<<\n\n>>>\n\nNote:\n<<<\n\n>>>\n\n"
+            "## s2\nRange: r2\n\nSource:\n<<<\n" + ("b" * 1500) + "\n>>>\n\nTranslation:\n<<<\n\n>>>\n\nNote:\n<<<\n\n>>>\n\n"
+            "## s3\nRange: r3\n\nSource:\n<<<\n" + ("c" * 1500) + "\n>>>\n\nTranslation:\n<<<\n\n>>>\n\nNote:\n<<<\n\n>>>\n",
+            encoding="utf-8",
+        )
+        job = self.job([1])
+        prog = {}
+        prompts = []
+
+        def fake_llm_call(_job, prompt, _stage, _juan):
+            prompts.append(prompt)
+            if "<<<SOURCE_SECTION 1>>>" in prompt:
+                return (
+                    "<<<SECTION 1>>>\n<<<TRANSLATION\n譯一\n>>>\n<<<NOTE\n註一\n>>>\n<<<END_SECTION 1>>>\n"
+                    "<<<SECTION 2>>>\n<<<TRANSLATION\n譯二\n>>>\n<<<NOTE\n\n>>>\n<<<END_SECTION 2>>>"
+                )
+            return "<<<TRANSLATION\n譯三\n>>>\n<<<NOTE\n註三\n>>>"
+
+        with mock.patch.object(runner, "llm_call", side_effect=fake_llm_call):
+            runner.translate_sections_batched(job, 1, md_path, prog, stage="draft_codex")
+
+        entries = runner.bth.parse_entries(md_path.read_text(encoding="utf-8"))
+        self.assertEqual([entry.translation for entry in entries], ["譯一", "譯二", "譯三"])
+        self.assertEqual([entry.note for entry in entries], ["註一", "", "註三"])
+        self.assertEqual(prog["section"], 3)
+        self.assertEqual(len(prompts), 2)
+        self.assertIn("<<<SOURCE_SECTION 1>>>", prompts[0])
+        self.assertIn("【原文】", prompts[1])
+
     def test_archive_job_moves_completed_job_out_of_active_queue(self):
         job = self.job([1], parallel=2)
         job["state"] = "done"

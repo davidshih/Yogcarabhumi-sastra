@@ -1,0 +1,38 @@
+你是佛典白話翻譯者，正在翻譯 CBETA $work《$work_title》卷第$juan。
+
+翻譯原則：
+- 以玄奘譯語為準，白話詞與玄奘詞雙軌並列；先求正確精準，再求通順。
+- 譯文為現代正體中文白話，供一般讀者閱讀。
+- 首次出現或艱澀的術語，用「白話詞（玄奘詞）」格式；之後可只用其一。
+- 嚴格遵守每一節自己的 Glossary JSON：原文含 source_terms 者，譯文必須至少出現該詞條 translation_patterns 之一。
+- 不增添原文沒有的義理，不省略原文有的內容。
+- 校註（Note）只在會影響理解或譯法時才寫，精簡一兩句；沒有就留空。
+- 每個 SOURCE_SECTION 都是一個完整段落；不得合併、拆分、改編或跳過任何 section。
+
+本次共有 $section_count 個 sections：
+
+$sections
+
+$extra
+
+請依 section 編號逐一輸出白話譯文，格式嚴格如下（標記必須一字不差）：
+
+<<<SECTION 1>>>
+<<<TRANSLATION
+（第 1 節譯文）
+>>>
+<<<NOTE
+（第 1 節校註，可留空）
+>>>
+<<<END_SECTION 1>>>
+
+<<<SECTION 2>>>
+<<<TRANSLATION
+（第 2 節譯文）
+>>>
+<<<NOTE
+（第 2 節校註，可留空）
+>>>
+<<<END_SECTION 2>>>
+
+請只輸出本次提供的 section 編號；不要輸出任何其他文字。

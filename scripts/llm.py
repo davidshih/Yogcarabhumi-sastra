@@ -183,6 +183,20 @@ def _run_fake(model: str, prompt: str) -> LLMResult:
             return LLMResult(ok=False, error="echo: no line ids in prompt")
         text = f"<TSV>\n全卷\t{ids[0]}-p{ids[-1].split('_p')[1]}\t\n</TSV>"
         return LLMResult(ok=True, text=text)
+    if "<<<SOURCE_SECTION " in prompt:
+        sections = re.findall(
+            r"<<<SOURCE_SECTION (\d+)>>>\n.*?Source:\n(.*?)\n<<<END_SOURCE_SECTION \1>>>",
+            prompt,
+            re.DOTALL,
+        )
+        if not sections:
+            return LLMResult(ok=False, error="echo: no source sections in batch prompt")
+        text = "\n\n".join(
+            f"<<<SECTION {number}>>>\n<<<TRANSLATION\n{source.strip()}\n>>>\n"
+            f"<<<NOTE\n\n>>>\n<<<END_SECTION {number}>>>"
+            for number, source in sections
+        )
+        return LLMResult(ok=True, text=text)
     source = re.search(r"【原文】\n(.*?)\n【原文結束】", prompt, re.DOTALL)
     if "【譯稿A】" in prompt:  # merge prompts must produce a translation, not "OK"
         body = source.group(1).strip() if source else "（測試合稿）"

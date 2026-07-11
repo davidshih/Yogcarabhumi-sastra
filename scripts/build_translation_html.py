@@ -205,11 +205,22 @@ def render(entries: list[Entry], source: Path, work: str, juan: int, title: str)
                  if prev_juan else "<span></span>")
     next_link = (f"<a class='juan-nav-link' href='{work}-{next_juan:03d}-baihua.html'>卷第{next_juan} →</a>"
                  if next_juan else "<span></span>")
+    continue_tray = ""
+    if next_juan:
+        continue_tray = f"""  <aside class=\"continue-tray\" id=\"continueTray\" aria-live=\"polite\">
+    <p id=\"continueMessage\">本卷已讀畢。</p>
+    <div class=\"continue-actions\">
+      <a id=\"nextVolume\" href=\"{work}-{next_juan:03d}-baihua.html\">前往卷第{next_juan}</a>
+      <button type=\"button\" id=\"stayHere\">留在本卷</button>
+    </div>
+  </aside>"""
     glossary_path = ROOT / "translations" / "glossary" / f"{work}-terms.json"
     glossary_link = (f'<a href="{REPO_BLOB}/translations/glossary/{work}-terms.json">術語庫</a>'
                      if glossary_path.exists() else "")
     workflow_path = ROOT / "docs" / work / "docs" / "translation-workflow.html"
     workflow_link = '<a href="../docs/translation-workflow.html">翻譯流程</a>' if workflow_path.exists() else ""
+    version_selector = version_select_html(source)
+    rail_workflow_link = workflow_link
     brand = html.escape(work_title(work))
     return f"""<!doctype html>
 <html lang="zh-Hant">
@@ -217,36 +228,48 @@ def render(entries: list[Entry], source: Path, work: str, juan: int, title: str)
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{html.escape(title)}</title>
-  <link rel="stylesheet" href="../../style.css">
-  <script src="../../theme.js"></script>
+  <link rel="stylesheet" href="../../style.css?v=20260711">
+  <script src="../../theme.js?v=20260711"></script>
 </head>
-<body class="source-collapsed">
+<body class="source-collapsed reader-shell">
+  <a class="skip-link" href="#parallelText">跳至閱讀內容</a>
   <div class="read-progress" id="readProgress"></div>
-  <div class="topbar">
-    <a class="topbar-brand" href="../index.html">{brand}</a>
-    <a class="topbar-link" href="../../index.html">總目錄</a>
-    <button class="theme-toggle" type="button" aria-label="切換深色或淺色模式"></button>
-  </div>
-  <header class="site-header">
-    <div class="kicker">CBETA {html.escape(work)} / Juan {juan}</div>
-    <h1>{html.escape(title)}</h1>
-    <p>底本範圍：{html.escape(first_start)} 至 {html.escape(last_end)}。</p>
-    <p>譯例：核心術語採白話詞（玄奘詞）雙軌，疑難處以精簡校註標示；術語下有虛線者可懸停或點按看註解。</p>
-    <nav class="translation-tools">
+  <aside class="site-rail" id="siteRail" aria-label="網站導覽">
+    <a class="rail-brand" href="../../index.html"><strong>佛典白話翻譯</strong><span>CBETA 對照閱讀</span></a>
+    <nav class="rail-nav" aria-label="主要導覽">
+      <span class="rail-label">閱讀</span>
+      <a href="../../index.html">總目錄</a>
+      <a href="../index.html" aria-current="page">{brand}</a>
+{f'      {rail_workflow_link}' if rail_workflow_link else ''}
+    </nav>
+    <div class="rail-footer">
+      <button class="rail-control theme-toggle" type="button" aria-label="切換深色或淺色模式"></button>
+    </div>
+  </aside>
+  <button class="rail-toggle" type="button" aria-expanded="false" aria-controls="siteRail">目錄</button>
+  <div class="site-frame">
+    <header class="page-header">
+      <div class="page-header-inner">
+        <div class="kicker">CBETA {html.escape(work)} / Juan {juan}</div>
+        <h1>{html.escape(title)}</h1>
+        <p>底本範圍：{html.escape(first_start)} 至 {html.escape(last_end)}。</p>
+        <p>核心術語保留白話詞與玄奘詞雙軌；可切換白話、對照與原文閱讀。</p>
+        <nav class="translation-tools">
       <div class="mode-switch" role="group" aria-label="閱讀模式">
         <button type="button" data-mode="trans" aria-pressed="true">白話</button>
         <button type="button" data-mode="both" aria-pressed="false">對照</button>
         <button type="button" data-mode="source" aria-pressed="false">原文</button>
       </div>
-      {version_select_html(source)}
+{f'      {version_selector}' if version_selector else ''}
       <a href="{source_link}">來源稿</a>
-      {glossary_link}
-      {workflow_link}
+{f'      {glossary_link}' if glossary_link else ''}
+{f'      {workflow_link}' if workflow_link else ''}
       <a href="https://cbdata.dila.edu.tw/stable/juans?work={html.escape(work)}&amp;juan={juan}&amp;toc=1&amp;work_info=1">CBETA API</a>
-    </nav>
-    <nav class="juan-nav">{prev_link}{next_link}</nav>
-  </header>
-  <div class="page-with-toc">
+        </nav>
+        <nav class="juan-nav" aria-label="卷次導覽">{prev_link}{next_link}</nav>
+      </div>
+    </header>
+    <div class="page-with-toc">
     <details class="toc-side" id="tocSide">
       <summary>本卷目次</summary>
       <ol>
@@ -255,12 +278,15 @@ def render(entries: list[Entry], source: Path, work: str, juan: int, title: str)
     </details>
     <main class="reader parallel-text" id="parallelText">
 {chr(10).join(pairs)}
+      <div id="readerEnd" tabindex="-1"></div>
     </main>
+    </div>
+    <nav class="section-nav" aria-label="段落導航">
+      <button type="button" id="prevSection" aria-label="上一段">↑</button>
+      <button type="button" id="nextSection" aria-label="下一段">↓</button>
+    </nav>
   </div>
-  <nav class="section-nav" aria-label="段落導航">
-    <button type="button" id="prevSection" aria-label="上一段">↑</button>
-    <button type="button" id="nextSection" aria-label="下一段">↓</button>
-  </nav>
+{continue_tray}
   <script>
     // 閱讀模式：白話（預設）/ 對照 / 原文，記憶於 localStorage
     const MODE_CLASS = {{trans: "source-collapsed", both: "", source: "translation-collapsed"}};
@@ -300,6 +326,40 @@ def render(entries: list[Entry], source: Path, work: str, juan: int, title: str)
     function syncToc() {{ toc.open = wide.matches; }}
     syncToc();
     wide.addEventListener("change", syncToc);
+
+    // 到達卷末時提供可取消的自動續讀，不必返回索引頁選下一卷。
+    const readerEnd = document.getElementById("readerEnd");
+    const continueTray = document.getElementById("continueTray");
+    const nextVolume = document.getElementById("nextVolume");
+    const stayHere = document.getElementById("stayHere");
+    const continueMessage = document.getElementById("continueMessage");
+    let continueTimer = null;
+    let remaining = 5;
+    function cancelContinue() {{
+      if (continueTimer) clearInterval(continueTimer);
+      continueTimer = null;
+      if (continueTray) continueTray.classList.remove("is-visible");
+    }}
+    function offerContinue() {{
+      if (!continueTray || !nextVolume || continueTimer) return;
+      remaining = 5;
+      continueTray.classList.add("is-visible");
+      continueMessage.textContent = `本卷已讀畢，${{remaining}} 秒後前往下一卷。`;
+      continueTimer = setInterval(() => {{
+        remaining -= 1;
+        if (remaining <= 0) {{
+          location.href = nextVolume.href;
+          return;
+        }}
+        continueMessage.textContent = `本卷已讀畢，${{remaining}} 秒後前往下一卷。`;
+      }}, 1000);
+    }}
+    if (readerEnd && continueTray && nextVolume) {{
+      new IntersectionObserver((entries) => {{
+        if (entries.some(entry => entry.isIntersecting)) offerContinue();
+      }}, {{threshold: 0.9}}).observe(readerEnd);
+      stayHere.addEventListener("click", cancelContinue);
+    }}
   </script>
 </body>
 </html>

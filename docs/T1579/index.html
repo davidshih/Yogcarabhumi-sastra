@@ -4,23 +4,33 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>瑜伽師地論聲聞地</title>
-  <link rel="stylesheet" href="../style.css">
-  <script src="../theme.js"></script>
+  <link rel="stylesheet" href="../style.css?v=20260711">
+  <script src="../theme.js?v=20260711"></script>
 </head>
 <body>
-  <div class="topbar">
-    <a class="topbar-brand" href="index.html">聲聞地</a>
-    <a class="topbar-link" href="../index.html">總目錄</a>
-    <a class="topbar-link" href="docs/translation-workflow.html">翻譯流程</a>
-    <button class="theme-toggle" type="button" aria-label="切換深色或淺色模式"></button>
-  </div>
-  <header class="site-header">
-    <div class="kicker">CBETA T1579</div>
-    <h1>瑜伽師地論聲聞地</h1>
-    <p>Split from CBETA HTML by mulu nodes. Notes, line markers, and source anchors are preserved.</p>
-    <p><a href="docs/translation-workflow.html">白話翻譯工作流程與術語庫</a></p>
-  </header>
-  <main class="index-list">
+  <a class="skip-link" href="#libraryContent">跳至內容</a>
+  <aside class="site-rail" id="siteRail" aria-label="網站導覽">
+    <a class="rail-brand" href="../index.html"><strong>佛典白話翻譯</strong><span>CBETA 對照閱讀</span></a>
+    <nav class="rail-nav" aria-label="主要導覽">
+      <span class="rail-label">閱讀</span>
+      <a href="../index.html">總目錄</a>
+      <a href="index.html" aria-current="page">瑜伽師地論</a>
+      <a href="docs/translation-workflow.html">翻譯說明</a>
+    </nav>
+    <div class="rail-footer">
+      <button class="rail-control theme-toggle" type="button" aria-label="切換深色或淺色模式"></button>
+    </div>
+  </aside>
+  <button class="rail-toggle" type="button" aria-expanded="false" aria-controls="siteRail">目錄</button>
+  <div class="site-frame">
+    <header class="page-header">
+      <div class="page-header-inner">
+        <div class="kicker">CBETA T1579</div>
+        <h1>瑜伽師地論</h1>
+        <p>白話對照翻譯與原典章節索引。從左欄選擇閱讀入口，卷次與章節都保持在同一處。</p>
+      </div>
+    </header>
+    <main class="index-list" id="libraryContent">
     <div class="site-search">
       <input type="search" id="siteSearch" placeholder="搜尋經文、譯文、章節標題…" aria-label="全站搜尋">
       <ol id="searchResults" hidden></ol>
@@ -289,7 +299,8 @@
       <li class='level-1' data-juan='34'><a href='sections/193-8章-聲聞地總結.html'>8章 聲聞地總結</a><span>T30n1579_p0477b27</span></li>
       </ol>
     </details>
-  </main>
+    </main>
+  </div>
   <script>
     // 全站搜尋：首次輸入才載入 search.json，中文用 substring 比對即正確
     const searchInput = document.getElementById("siteSearch");

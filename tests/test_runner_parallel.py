@@ -359,8 +359,8 @@ class RunnerParallelTests(unittest.TestCase):
             runner.build_site_index()
 
         html = (docs / "index.html").read_text(encoding="utf-8")
-        self.assertIn('<a href="T1558/index.html">阿毘達磨俱舍論（T1558）</a>', html)
-        self.assertIn("成唯識論（T1585）<span>護法 / 玄奘・準備中</span>", html)
+        self.assertIn('<a href="T1558/index.html"><strong>阿毘達磨俱舍論（T1558）</strong>', html)
+        self.assertIn('<strong>成唯識論（T1585）</strong>護法 / 玄奘・準備中', html)
 
 
 if __name__ == "__main__":

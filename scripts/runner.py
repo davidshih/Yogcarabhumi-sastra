@@ -221,6 +221,7 @@ def publish_status() -> None:
 def build_site_index() -> None:
     works = json.loads(WORKS_PATH.read_text(encoding="utf-8"))["works"]
     items = []
+    rail_items = []
     for work in works:
         work_id = work["id"]
         title = f"{work['title']}（{work_id}）"
@@ -230,12 +231,13 @@ def build_site_index() -> None:
         work_index = ROOT / "docs" / work_id / "index.html"
         if work_index.exists():
             items.append(
-                f'      <li class="level-0"><a href="{work_id}/index.html">{title}</a>'
-                f"<span>{subtitle}</span></li>"
+                f'      <li><a href="{work_id}/index.html"><strong>{title}</strong>'
+                f"<span>{subtitle}</span></a></li>"
             )
+            rail_items.append(f'      <a href="{work_id}/index.html">{work["title"]}</a>')
         else:
             note = f"{subtitle}・準備中" if subtitle else "準備中"
-            items.append(f'      <li class="level-0">{title}<span>{note}</span></li>')
+            items.append(f'      <li><span><strong>{title}</strong>{note}</span></li>')
     out = ROOT / "docs" / "index.html"
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(f"""<!doctype html>
@@ -244,25 +246,38 @@ def build_site_index() -> None:
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>佛典白話翻譯</title>
-  <link rel="stylesheet" href="style.css">
-  <script src="theme.js"></script>
+  <link rel="stylesheet" href="style.css?v=20260711">
+  <script src="theme.js?v=20260711"></script>
 </head>
 <body>
-  <div class="topbar">
-    <a class="topbar-brand" href="index.html">佛典白話翻譯</a>
-    <a class="topbar-link" href="status.html">翻譯進度</a>
-    <button class="theme-toggle" type="button" aria-label="切換深色或淺色模式"></button>
-  </div>
-  <header class="site-header">
-    <div class="kicker">CBETA 白話對照</div>
-    <h1>佛典白話翻譯</h1>
-    <p>以 CBETA 底本逐段白話翻譯，經術語、義理、平行文獻三線審校。</p>
-  </header>
-  <main class="index-list">
-    <ol>
+  <a class="skip-link" href="#libraryContent">跳至作品</a>
+  <aside class="site-rail" id="siteRail" aria-label="網站導覽">
+    <a class="rail-brand" href="index.html"><strong>佛典白話翻譯</strong><span>CBETA 對照閱讀</span></a>
+    <nav class="rail-nav" aria-label="主要導覽">
+      <span class="rail-label">藏經</span>
+      <a href="index.html" aria-current="page">總目錄</a>
+{chr(10).join(rail_items)}
+    </nav>
+    <div class="rail-footer">
+      <a href="status.html">翻譯進度</a>
+      <button class="rail-control theme-toggle" type="button" aria-label="切換深色或淺色模式"></button>
+    </div>
+  </aside>
+  <button class="rail-toggle" type="button" aria-expanded="false" aria-controls="siteRail">目錄</button>
+  <div class="site-frame">
+    <header class="page-header">
+      <div class="page-header-inner">
+        <div class="kicker">CBETA 白話對照</div>
+        <h1>佛典白話翻譯</h1>
+        <p>逐段比對原文與白話譯文；從左欄選擇經典，閱讀時可直接續讀下一卷。</p>
+      </div>
+    </header>
+    <main class="index-list" id="libraryContent">
+      <ol class="library-list">
 {chr(10).join(items)}
-    </ol>
-  </main>
+      </ol>
+    </main>
+  </div>
 </body>
 </html>
 """, encoding="utf-8")
@@ -1149,7 +1164,7 @@ def build_simple_work_index(work: str) -> None:
             continue
         pages.append((juan, f"translations/{md.stem}.html"))
     items = "\n".join(
-        f"      <li class=\"level-0\"><a href=\"{href}\">{info['title']} 卷第{juan}</a></li>"
+        f"      <li><a href=\"{href}\"><strong>卷第{juan}</strong><span>{info['title']}</span></a></li>"
         for juan, href in pages
     )
     out_dir = ROOT / "docs" / work
@@ -1160,24 +1175,38 @@ def build_simple_work_index(work: str) -> None:
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{info['title']}（{work}）</title>
-  <link rel="stylesheet" href="../style.css">
-  <script src="../theme.js"></script>
+  <link rel="stylesheet" href="../style.css?v=20260711">
+  <script src="../theme.js?v=20260711"></script>
 </head>
 <body>
-  <div class="topbar">
-    <a class="topbar-brand" href="../index.html">總目錄</a>
-    <button class="theme-toggle" type="button" aria-label="切換深色或淺色模式"></button>
-  </div>
-  <header class="site-header">
-    <div class="kicker">CBETA {work}</div>
-    <h1>{info['title']}</h1>
-    <p>{info.get('subtitle', '')}</p>
-  </header>
-  <main class="toc-list">
-    <ol>
+  <a class="skip-link" href="#volumeList">跳至卷次</a>
+  <aside class="site-rail" id="siteRail" aria-label="網站導覽">
+    <a class="rail-brand" href="../index.html"><strong>佛典白話翻譯</strong><span>CBETA 對照閱讀</span></a>
+    <nav class="rail-nav" aria-label="主要導覽">
+      <span class="rail-label">閱讀</span>
+      <a href="../index.html">總目錄</a>
+      <a href="index.html" aria-current="page">{info['title']}</a>
+    </nav>
+    <div class="rail-footer">
+      <a href="../status.html">翻譯進度</a>
+      <button class="rail-control theme-toggle" type="button" aria-label="切換深色或淺色模式"></button>
+    </div>
+  </aside>
+  <button class="rail-toggle" type="button" aria-expanded="false" aria-controls="siteRail">目錄</button>
+  <div class="site-frame">
+    <header class="page-header">
+      <div class="page-header-inner">
+        <div class="kicker">CBETA {work}</div>
+        <h1>{info['title']}</h1>
+        <p>{info.get('subtitle', '')}</p>
+      </div>
+    </header>
+    <main class="toc-list index-list" id="volumeList">
+      <ol class="library-list">
 {items}
-    </ol>
-  </main>
+      </ol>
+    </main>
+  </div>
 </body>
 </html>
 """, encoding="utf-8")

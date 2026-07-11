@@ -4,26 +4,41 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>佛典白話翻譯</title>
-  <link rel="stylesheet" href="style.css">
-  <script src="theme.js"></script>
+  <link rel="stylesheet" href="style.css?v=20260711">
+  <script src="theme.js?v=20260711"></script>
 </head>
 <body>
-  <div class="topbar">
-    <a class="topbar-brand" href="index.html">佛典白話翻譯</a>
-    <a class="topbar-link" href="status.html">翻譯進度</a>
-    <button class="theme-toggle" type="button" aria-label="切換深色或淺色模式"></button>
+  <a class="skip-link" href="#libraryContent">跳至作品</a>
+  <aside class="site-rail" id="siteRail" aria-label="網站導覽">
+    <a class="rail-brand" href="index.html"><strong>佛典白話翻譯</strong><span>CBETA 對照閱讀</span></a>
+    <nav class="rail-nav" aria-label="主要導覽">
+      <span class="rail-label">藏經</span>
+      <a href="index.html" aria-current="page">總目錄</a>
+      <a href="T1579/index.html">瑜伽師地論</a>
+      <a href="T1585/index.html">成唯識論</a>
+      <a href="T1558/index.html">阿毘達磨俱舍論</a>
+    </nav>
+    <div class="rail-footer">
+      <a href="status.html">翻譯進度</a>
+      <button class="rail-control theme-toggle" type="button" aria-label="切換深色或淺色模式"></button>
+    </div>
+  </aside>
+  <button class="rail-toggle" type="button" aria-expanded="false" aria-controls="siteRail">目錄</button>
+  <div class="site-frame">
+    <header class="page-header">
+      <div class="page-header-inner">
+        <div class="kicker">CBETA 白話對照</div>
+        <h1>佛典白話翻譯</h1>
+        <p>逐段比對原文與白話譯文；從左欄選擇經典，閱讀時可直接續讀下一卷。</p>
+      </div>
+    </header>
+    <main class="index-list" id="libraryContent">
+      <ol class="library-list">
+      <li><a href="T1579/index.html"><strong>瑜伽師地論（T1579）聲聞地</strong><span>彌勒菩薩說 / 玄奘譯</span></a></li>
+      <li><a href="T1585/index.html"><strong>成唯識論（T1585）</strong><span>護法等菩薩造 / 玄奘譯</span></a></li>
+      <li><a href="T1558/index.html"><strong>阿毘達磨俱舍論（T1558）</strong><span>世親菩薩造 / 玄奘譯</span></a></li>
+      </ol>
+    </main>
   </div>
-  <header class="site-header">
-    <div class="kicker">CBETA 白話對照</div>
-    <h1>佛典白話翻譯</h1>
-    <p>以 CBETA 底本逐段白話翻譯，經術語、義理、平行文獻三線審校。</p>
-  </header>
-  <main class="index-list">
-    <ol>
-      <li class="level-0"><a href="T1579/index.html">瑜伽師地論（T1579）聲聞地</a><span>彌勒菩薩說 / 玄奘譯</span></li>
-      <li class="level-0"><a href="T1585/index.html">成唯識論（T1585）</a><span>護法等菩薩造 / 玄奘譯</span></li>
-      <li class="level-0"><a href="T1558/index.html">阿毘達磨俱舍論（T1558）</a><span>世親菩薩造 / 玄奘譯</span></li>
-    </ol>
-  </main>
 </body>
 </html>

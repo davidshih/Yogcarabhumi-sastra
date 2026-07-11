@@ -6,6 +6,8 @@ Billing guarantee (correctness requirement, not style):
              CLI uses OAuth login, never metered API billing. The app pins the
              Claude CLI model with --model so global user settings do not leak in.
 - codex   -> ChatGPT subscription: OPENAI_API_KEY scrubbed, ChatGPT login auth.
+             The runner pins the Codex CLI model so global user settings do not
+             silently change translation jobs.
 - glm     -> z.ai GLM coding plan: claude CLI pointed at the coding-plan
              endpoint via ANTHROPIC_BASE_URL/ANTHROPIC_AUTH_TOKEN.
 """
@@ -28,6 +30,7 @@ ZAI_BASE_URL = "https://api.z.ai/api/anthropic"
 ZAI_KEY_FILE = Path.home() / ".zai_key"
 ZAI_MODEL = os.environ.get("ZAI_MODEL", "glm-5.2")
 CLAUDE_MODEL = os.environ.get("YOGACARA_CLAUDE_MODEL", "sonnet")
+CODEX_MODEL = os.environ.get("YOGACARA_CODEX_MODEL", "gpt-5.6-luna")
 # z.ai error payloads carry naive datetimes in Beijing time:
 # "[1308][Usage limit reached for 5 hour. Your limit will reset at 2026-07-06 06:10:27][...]"
 ZAI_TZ = dt.timezone(dt.timedelta(hours=8))
@@ -218,7 +221,7 @@ def run_llm(model: str, prompt: str, timeout: int = TIMEOUT) -> LLMResult:
         cmd = ["claude", "-p"]
     elif model == "codex":
         out_file = SCRATCH / f"codex-out-{os.getpid()}-{time.monotonic_ns()}.txt"
-        cmd = ["codex", "exec", "-s", "read-only", "--skip-git-repo-check",
+        cmd = ["codex", "exec", "--model", CODEX_MODEL, "-s", "read-only", "--skip-git-repo-check",
                "--ephemeral", "--color", "never", "-o", str(out_file), "-"]
     else:
         raise LLMError(f"unknown model: {model}")

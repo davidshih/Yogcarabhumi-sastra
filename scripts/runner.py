@@ -583,7 +583,9 @@ def force_start_juan(job_id: str, juan: int) -> tuple[bool, str]:
         cancel_flag(job_id).unlink(missing_ok=True)
         cancel_flag(job_id, juan).unlink(missing_ok=True)
         resume_step = force_resume_step(prog)
-        for key in ("cancelled", "resume_at", "error"):
+        # A manual force restart gets a fresh repair and retry budget while
+        # retaining completed drafts and review progress.
+        for key in ("cancelled", "resume_at", "error", "auto_retried", "repaired", "force_fallback"):
             prog.pop(key, None)
         prog["step"] = resume_step
         prog["force_started"] = now_iso()

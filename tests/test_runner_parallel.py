@@ -170,6 +170,9 @@ class RunnerParallelTests(unittest.TestCase):
                 "step": "waiting_limit",
                 "resume_at": "2099-01-01T00:00:00+00:00",
                 "error": "limit",
+                "auto_retried": 2,
+                "repaired": True,
+                "force_fallback": True,
                 "tasks": {
                     "review": {
                         "state": "waiting",
@@ -198,6 +201,9 @@ class RunnerParallelTests(unittest.TestCase):
         self.assertEqual(review["sections_total"], 15)
         self.assertNotIn("resume_at", review)
         self.assertNotIn("error", review)
+        self.assertNotIn("auto_retried", saved["progress"]["1"])
+        self.assertNotIn("repaired", saved["progress"]["1"])
+        self.assertNotIn("force_fallback", saved["progress"]["1"])
 
     def test_force_start_juan_rejects_done_volume(self):
         job = self.job([1], parallel=2)

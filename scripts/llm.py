@@ -31,6 +31,8 @@ ZAI_KEY_FILE = Path.home() / ".zai_key"
 ZAI_MODEL = os.environ.get("ZAI_MODEL", "glm-5.2")
 CLAUDE_MODEL = os.environ.get("YOGACARA_CLAUDE_MODEL", "sonnet")
 CODEX_MODEL = os.environ.get("YOGACARA_CODEX_MODEL", "gpt-5.6-luna")
+CODEX_REASONING_EFFORTS = ("low", "medium", "high", "xhigh", "max")
+CODEX_REASONING_EFFORT = os.environ.get("YOGACARA_CODEX_REASONING_EFFORT", "high")
 # z.ai error payloads carry naive datetimes in Beijing time:
 # "[1308][Usage limit reached for 5 hour. Your limit will reset at 2026-07-06 06:10:27][...]"
 ZAI_TZ = dt.timezone(dt.timedelta(hours=8))
@@ -211,7 +213,9 @@ def _run_fake(model: str, prompt: str) -> LLMResult:
     return LLMResult(ok=True, text=f"<<<TRANSLATION\n{body}\n>>>\n<<<NOTE\n\n>>>")
 
 
-def run_llm(model: str, prompt: str, timeout: int = TIMEOUT) -> LLMResult:
+def run_llm(model: str, prompt: str, timeout: int = TIMEOUT,
+            codex_model: str | None = None,
+            codex_reasoning_effort: str | None = None) -> LLMResult:
     SCRATCH.mkdir(parents=True, exist_ok=True)
     if model in FAKE_MODELS:
         return _run_fake(model, prompt)
@@ -220,8 +224,13 @@ def run_llm(model: str, prompt: str, timeout: int = TIMEOUT) -> LLMResult:
     elif model == "glm":
         cmd = ["claude", "-p"]
     elif model == "codex":
+        codex_model = codex_model or CODEX_MODEL
+        effort = codex_reasoning_effort or CODEX_REASONING_EFFORT
+        if effort not in CODEX_REASONING_EFFORTS:
+            raise LLMError(f"invalid Codex reasoning effort: {effort}")
         out_file = SCRATCH / f"codex-out-{os.getpid()}-{time.monotonic_ns()}.txt"
-        cmd = ["codex", "exec", "--model", CODEX_MODEL, "-s", "read-only", "--skip-git-repo-check",
+        cmd = ["codex", "exec", "--model", codex_model, "-c", f'model_reasoning_effort="{effort}"',
+               "-s", "read-only", "--skip-git-repo-check",
                "--ephemeral", "--color", "never", "-o", str(out_file), "-"]
     else:
         raise LLMError(f"unknown model: {model}")

@@ -21,6 +21,13 @@
       "title": "阿毘達磨俱舍論",
       "subtitle": "世親菩薩造 / 玄奘譯",
       "pipeline_ready": false
+    },
+    {
+      "id": "T1821",
+      "file_id": "T41n1821",
+      "title": "俱舍論記",
+      "subtitle": "唐 普光述",
+      "pipeline_ready": true
     }
   ]
 }

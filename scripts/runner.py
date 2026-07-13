@@ -324,9 +324,12 @@ def unregister_job_parallel(job_id: str) -> None:
         MODEL_GATE.notify_all()
 
 
-def run_llm_guarded(model: str, prompt: str, timeout: int = llm.TIMEOUT) -> llm.LLMResult:
+def run_llm_guarded(model: str, prompt: str, timeout: int = llm.TIMEOUT,
+                    codex_model: str | None = None,
+                    codex_reasoning_effort: str | None = None) -> llm.LLMResult:
     with model_gate(model):
-        return llm.run_llm(model, prompt, timeout=timeout)
+        return llm.run_llm(model, prompt, timeout=timeout, codex_model=codex_model,
+                           codex_reasoning_effort=codex_reasoning_effort)
 
 
 def record_model_event(prog: dict | None, stage: str, primary: str, fallback: str,
@@ -938,10 +941,16 @@ def llm_call(job: dict, prompt: str, stage: str, juan: int | None = None) -> str
     check_cancel(job, juan)
     model = stage_model(job, stage, prog)
     fallback = stage_fallback(job, stage)
+
+    def run_job_llm(selected_model: str, selected_prompt: str) -> llm.LLMResult:
+        return run_llm_guarded(selected_model, selected_prompt,
+                               codex_model=job.get("codex_model"),
+                               codex_reasoning_effort=job.get("codex_reasoning_effort"))
+
     if fallback and fallback != model:
         # one shot on the primary; any failure switches this stage to the fallback
         try:
-            result = run_llm_guarded(model, prompt)
+            result = run_job_llm(model, prompt)
         except (llm.LLMError, FileNotFoundError) as err:
             result = llm.LLMResult(ok=False, error=str(err))
         if result.ok:
@@ -957,14 +966,14 @@ def llm_call(job: dict, prompt: str, stage: str, juan: int | None = None) -> str
     elif stage in DUAL_STAGES and is_dual(job):
         # draft without fallback: one shot, then skip this draft (the other one carries)
         try:
-            result = run_llm_guarded(model, prompt)
+            result = run_job_llm(model, prompt)
         except (llm.LLMError, FileNotFoundError) as err:
             result = llm.LLMResult(ok=False, error=str(err))
         if result.ok:
             return result.text
         raise OptionalModelUnavailable(f"{model} unavailable during {stage}: {result.error[:300]}")
     text = llm.call_with_limit_retry(model, prompt, on_wait=on_wait, log=lambda m: log(job, m),
-                                     run_fn=run_llm_guarded)
+                                     run_fn=run_job_llm)
     if prog is not None and task_state(prog, task_name).get("state") == "waiting":
         set_task(prog, task_name, "running", model=model)
         prog.pop("resume_at", None)
@@ -1667,6 +1676,9 @@ def cmd_enqueue(args) -> None:
         "parallel_juans": parallel_juans,
         "progress": {},
     }
+    if args.model == "codex":
+        job["codex_model"] = args.codex_model
+        job["codex_reasoning_effort"] = args.codex_reasoning_effort
     save_job(job)
     print(f"enqueued {job['id']}: {work} juans {juans} via {args.model}")
 
@@ -1681,6 +1693,9 @@ def main() -> int:
     enq.add_argument("--model", required=True, choices=QUEUES)
     enq.add_argument("--parallel-juans", type=int, default=DEFAULT_PARALLEL_JUANS,
                      help=f"number of juans to process concurrently (1-{MAX_PARALLEL_JUANS})")
+    enq.add_argument("--codex-model", default=llm.CODEX_MODEL)
+    enq.add_argument("--codex-reasoning-effort", choices=llm.CODEX_REASONING_EFFORTS,
+                     default=llm.CODEX_REASONING_EFFORT)
     enq.add_argument("--no-push", action="store_true")
     enq.add_argument("--summary", action="store_true", help="also build a summary page (not implemented)")
     sub.add_parser("run")

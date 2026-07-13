@@ -117,6 +117,23 @@ class RunnerParallelTests(unittest.TestCase):
         self.assertEqual(runner.stage_model(job, "merge", prog_a), "claude")
         self.assertEqual(runner.stage_model(job, "merge", prog_b), "codex")
 
+    def test_llm_call_forwards_job_codex_selection(self):
+        job = self.job([1])
+        job["model"] = "codex"
+        job["codex_model"] = "gpt-5.6-luna"
+        job["codex_reasoning_effort"] = "xhigh"
+
+        def run_once(_model, _prompt, **kwargs):
+            return kwargs["run_fn"](_model, _prompt).text
+
+        with mock.patch.object(runner, "run_llm_guarded",
+                               return_value=runner.llm.LLMResult(ok=True, text="done")) as guarded:
+            with mock.patch.object(runner.llm, "call_with_limit_retry", side_effect=run_once):
+                self.assertEqual(runner.llm_call(job, "prompt", "segment", 1), "done")
+
+        guarded.assert_called_once_with("codex", "prompt", codex_model="gpt-5.6-luna",
+                                        codex_reasoning_effort="xhigh")
+
     def test_held_job_sets_waiting_model_after_other_juans_finish(self):
         job = self.job([1, 2], parallel=2)
 

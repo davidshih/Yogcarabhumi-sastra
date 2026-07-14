@@ -705,6 +705,325 @@ class StructuredContractTests(unittest.TestCase):
             )
         self.assertNotIn("translation", runner.REVIEW_SCHEMA["properties"])
 
+    def test_review_schema_binds_exact_finding_evidence_and_parallel_identity(self):
+        schema = runner.review_schema(
+            "review_terms", "T1579-067-001", "a" * 64,
+            "T30n1579_p0001a01", set(),
+        )
+        self.assertFalse(schema["additionalProperties"])
+        self.assertEqual("review_terms", schema["properties"]["stage"]["const"])
+        self.assertEqual("T1579-067-001", schema["properties"]["unit_id"]["const"])
+        finding = schema["properties"]["findings"]["items"]
+        self.assertFalse(finding["additionalProperties"])
+        self.assertEqual(set(runner.REVIEW_FINDING_FIELDS), set(finding["properties"]))
+        self.assertEqual(
+            "T30n1579_p0001a01",
+            finding["properties"]["clause_id"]["const"],
+        )
+        evidence = finding["properties"]["evidence"]
+        self.assertFalse(evidence["additionalProperties"])
+        self.assertEqual(set(runner.REVIEW_EVIDENCE_FIELDS), set(evidence["properties"]))
+        self.assertEqual(0, evidence["properties"]["reference_ids"]["maxItems"])
+
+        parallel = runner.review_schema(
+            "review_parallel", "T1579-067-001", "a" * 64,
+            "T30n1579_p0001a01", {"ref-b", "ref-a"},
+        )
+        reference_ids = parallel["properties"]["findings"]["items"]["properties"][
+            "evidence"
+        ]["properties"]["reference_ids"]
+        self.assertEqual(["ref-a", "ref-b"], reference_ids["items"]["enum"])
+
+        no_evidence = runner.review_schema(
+            "review_parallel", "T1579-067-001", "a" * 64,
+            "T30n1579_p0001a01", set(),
+        )
+        self.assertEqual("not_checked", no_evidence["properties"]["verdict"]["const"])
+        self.assertEqual(0, no_evidence["properties"]["findings"]["maxItems"])
+        doctrine = runner.review_schema(
+            "review_doctrine", "T1579-067-001", "a" * 64,
+            "T30n1579_p0001a01", set(),
+        )
+        self.assertEqual(0, doctrine["properties"]["proposed_terms"]["maxItems"])
+        self.assertEqual(3, len(parallel["oneOf"]))
+        verdict_rules = {
+            item["properties"]["verdict"]["const"]: item["properties"]["findings"]
+            for item in parallel["oneOf"]
+        }
+        self.assertEqual(0, verdict_rules["pass"]["maxItems"])
+        self.assertEqual(1, verdict_rules["changes_required"]["minItems"])
+        self.assertEqual(0, verdict_rules["not_checked"]["maxItems"])
+
+    def test_review_schema_exposes_shape_that_rejects_observed_67_evidence_string(self):
+        schema = runner.review_schema(
+            "review_terms", "T1579-067-001", "a" * 64,
+            "T30n1579_p0001a01", set(),
+        )
+        evidence_schema = schema["properties"]["findings"]["items"]["properties"][
+            "evidence"
+        ]
+        self.assertEqual("object", evidence_schema["type"])
+        observed = {
+            "schema_version": "1.0", "stage": "review_terms",
+            "unit_id": "T1579-067-001", "source_hash": "a" * 64,
+            "verdict": "changes_required", "findings": [{
+                "clause_id": "T30n1579_p0001a01", "severity": "high",
+                "category": "terminology", "claim": "primary term_id missing",
+                "evidence": "原文：作意；譯文：作意",
+                "required_change": "Bind the primary term_id.",
+            }],
+        }
+        with self.assertRaisesRegex(ValueError, "requires source and translation evidence"):
+            runner.validate_review_contract(
+                observed, "review_terms", "T1579-067-001", "a" * 64,
+                "T30n1579_p0001a01", source="作意", translation="作意",
+            )
+
+    def test_review_terms_receives_only_whitelisted_structured_contract_annotations(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            markdown = Path(tmp) / "translation.md"
+            self.markdown(markdown, translation="譯文")
+            current_hash = audit.sha256_text("原文")
+            clause = self.translation_payload()["clauses"][0]
+            clause.update({
+                "clause_id": "T30n1579_p0001a01", "literal": "原文",
+                "vernacular": "譯文", "term_occurrences": [{
+                    "clause_id": "T30n1579_p0001a01",
+                    "term_id": "term-primary-001", "surface": "作意",
+                }],
+            })
+            prog = {"clause_contracts": {"T1579-067-001": {
+                "stage": "translate", "source_hash": current_hash, "clause": clause,
+            }}}
+            job = {"id": "job", "work": "T1579", "model": "auto"}
+            captured = {}
+
+            def fake_prompt(name, **values):
+                captured["name"] = name
+                captured["input"] = json.loads(values["input_json"])
+                captured["schema"] = json.loads(values["schema_json"])
+                return "prompt"
+
+            response = json.dumps({
+                "schema_version": "1.0", "stage": "review_terms",
+                "unit_id": "T1579-067-001", "source_hash": current_hash,
+                "verdict": "pass", "findings": [], "proposed_terms": [],
+            }, ensure_ascii=False)
+            with patch.object(runner, "prompt_text", side_effect=fake_prompt), \
+                 patch.object(
+                     runner, "llm_call", side_effect=self.audited_llm_response(response)
+                 ) as call, patch.object(runner, "save_job"):
+                runner.review_pass(job, 67, markdown, "review_terms", prog, 1)
+
+        call.assert_called_once()
+        structured = captured["input"]["structured_contract"]
+        self.assertEqual(
+            {"stage", "source_hash", "translation_sha256", "clause_id", "annotations"},
+            set(structured),
+        )
+        self.assertEqual(
+            {"additions", "negation_scope", "references", "speakers",
+             "term_occurrences", "variants", "notes"},
+            set(structured["annotations"]),
+        )
+        self.assertEqual("term-primary-001",
+                         structured["annotations"]["term_occurrences"][0]["term_id"])
+        self.assertNotIn("source", structured)
+        self.assertNotIn("translation", structured)
+        self.assertEqual("review_terms", captured["schema"]["properties"]["stage"]["const"])
+        self.assertEqual(
+            runner.structured_contract_sha256(structured),
+            prog["review_attestations"]["T1579-067-001"]["review_terms"][
+                "structured_contract_sha256"
+            ],
+        )
+
+    def test_review_terms_reloads_glossary_before_building_next_section_prompt(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            markdown = Path(tmp) / "translation.md"
+            markdown.write_text(
+                "# test\n\n"
+                "## 01 First\nRange: T30n1579_p0001a01\n\n"
+                "Source:\n<<<\n共同詞第一節\n>>>\n\n"
+                "Translation:\n<<<\n第一節譯文\n>>>\n\nNote:\n<<<\n\n>>>\n\n"
+                "## 02 Second\nRange: T30n1579_p0001a02\n\n"
+                "Source:\n<<<\n共同詞第二節\n>>>\n\n"
+                "Translation:\n<<<\n第二節譯文\n>>>\n\nNote:\n<<<\n\n>>>\n",
+                encoding="utf-8",
+            )
+            contracts = {}
+            for index, (source, translation, clause_id) in enumerate((
+                ("共同詞第一節", "第一節譯文", "T30n1579_p0001a01"),
+                ("共同詞第二節", "第二節譯文", "T30n1579_p0001a02"),
+            ), start=1):
+                clause = self.translation_payload()["clauses"][0]
+                clause.update({
+                    "clause_id": clause_id, "literal": source, "vernacular": translation,
+                })
+                contracts[f"T1579-067-{index:03d}"] = {
+                    "stage": "translate", "source_hash": audit.sha256_text(source),
+                    "clause": clause,
+                }
+            prog = {"clause_contracts": contracts}
+            job = {"id": "job", "work": "T1579", "model": "auto"}
+            glossary_state = {"terms": []}
+            call_order = []
+            prompt_inputs = []
+            llm_calls = []
+            new_term = {"id": "term-new", "source_terms": ["共同詞"]}
+
+            def fake_load():
+                call_order.append("load")
+                return copy.deepcopy(glossary_state)
+
+            def fake_prompt(name, **values):
+                prompt_inputs.append(json.loads(values["input_json"]))
+                call_order.append(f"prompt-{len(prompt_inputs)}")
+                return name
+
+            def fake_append(raw, _job):
+                call_order.append("append")
+                glossary_state["terms"].extend(json.loads(raw))
+
+            responses = [
+                {"schema_version": "1.0", "stage": "review_terms",
+                 "unit_id": "T1579-067-001",
+                 "source_hash": audit.sha256_text("共同詞第一節"),
+                 "verdict": "pass", "findings": [], "proposed_terms": [new_term]},
+                {"schema_version": "1.0", "stage": "review_terms",
+                 "unit_id": "T1579-067-002",
+                 "source_hash": audit.sha256_text("共同詞第二節"),
+                 "verdict": "pass", "findings": [], "proposed_terms": []},
+            ]
+
+            def fake_call(_job, _prompt, _stage, *, context, effort=None):
+                llm_calls.append(context["unit_id"])
+                call_order.append(f"llm-{len(llm_calls)}")
+                context.setdefault("_audit_event_ids", []).append(
+                    f"event-{context['unit_id']}"
+                )
+                return json.dumps(responses.pop(0), ensure_ascii=False)
+
+            with patch.object(runner, "load_glossary", side_effect=fake_load), \
+                 patch.object(runner, "prompt_text", side_effect=fake_prompt), \
+                 patch.object(runner, "append_new_terms", side_effect=fake_append), \
+                 patch.object(runner, "llm_call", side_effect=fake_call), \
+                 patch.object(runner, "save_job"):
+                runner.review_pass(job, 67, markdown, "review_terms", prog, 1)
+
+        self.assertEqual(
+            ["load", "prompt-1", "llm-1", "append", "load", "prompt-2", "llm-2"],
+            call_order,
+        )
+        self.assertEqual([], prompt_inputs[0]["glossary"])
+        self.assertEqual(["term-new"], [
+            term["id"] for term in prompt_inputs[1]["glossary"]
+        ])
+
+    def test_review_preflight_rejects_stale_or_malformed_contract_before_llm(self):
+        cases = ("source_hash", "translation", "term_occurrences")
+        for case in cases:
+            with self.subTest(case=case), tempfile.TemporaryDirectory() as tmp:
+                markdown = Path(tmp) / "translation.md"
+                self.markdown(markdown, translation="譯文")
+                current_hash = audit.sha256_text("原文")
+                clause = self.translation_payload()["clauses"][0]
+                clause.update({
+                    "clause_id": "T30n1579_p0001a01", "literal": "原文",
+                    "vernacular": "譯文",
+                })
+                contract = {
+                    "stage": "translate", "source_hash": current_hash, "clause": clause,
+                }
+                if case == "source_hash":
+                    contract["source_hash"] = "b" * 64
+                elif case == "translation":
+                    clause["vernacular"] = "stale translation"
+                else:
+                    clause["term_occurrences"] = [{
+                        "clause_id": "T30n1579_p0001a01", "surface": "作意",
+                    }]
+                prog = {
+                    "clause_contracts": {"T1579-067-001": contract},
+                    "review_attestations": {"T1579-067-001": {
+                        "review_terms": {"verdict": "pass"},
+                    }},
+                }
+                job = {"id": "job", "work": "T1579", "model": "auto"}
+                with patch.object(runner, "llm_call") as call, \
+                     patch.object(runner, "save_job"):
+                    with self.assertRaises(ValueError):
+                        runner.review_pass(job, 67, markdown, "review_terms", prog, 1)
+
+                call.assert_not_called()
+                self.assertNotIn(
+                    "review_terms", prog["review_attestations"]["T1579-067-001"],
+                )
+
+    def test_review_whole_pass_preflight_rejects_second_stale_contract_before_any_llm(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            markdown = Path(tmp) / "translation.md"
+            markdown.write_text(
+                "# test\n\n"
+                "## 01 First\nRange: T30n1579_p0001a01\n\n"
+                "Source:\n<<<\n第一節原文很長很長\n>>>\n\n"
+                "Translation:\n<<<\n短\n>>>\n\nNote:\n<<<\n\n>>>\n\n"
+                "## 02 Second\nRange: T30n1579_p0001a02\n\n"
+                "Source:\n<<<\n第二節原文\n>>>\n\n"
+                "Translation:\n<<<\n第二節譯文\n>>>\n\nNote:\n<<<\n\n>>>\n",
+                encoding="utf-8",
+            )
+            clauses = {}
+            for index, (source, translation, clause_id) in enumerate((
+                ("第一節原文很長很長", "短", "T30n1579_p0001a01"),
+                ("第二節原文", "第二節譯文", "T30n1579_p0001a02"),
+            ), start=1):
+                clause = self.translation_payload()["clauses"][0]
+                clause.update({
+                    "clause_id": clause_id, "literal": source, "vernacular": translation,
+                })
+                clauses[f"T1579-067-{index:03d}"] = {
+                    "stage": "translate", "source_hash": audit.sha256_text(source),
+                    "clause": clause,
+                }
+            clauses["T1579-067-002"]["source_hash"] = "b" * 64
+            prog = {"clause_contracts": clauses}
+            job = {"id": "job", "work": "T1579", "model": "auto"}
+
+            def fake_call(_job, _prompt, stage, *, context, effort=None):
+                context.setdefault("_audit_event_ids", []).append("unexpected-event")
+                return json.dumps({
+                    "schema_version": "1.0", "stage": stage,
+                    "unit_id": context["unit_id"],
+                    "source_hash": context["source_hash"],
+                    "verdict": "pass", "findings": [],
+                }, ensure_ascii=False)
+
+            with patch.object(runner, "llm_call", side_effect=fake_call) as call, \
+                 patch.object(runner, "save_job"):
+                with self.assertRaises(ValueError):
+                    runner.review_pass(job, 67, markdown, "review_terms", prog, 1)
+            created_attestation_maps = "review_attestations" in prog
+            prog["review_attestations"] = {
+                unit: {"review_terms": {"verdict": "pass"}}
+                for unit in clauses
+            }
+            with patch.object(runner, "llm_call", side_effect=fake_call) as second_call, \
+                 patch.object(runner, "save_job"):
+                with self.assertRaises(ValueError):
+                    runner.review_pass(job, 67, markdown, "review_terms", prog, 1)
+            old_attestations_cleared = all(
+                "review_terms" not in item
+                for item in prog["review_attestations"].values()
+            )
+
+        call.assert_not_called()
+        second_call.assert_not_called()
+        self.assertNotIn("warnings", prog)
+        self.assertFalse(created_attestation_maps)
+        self.assertTrue(old_attestations_cleared)
+        self.assertNotIn("review_verdicts", prog)
+
     def test_review_chain_fixes_then_runs_all_reviewers_again(self):
         job = {"id": "test", "progress": {"67": {}}}
         finding = {"section_index": 0, "clause_id": "c1"}
@@ -756,6 +1075,98 @@ class StructuredContractTests(unittest.TestCase):
                 "review_parallel", "u", "a" * 64, "c", source="原文", translation="譯文",
                 allowed_reference_ids={"allowed"},
             )
+        with self.assertRaisesRegex(ValueError, "must be empty"):
+            runner.validate_review_contract(
+                {**base, "stage": "review_terms", "verdict": "changes_required",
+                 "findings": [finding]},
+                "review_terms", "u", "a" * 64, "c", source="原文", translation="譯文",
+            )
+        self.assertEqual([], runner.validate_review_contract(
+            {**base, "stage": "review_parallel"}, "review_parallel", "u", "a" * 64, "c",
+            source="原文", translation="譯文", allowed_reference_ids={"allowed"},
+        ))
+        for verdict, findings in (
+            ("pass", [finding]),
+            ("changes_required", []),
+            ("not_checked", [finding]),
+        ):
+            with self.subTest(verdict=verdict), self.assertRaisesRegex(
+                    ValueError, "verdict does not match"):
+                runner.validate_review_contract(
+                    {**base, "stage": "review_parallel", "verdict": verdict,
+                     "findings": findings},
+                    "review_parallel", "u", "a" * 64, "c",
+                    source="原文", translation="譯文",
+                    allowed_reference_ids={"outside"},
+                )
+        with self.assertRaisesRegex(ValueError, "only review_terms"):
+            runner.validate_review_contract(
+                {**base, "stage": "review_doctrine", "verdict": "pass",
+                 "proposed_terms": [{"id": "not-allowed"}]},
+                "review_doctrine", "u", "a" * 64, "c",
+                source="原文", translation="譯文",
+            )
+
+    def test_review_parallel_normalizes_nonblank_source_ids_for_input_and_schema(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            markdown = Path(tmp) / "translation.md"
+            self.markdown(markdown, translation="譯文")
+            current_hash = audit.sha256_text("原文")
+            clause = self.translation_payload()["clauses"][0]
+            clause.update({
+                "clause_id": "T30n1579_p0001a01", "literal": "原文",
+                "vernacular": "譯文",
+            })
+            prog = {"clause_contracts": {"T1579-067-001": {
+                "stage": "translate", "source_hash": current_hash, "clause": clause,
+            }}}
+            job = {
+                "id": "job", "work": "T1579", "model": "auto",
+                "review_evidence": {"T1579-067-001": [
+                    {"source_id": " ref-a ", "quote": "usable",
+                     "metadata": {"quote": "before"}},
+                    {"source_id": "   ", "quote": "blank"},
+                    {"source_id": 7, "quote": "not a string"},
+                ]},
+            }
+            captured = {}
+
+            def mutate_after_preflight():
+                job["review_evidence"]["T1579-067-001"][0]["metadata"]["quote"] = "after"
+                return {"terms": []}
+
+            def fake_prompt(name, **values):
+                captured["input"] = json.loads(values["input_json"])
+                captured["schema"] = json.loads(values["schema_json"])
+                return name
+
+            response = json.dumps({
+                "schema_version": "1.0", "stage": "review_parallel",
+                "unit_id": "T1579-067-001", "source_hash": current_hash,
+                "verdict": "not_checked", "findings": [],
+            }, ensure_ascii=False)
+            with patch.object(runner, "load_glossary", side_effect=mutate_after_preflight), \
+                 patch.object(runner, "prompt_text", side_effect=fake_prompt), \
+                 patch.object(
+                     runner, "llm_call", side_effect=self.audited_llm_response(response)
+                 ), patch.object(runner, "save_job"):
+                runner.review_pass(job, 67, markdown, "review_parallel", prog, 1)
+
+        self.assertEqual(
+            ["ref-a"],
+            [item["source_id"] for item in captured["input"]["review_evidence"]],
+        )
+        self.assertEqual(
+            "before", captured["input"]["review_evidence"][0]["metadata"]["quote"],
+        )
+        self.assertEqual(
+            "after",
+            job["review_evidence"]["T1579-067-001"][0]["metadata"]["quote"],
+        )
+        reference_schema = captured["schema"]["properties"]["findings"]["items"][
+            "properties"
+        ]["evidence"]["properties"]["reference_ids"]
+        self.assertEqual(["ref-a"], reference_schema["items"]["enum"])
 
     def test_formal_codex_command_pins_model_and_effort(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -1010,6 +1421,26 @@ class AuditStoreTests(unittest.TestCase):
             data = root / "data.json"
             data.write_text("{}", encoding="utf-8")
             store = audit.AuditStore(root, "job")
+            clause = {
+                "clause_id": "T30n1579_p0001a01", "literal": "原文",
+                "vernacular": "譯文", "additions": [], "negation_scope": [],
+                "references": [], "speakers": None, "term_occurrences": [],
+                "variants": [], "notes": [],
+            }
+            structured_contract = {
+                "stage": "translate", "source_hash": audit.sha256_text("原文"),
+                "translation_sha256": audit.sha256_text("譯文"),
+                "clause_id": "T30n1579_p0001a01",
+                "annotations": {
+                    field: clause[field] for field in (
+                        "additions", "negation_scope", "references", "speakers",
+                        "term_occurrences", "variants", "notes",
+                    )
+                },
+            }
+            structured_contract_sha256 = audit.sha256_text(json.dumps(
+                structured_contract, ensure_ascii=False, sort_keys=True, separators=(",", ":"),
+            ))
             attestations = {}
             for stage in ("review_terms", "review_doctrine"):
                 response = store.artifact("response", json.dumps({
@@ -1021,7 +1452,10 @@ class AuditStoreTests(unittest.TestCase):
                     "type": "llm_attempt", "stage": stage, "model": "gpt-5.6-sol",
                     "effort": "high", "status": "ok", "sent_at": "2026-07-14T00:00:00Z",
                     "unit_id": "T1579-067-001", "clause_ids": ["T30n1579_p0001a01"],
-                    "hashes": {"source_sha256": audit.sha256_text("原文")},
+                    "hashes": {
+                        "source_sha256": audit.sha256_text("原文"),
+                        "structured_contract_sha256": structured_contract_sha256,
+                    },
                     "artifacts": {"response": response},
                 })
                 attestations[stage] = {
@@ -1029,13 +1463,13 @@ class AuditStoreTests(unittest.TestCase):
                     "model": "gpt-5.6-sol", "effort": "high",
                     "source_sha256": audit.sha256_text("原文"),
                     "translation_sha256": audit.sha256_text("譯文"),
+                    "structured_contract_sha256": structured_contract_sha256,
                     "source_quote": "原文", "translation_quote": "譯文",
                 }
             job = {"id": "job", "work": "T1579", "model": "auto", "progress": {"67": {
                 "clause_contracts": {"T1579-067-001": {
                     "stage": "translate", "source_hash": audit.sha256_text("原文"),
-                    "clause": {"clause_id": "T30n1579_p0001a01", "literal": "原文",
-                               "vernacular": "譯文"},
+                    "clause": clause,
                 }},
                 "review_attestations": {"T1579-067-001": attestations},
             }}}
@@ -1046,6 +1480,25 @@ class AuditStoreTests(unittest.TestCase):
                     job, 67, markdown, data, "T30n1579_p0001a01", "T30n1579_p0001a01",
                 )
                 passed = json.loads(path.read_text(encoding="utf-8"))
+                clause["term_occurrences"] = [{
+                    "clause_id": "T30n1579_p0001a01",
+                    "term_id": "term-primary-001", "surface": "作意",
+                }]
+                annotation_path = runner.write_coverage_ledger(
+                    job, 67, markdown, data, "T30n1579_p0001a01", "T30n1579_p0001a01",
+                )
+                annotation_stale = json.loads(annotation_path.read_text(encoding="utf-8"))
+                clause["term_occurrences"] = []
+                job["progress"]["67"]["clause_contracts"]["T1579-067-001"][
+                    "source_hash"
+                ] = "stale"
+                stale_path = runner.write_coverage_ledger(
+                    job, 67, markdown, data, "T30n1579_p0001a01", "T30n1579_p0001a01",
+                )
+                stale = json.loads(stale_path.read_text(encoding="utf-8"))
+                job["progress"]["67"]["clause_contracts"]["T1579-067-001"][
+                    "source_hash"
+                ] = audit.sha256_text("原文")
                 bad_response = store.artifact("response", json.dumps({
                     "schema_version": "1.0", "stage": "review_terms",
                     "unit_id": "T1579-067-001", "source_hash": audit.sha256_text("原文"),
@@ -1080,8 +1533,106 @@ class AuditStoreTests(unittest.TestCase):
         self.assertTrue(passed["passed"])
         self.assertEqual({"review_terms", "review_doctrine"},
                          {item["stage"] for item in passed["clauses"][0]["evidence"]})
+        self.assertFalse(annotation_stale["passed"])
+        self.assertEqual("missing", annotation_stale["clauses"][0]["status"])
+        self.assertFalse(stale["passed"])
+        self.assertEqual("missing", stale["clauses"][0]["status"])
         self.assertFalse(bad["passed"])
         self.assertFalse(failed["passed"])
+
+    def test_real_review_events_seal_structured_contract_digest_for_ledger(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            markdown = root / "translation.md"
+            StructuredContractTests.markdown(markdown, translation="譯文")
+            data = root / "data.json"
+            data.write_text("{}", encoding="utf-8")
+            current_hash = audit.sha256_text("原文")
+            clause = StructuredContractTests.translation_payload()["clauses"][0]
+            clause.update({
+                "clause_id": "T30n1579_p0001a01", "literal": "原文",
+                "vernacular": "譯文",
+            })
+            job = {
+                "id": "job", "work": "T1579", "model": "auto", "state": "running",
+                "progress": {"67": {"clause_contracts": {"T1579-067-001": {
+                    "stage": "translate", "source_hash": current_hash, "clause": clause,
+                }}}},
+            }
+            prog = job["progress"]["67"]
+            store = audit.AuditStore(root, "job")
+            responses = [
+                {"schema_version": "1.0", "stage": stage,
+                 "unit_id": "T1579-067-001", "source_hash": current_hash,
+                 "verdict": "pass", "findings": [], "proposed_terms": []}
+                for stage in ("review_terms", "review_doctrine")
+            ]
+
+            def fake_backend(_model, _prompt, *, on_wait, log, effort, on_attempt):
+                text = json.dumps(responses.pop(0), ensure_ascii=False)
+                result = llm.LLMResult(
+                    ok=True, text=text, model="gpt-5.6-sol", effort=effort,
+                    sent_at="2026-07-14T00:00:00-04:00",
+                    received_at="2026-07-14T00:00:01-04:00", duration_ms=1000,
+                )
+                on_attempt(result, 1)
+                return text
+
+            with patch.object(runner, "ROOT", root), \
+                 patch.object(runner, "audit_store", return_value=store), \
+                 patch.object(llm, "call_with_limit_retry", side_effect=fake_backend), \
+                 patch.object(runner, "save_job"), \
+                 patch.object(
+                     runner, "extract_lines",
+                     return_value={"T30n1579_p0001a01": "原文"},
+                 ):
+                runner.review_pass(job, 67, markdown, "review_terms", prog, 1)
+                runner.review_pass(job, 67, markdown, "review_doctrine", prog, 1)
+                passed_path = runner.write_coverage_ledger(
+                    job, 67, markdown, data,
+                    "T30n1579_p0001a01", "T30n1579_p0001a01",
+                )
+                passed = json.loads(passed_path.read_text(encoding="utf-8"))
+                initial_digest = prog["review_attestations"]["T1579-067-001"][
+                    "review_terms"
+                ]["structured_contract_sha256"]
+                review_events = [
+                    event for event in store.events()
+                    if event.get("stage") in {"review_terms", "review_doctrine"}
+                ]
+
+                clause["term_occurrences"] = [{
+                    "clause_id": "T30n1579_p0001a01",
+                    "term_id": "term-new", "surface": "作意",
+                }]
+                changed_contract = runner.canonical_structured_contract(
+                    prog["clause_contracts"]["T1579-067-001"],
+                    "T1579-067-001", current_hash, "T30n1579_p0001a01", "譯文",
+                    error_stage="test",
+                )
+                changed_digest = runner.structured_contract_sha256(changed_contract)
+                for stage in ("review_terms", "review_doctrine"):
+                    prog["review_attestations"]["T1579-067-001"][stage][
+                        "structured_contract_sha256"
+                    ] = changed_digest
+                tampered_path = runner.write_coverage_ledger(
+                    job, 67, markdown, data,
+                    "T30n1579_p0001a01", "T30n1579_p0001a01",
+                )
+                tampered = json.loads(tampered_path.read_text(encoding="utf-8"))
+
+        self.assertTrue(passed["passed"])
+        with self.subTest("event digest"):
+            self.assertEqual(
+                [initial_digest, initial_digest],
+                [
+                    event.get("hashes", {}).get("structured_contract_sha256")
+                    for event in review_events
+                ],
+            )
+        with self.subTest("mutable digest cannot replace event"):
+            self.assertFalse(tampered["passed"])
+            self.assertEqual("missing", tampered["clauses"][0]["status"])
 
 
 class PublisherTests(unittest.TestCase):

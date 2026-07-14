@@ -132,6 +132,10 @@ TRANSLATION_NESTED_SHAPES = {
     "variants": ("clause_id", "text", "rationale"),
     "notes": ("clause_id", "text"),
 }
+STRUCTURED_CONTRACT_ANNOTATION_FIELDS = (
+    "additions", "negation_scope", "references", "speakers",
+    "term_occurrences", "variants", "notes",
+)
 
 
 def translation_schema(stage: str | None = None, unit_id_value: str | None = None,
@@ -199,27 +203,126 @@ def translation_schema(stage: str | None = None, unit_id_value: str | None = Non
 
 
 TRANSLATION_SCHEMA = translation_schema()
-REVIEW_SCHEMA = {
-    "type": "object",
-    "additionalProperties": False,
-    "required": ["schema_version", "stage", "unit_id", "source_hash", "verdict", "findings"],
-    "properties": {
-        "schema_version": {"const": "1.0"},
-        "stage": {"enum": list(REVIEW_PASSES)},
-        "unit_id": {"type": "string"},
-        "source_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
-        "verdict": {"enum": ["pass", "changes_required", "not_checked"]},
-        "findings": {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "required": ["clause_id", "severity", "category", "claim", "evidence",
-                             "required_change"],
-            },
+REVIEW_EVIDENCE_FIELDS = ("source_quote", "translation_quote", "reference_ids")
+REVIEW_FINDING_FIELDS = (
+    "clause_id", "severity", "category", "claim", "evidence", "required_change",
+)
+
+
+def normalized_reference_ids(values: set[str]) -> set[str]:
+    return {
+        value.strip() for value in values
+        if isinstance(value, str) and value.strip()
+    }
+
+
+def review_schema(stage: str | None = None, unit_id_value: str | None = None,
+                  source_hash_value: str | None = None,
+                  clause_id_value: str | None = None,
+                  allowed_reference_ids: set[str] | None = None) -> dict:
+    def nonblank_string() -> dict:
+        return {"type": "string", "pattern": r"\S"}
+
+    def bound_string(value: str | None) -> dict:
+        return {"const": value} if value is not None else nonblank_string()
+
+    normalized_allowed_ids = (
+        normalized_reference_ids(allowed_reference_ids)
+        if allowed_reference_ids is not None else None
+    )
+    reference_ids = {
+        "type": "array",
+        "items": nonblank_string(),
+    }
+    if stage in {"review_terms", "review_doctrine"}:
+        reference_ids["maxItems"] = 0
+    elif stage == "review_parallel" and normalized_allowed_ids is not None:
+        if normalized_allowed_ids:
+            reference_ids["items"] = {"enum": sorted(normalized_allowed_ids)}
+        else:
+            reference_ids["maxItems"] = 0
+
+    evidence_properties = {
+        "source_quote": nonblank_string(),
+        "translation_quote": nonblank_string(),
+        "reference_ids": reference_ids,
+    }
+    finding_properties = {
+        "clause_id": bound_string(clause_id_value),
+        "severity": {"enum": ["crit", "high", "med", "low"]},
+        "category": nonblank_string(),
+        "claim": nonblank_string(),
+        "evidence": {
+            "type": "object",
+            "additionalProperties": False,
+            "required": list(REVIEW_EVIDENCE_FIELDS),
+            "properties": evidence_properties,
         },
-        "proposed_terms": {"type": "array"},
-    },
-}
+        "required_change": nonblank_string(),
+    }
+    findings = {
+        "type": "array",
+        "items": {
+            "type": "object",
+            "additionalProperties": False,
+            "required": list(REVIEW_FINDING_FIELDS),
+            "properties": finding_properties,
+        },
+    }
+    no_parallel_evidence = stage == "review_parallel" and normalized_allowed_ids == set()
+    if no_parallel_evidence:
+        findings["maxItems"] = 0
+
+    if no_parallel_evidence:
+        verdict = {"const": "not_checked"}
+    elif stage is None:
+        verdict = {"enum": ["pass", "changes_required", "not_checked"]}
+    elif stage == "review_parallel":
+        verdict = {"enum": ["pass", "changes_required", "not_checked"]}
+    else:
+        verdict = {"enum": ["pass", "changes_required"]}
+    proposed_terms = {"type": "array"}
+    if stage is not None and stage != "review_terms":
+        proposed_terms["maxItems"] = 0
+    properties = {
+        "schema_version": {"const": "1.0"},
+        "stage": {"const": stage} if stage is not None else {"enum": list(REVIEW_PASSES)},
+        "unit_id": bound_string(unit_id_value),
+        "source_hash": ({"const": source_hash_value} if source_hash_value is not None
+                        else {"type": "string", "pattern": "^[0-9a-f]{64}$"}),
+        "verdict": verdict,
+        "findings": findings,
+        "proposed_terms": proposed_terms,
+    }
+    return {
+        "type": "object",
+        "additionalProperties": False,
+        "required": ["schema_version", "stage", "unit_id", "source_hash", "verdict", "findings"],
+        "properties": properties,
+        "oneOf": [
+            {
+                "properties": {
+                    "verdict": {"const": "pass"},
+                    "findings": {"maxItems": 0},
+                },
+            },
+            {
+                "properties": {
+                    "verdict": {"const": "changes_required"},
+                    "findings": {"minItems": 1},
+                },
+            },
+            {
+                "properties": {
+                    "verdict": {"const": "not_checked"},
+                    "findings": {"maxItems": 0},
+                },
+            },
+        ],
+    }
+
+
+REVIEW_SCHEMA = review_schema()
 SEGMENT_SCHEMA = {
     "type": "object",
     "required": ["schema_version", "stage", "work", "juan", "source_hash", "segments"],
@@ -428,6 +531,45 @@ def validate_translation_contract(payload: dict, stage: str, expected_unit: str,
     return clause
 
 
+def canonical_structured_contract(contract: dict, expected_unit: str, expected_hash: str,
+                                  expected_clause: str, translation: str,
+                                  *, error_stage: str) -> dict:
+    if not isinstance(contract, dict):
+        raise ValueError(f"{error_stage}: structured translation contract is missing")
+    contract_stage = contract.get("stage")
+    if contract_stage not in TRANSLATION_STAGES:
+        raise ValueError(f"{error_stage}: structured translation contract stage is invalid")
+    contract_payload = {
+        "schema_version": "1.0",
+        "stage": contract_stage,
+        "unit_id": expected_unit,
+        "source_hash": contract.get("source_hash"),
+        "clauses": [contract.get("clause")],
+    }
+    clause = validate_translation_contract(
+        contract_payload, contract_stage, expected_unit, expected_hash, expected_clause,
+    )
+    if clause["vernacular"] != translation:
+        raise ValueError(f"{error_stage}: structured translation contract is stale")
+    annotations = json.loads(json.dumps({
+        field: clause[field] for field in STRUCTURED_CONTRACT_ANNOTATION_FIELDS
+    }, ensure_ascii=False))
+    return {
+        "stage": contract_stage,
+        "source_hash": expected_hash,
+        "translation_sha256": audit.sha256_text(translation),
+        "clause_id": expected_clause,
+        "annotations": annotations,
+    }
+
+
+def structured_contract_sha256(contract: dict) -> str:
+    canonical = json.dumps(
+        contract, ensure_ascii=False, sort_keys=True, separators=(",", ":"),
+    )
+    return audit.sha256_text(canonical)
+
+
 def validate_review_contract(payload: dict, stage: str, expected_unit: str,
                              expected_hash: str, expected_clause: str, *,
                              source: str, translation: str,
@@ -437,16 +579,24 @@ def validate_review_contract(payload: dict, stage: str, expected_unit: str,
     required_payload = {"schema_version", "stage", "unit_id", "source_hash", "verdict", "findings"}
     if payload.keys() - allowed or required_payload - payload.keys():
         raise ValueError(f"{stage}: reviewer output contains forbidden fields")
+    if payload.get("schema_version") != "1.0" or payload.get("stage") != stage:
+        raise ValueError(f"{stage}: schema_version/stage mismatch")
     if payload.get("unit_id") != expected_unit or payload.get("source_hash") != expected_hash:
         raise ValueError(f"{stage}: unit_id/source_hash mismatch")
+    if "proposed_terms" in payload and not isinstance(payload["proposed_terms"], list):
+        raise ValueError(f"{stage}: proposed_terms must be an array")
     verdict = payload.get("verdict")
     findings = payload.get("findings")
     allowed_verdicts = {"pass", "changes_required"}
-    if stage == "review_parallel" and not allowed_reference_ids:
-        allowed_verdicts = {"not_checked"}
+    normalized_allowed_ids = normalized_reference_ids(allowed_reference_ids or set())
+    if stage == "review_parallel":
+        allowed_verdicts = (
+            {"pass", "changes_required", "not_checked"}
+            if normalized_allowed_ids else {"not_checked"}
+        )
     if verdict not in allowed_verdicts or not isinstance(findings, list):
         raise ValueError(f"{stage}: invalid verdict/findings")
-    required = {"clause_id", "severity", "category", "claim", "evidence", "required_change"}
+    required = set(REVIEW_FINDING_FIELDS)
     for finding in findings:
         if not isinstance(finding, dict) or set(finding) != required:
             raise ValueError(f"{stage}: finding is missing required fields")
@@ -455,7 +605,7 @@ def validate_review_contract(payload: dict, stage: str, expected_unit: str,
         }:
             raise ValueError(f"{stage}: finding clause/severity is invalid")
         evidence = finding["evidence"]
-        evidence_fields = {"source_quote", "translation_quote", "reference_ids"}
+        evidence_fields = set(REVIEW_EVIDENCE_FIELDS)
         if not isinstance(evidence, dict) or set(evidence) != evidence_fields:
             raise ValueError(f"{stage}: finding requires source and translation evidence")
         source_quote = evidence["source_quote"]
@@ -465,14 +615,19 @@ def validate_review_contract(payload: dict, stage: str, expected_unit: str,
                 or not isinstance(translation_quote, str) or not translation_quote.strip()
                 or translation_quote not in translation):
             raise ValueError(f"{stage}: evidence quotes are not contained in the reviewed text")
-        if not isinstance(reference_ids, list) or not all(isinstance(item, str) for item in reference_ids):
+        if (not isinstance(reference_ids, list)
+                or not all(isinstance(item, str) and item.strip() for item in reference_ids)):
             raise ValueError(f"{stage}: evidence reference_ids must be strings")
-        if stage == "review_parallel" and not set(reference_ids).issubset(allowed_reference_ids or set()):
+        if (stage == "review_parallel"
+                and not set(reference_ids).issubset(normalized_allowed_ids)):
             raise ValueError(f"{stage}: evidence reference_ids are outside the input allowlist")
+        if stage != "review_parallel" and reference_ids:
+            raise ValueError(f"{stage}: evidence reference_ids must be empty")
         for field in ("category", "claim", "required_change"):
             if not isinstance(finding[field], str) or not finding[field].strip():
                 raise ValueError(f"{stage}: finding {field} must be non-empty text")
-    if (findings and verdict != "changes_required") or (not findings and verdict == "changes_required"):
+    if ((verdict in {"pass", "not_checked"} and findings)
+            or (verdict == "changes_required" and not findings)):
         raise ValueError(f"{stage}: verdict does not match findings")
     if stage != "review_terms" and payload.get("proposed_terms"):
         raise ValueError(f"{stage}: only review_terms may propose terms")
@@ -722,6 +877,7 @@ def llm_call(job: dict, prompt: str, stage: str, *, context: dict | None = None,
                 "prompt_sha256": audit.sha256_text(prompt),
                 "source_sha256": context.get("source_hash"),
                 "glossary_sha256": context.get("glossary_hash"),
+                "structured_contract_sha256": context.get("structured_contract_sha256"),
             },
             "policy_version": POLICY_VERSION,
             "artifacts": artifacts,
@@ -1002,80 +1158,134 @@ def translation_ratio(source: str, translation: str) -> float:
 
 def review_pass(job: dict, juan: int, md_path: Path, pass_name: str,
                 prog: dict, round_number: int) -> list[dict]:
-    glossary = load_glossary()
     entries = bth.parse_entries(md_path.read_text(encoding="utf-8"))
-    findings: list[dict] = []
-    verdicts = []
+    prepared = []
+    pending_warnings = []
+    existing_attestations = prog.get("review_attestations", {})
+    if isinstance(existing_attestations, dict):
+        for idx in range(len(entries)):
+            unit_attestations = existing_attestations.get(unit_id(job, juan, idx))
+            if isinstance(unit_attestations, dict):
+                unit_attestations.pop(pass_name, None)
     for idx, entry in enumerate(entries):
         current_unit = unit_id(job, juan, idx)
         current_clause = clause_id(entry)
         current_hash = source_hash(entry.source)
-        glossary_subset = glossary_subset_json(glossary, entry.source)
+        structured_contract = canonical_structured_contract(
+            prog.get("clause_contracts", {}).get(current_unit),
+            current_unit, current_hash, current_clause, entry.translation,
+            error_stage=pass_name,
+        )
         ratio = translation_ratio(entry.source, entry.translation)
         low_ratio = ratio < (1 / 3)
         if low_ratio:
-            warning = {
+            pending_warnings.append({
                 "unit_id": current_unit,
                 "clause_id": current_clause,
                 "translation_ratio": round(ratio, 4),
                 "warning": "translation_ratio_below_one_third",
-                "routing": {"stage": "review_doctrine", "model": "gpt-5.6-sol", "effort": "xhigh"},
-            }
-            warnings = prog.setdefault("warnings", [])
+                "routing": {
+                    "stage": "review_doctrine", "model": "gpt-5.6-sol", "effort": "xhigh",
+                },
+            })
+        raw_evidence = job.get("review_evidence", {}).get(current_unit, [])
+        evidence = json.loads(json.dumps([
+            {**item, "source_id": item["source_id"].strip()}
+            for item in raw_evidence
+            if (isinstance(item, dict)
+                and isinstance(item.get("source_id"), str)
+                and item["source_id"].strip())
+        ], ensure_ascii=False))
+        allowed_reference_ids = {item["source_id"] for item in evidence}
+        effort = stage_effort(pass_name, low_ratio=low_ratio)
+        prepared.append({
+            "idx": idx,
+            "unit_id": current_unit,
+            "clause_id": current_clause,
+            "source_hash": current_hash,
+            "source": entry.source,
+            "translation": entry.translation,
+            "note": entry.note,
+            "low_ratio": low_ratio,
+            "review_evidence": evidence,
+            "allowed_reference_ids": allowed_reference_ids,
+            "structured_contract": structured_contract,
+            "structured_contract_sha256": structured_contract_sha256(structured_contract),
+            "effort": effort,
+        })
+
+    if pending_warnings:
+        warnings = prog.setdefault("warnings", [])
+        for warning in pending_warnings:
             if warning not in warnings:
                 warnings.append(warning)
-        evidence = job.get("review_evidence", {}).get(current_unit, [])
-        allowed_reference_ids = {
-            item["source_id"] for item in evidence
-            if isinstance(item, dict) and isinstance(item.get("source_id"), str)
-        }
+
+    findings: list[dict] = []
+    verdicts = []
+    glossary = load_glossary()
+    for item in prepared:
+        idx = item["idx"]
+        current_unit = item["unit_id"]
+        current_clause = item["clause_id"]
+        current_hash = item["source_hash"]
+        glossary_subset = glossary_subset_json(glossary, item["source"])
         input_payload = {
             "schema_version": "1.0", "stage": pass_name, "unit_id": current_unit,
             "source_hash": current_hash,
             "clause": {
-                "clause_id": current_clause, "source": entry.source,
-                "translation": entry.translation, "note": entry.note,
+                "clause_id": current_clause, "source": item["source"],
+                "translation": item["translation"], "note": item["note"],
             },
             "glossary": json.loads(glossary_subset) if pass_name != "review_parallel" else [],
-            "review_evidence": evidence if pass_name == "review_parallel" else [],
-            "translation_ratio_warning": low_ratio,
+            "review_evidence": (
+                item["review_evidence"] if pass_name == "review_parallel" else []
+            ),
+            "translation_ratio_warning": item["low_ratio"],
+            "structured_contract": item["structured_contract"],
         }
-        effort = stage_effort(pass_name, low_ratio=low_ratio)
         call_context = {
             "volume": juan, "unit_id": current_unit, "clause_ids": [current_clause],
-            "source_hash": current_hash, "glossary_hash": audit.sha256_text(glossary_subset),
+            "source_hash": current_hash,
+            "glossary_hash": audit.sha256_text(glossary_subset),
+            "structured_contract_sha256": item["structured_contract_sha256"],
         }
-        prog.setdefault("review_attestations", {}).setdefault(current_unit, {}).pop(pass_name, None)
         raw = llm_call(
             job,
-            prompt_text(pass_name, input_json=json_text(input_payload),
-                        schema_json=json_text(REVIEW_SCHEMA)),
+            prompt_text(
+                pass_name,
+                input_json=json_text(input_payload),
+                schema_json=json_text(review_schema(
+                    pass_name, current_unit, current_hash, current_clause,
+                    item["allowed_reference_ids"],
+                )),
+            ),
             pass_name,
             context=call_context,
-            effort=effort,
+            effort=item["effort"],
         )
         payload = parse_json_contract(raw, pass_name)
         section_findings = validate_review_contract(
             payload, pass_name, current_unit, current_hash, current_clause,
-            source=entry.source,
-            translation=entry.translation,
-            allowed_reference_ids=allowed_reference_ids,
+            source=item["source"],
+            translation=item["translation"],
+            allowed_reference_ids=item["allowed_reference_ids"],
         )
         verdicts.append({
             "round": round_number, "stage": pass_name, "unit_id": current_unit,
             "verdict": payload["verdict"], "finding_count": len(section_findings),
         })
         if payload["verdict"] == "pass":
-            prog["review_attestations"][current_unit][pass_name] = {
+            prog.setdefault("review_attestations", {}).setdefault(current_unit, {})[pass_name] = {
                 "stage": pass_name,
                 "verdict": "pass",
                 "review_event_id": call_context.get("_audit_event_ids", [])[-1],
                 "model": stage_model(job, pass_name),
-                "effort": effort,
+                "effort": item["effort"],
                 "source_sha256": current_hash,
-                "translation_sha256": audit.sha256_text(entry.translation),
-                "source_quote": entry.source,
-                "translation_quote": entry.translation,
+                "translation_sha256": audit.sha256_text(item["translation"]),
+                "structured_contract_sha256": item["structured_contract_sha256"],
+                "source_quote": item["source"],
+                "translation_quote": item["translation"],
             }
         if pass_name == "review_terms" and payload.get("proposed_terms"):
             append_new_terms(json.dumps(payload["proposed_terms"], ensure_ascii=False), job)
@@ -1174,15 +1384,18 @@ def write_coverage_ledger(job: dict, juan: int, md_path: Path, data_path: Path,
     for idx, (entry, source_range) in enumerate(zip(entries, ranges)):
         current_unit = unit_id(job, juan, idx)
         contract = contracts.get(current_unit, {})
-        clause = contract.get("clause", {})
         line_ids = lines_in_range(expected_line_ids, source_range.start, source_range.end)
-        contract_valid = (
-            contract.get("source_hash") == source_hash(entry.source)
-            and
-            clause.get("clause_id") == clause_id(entry)
-            and clause.get("vernacular") == entry.translation
-            and bool(str(clause.get("literal", "")).strip())
-        )
+        try:
+            structured_contract = canonical_structured_contract(
+                contract, current_unit, source_hash(entry.source), clause_id(entry),
+                entry.translation, error_stage="coverage",
+            )
+        except (TypeError, ValueError):
+            contract_valid = False
+            expected_contract_sha256 = None
+        else:
+            contract_valid = True
+            expected_contract_sha256 = structured_contract_sha256(structured_contract)
         if not contract_valid:
             issues.append(f"{current_unit}: missing or stale structured translation contract")
         review_evidence = []
@@ -1213,6 +1426,7 @@ def write_coverage_ledger(job: dict, juan: int, md_path: Path, data_path: Path,
                 and attestation.get("effort") == expected_effort
                 and attestation.get("source_sha256") == source_hash(entry.source)
                 and attestation.get("translation_sha256") == audit.sha256_text(entry.translation)
+                and attestation.get("structured_contract_sha256") == expected_contract_sha256
                 and isinstance(attestation.get("source_quote"), str)
                 and attestation["source_quote"] in entry.source
                 and isinstance(attestation.get("translation_quote"), str)
@@ -1223,6 +1437,9 @@ def write_coverage_ledger(job: dict, juan: int, md_path: Path, data_path: Path,
                 and event.get("unit_id") == current_unit
                 and event.get("clause_ids") == [clause_id(entry)]
                 and event.get("hashes", {}).get("source_sha256") == source_hash(entry.source)
+                and event.get("hashes", {}).get(
+                    "structured_contract_sha256"
+                ) == expected_contract_sha256
                 and event.get("status") == "ok"
                 and isinstance(response_ref, dict)
                 and response_valid

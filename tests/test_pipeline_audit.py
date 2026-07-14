@@ -1,3 +1,5 @@
+import copy
+import inspect
 import json
 import re
 import sys
@@ -20,6 +22,442 @@ import runner
 
 
 class StructuredContractTests(unittest.TestCase):
+    @staticmethod
+    def semantic_payload(unit_id: str, source_hash: str, clause_id: str) -> dict:
+        payload = StructuredContractTests.translation_payload()
+        payload["unit_id"] = unit_id
+        payload["source_hash"] = source_hash
+        payload["clauses"][0]["clause_id"] = clause_id
+        return payload
+
+    @staticmethod
+    def recording_store():
+        events = []
+
+        class Store:
+            def append(self, event):
+                record = {**event, "event_id": f"validation-{len(events) + 1}"}
+                events.append(record)
+                return record
+
+        return Store(), events
+
+    @staticmethod
+    def audited_llm_response(response: str):
+        def fake_call(_job, _prompt, _stage, *, context, effort=None):
+            context.setdefault("_audit_event_ids", []).append("llm-test-event")
+            return response
+
+        return fake_call
+
+    @staticmethod
+    def markdown(path: Path, *, translation: str = "") -> None:
+        path.write_text(
+            "# test\n\n## 01 Test\nRange: T30n1579_p0001a01\n\n"
+            "Source:\n<<<\n原文\n>>>\n\nTranslation:\n<<<\n"
+            f"{translation}\n>>>\n\nNote:\n<<<\n\n>>>\n",
+            encoding="utf-8",
+        )
+
+    def test_semantic_retry_repairs_observed_unit_009_and_012_shapes(self):
+        fixtures = [
+            (
+                "T1579-068-009",
+                "b31dd727b8ba28f2cd9c20c00803231812b4096b68241059a5e0491458fe5d2a",
+                "T30n1579_p0675a18-p0675b01",
+                "references",
+                {
+                    "clause_id": "T30n1579_p0675a18-p0675b01",
+                    "text": "所餘諦",
+                    "scope": "集諦、滅諦、道諦三諦",
+                },
+            ),
+            (
+                "T1579-068-012",
+                "f7b4f1396df79159f5b9a8dde5a141983ad9ad5bdb07fd1c80dd44c0c167ed70",
+                "T30n1579_p0675c14-p0676a03",
+                "negation_scope",
+                [{
+                    "clause_id": "T30n1579_p0675c14-p0676a03",
+                    "text": "尚不應得於諸諦中教誡教授",
+                    "scope": "言語粗惡的聲聞不相應於諸諦的教導中接受教誡與教授。",
+                }, {
+                    "clause_id": "T30n1579_p0675c14-p0676a03",
+                    "text": "況當能得真諦現觀，或復清淨",
+                    "scope": "在不能受教的基礎上，更否定其能獲得真諦現觀或清淨。",
+                }, {
+                    "clause_id": "T30n1579_p0676a03",
+                    "text": "不生信解，非撥毀罵",
+                    "scope": "對他人所稱說舉罪者的功德，不生起信受理解，並作誹撥、毀罵。",
+                }],
+            ),
+        ]
+        for unit, current_hash, current_clause, field, invalid_value in fixtures:
+            invalid = self.semantic_payload(unit, current_hash, current_clause)
+            invalid["clauses"][0][field] = (
+                invalid_value if isinstance(invalid_value, list) else [invalid_value]
+            )
+            valid = self.semantic_payload(unit, current_hash, current_clause)
+            valid["clauses"][0]["vernacular"] = "修正後白話"
+            store, events = self.recording_store()
+            prompts = []
+
+            def fake_call(_job, prompt, _stage, *, context, effort=None):
+                prompts.append(prompt)
+                context.setdefault("_audit_event_ids", []).append(f"llm-{len(prompts)}")
+                response = invalid if len(prompts) == 1 else valid
+                return json.dumps(response, ensure_ascii=False)
+
+            with self.subTest(unit=unit), patch.object(runner, "llm_call", side_effect=fake_call), \
+                 patch.object(runner, "audit_store", return_value=store):
+                clause = runner.semantic_translation_call(
+                    {"id": "job"}, "original prompt", "translate",
+                    context={"volume": 68}, expected_unit=unit,
+                    expected_hash=current_hash, expected_clause=current_clause,
+                )
+
+            self.assertEqual("修正後白話", clause["vernacular"])
+            self.assertEqual(["fail", "pass"], [event["verdict"] for event in events])
+            self.assertEqual(["llm-1", "llm-2"],
+                             [event["llm_event_id"] for event in events])
+            self.assertNotEqual(audit.sha256_text(prompts[0]), audit.sha256_text(prompts[1]))
+            invalid_raw = json.dumps(invalid, ensure_ascii=False)
+            self.assertNotIn(invalid_raw, prompts[1])
+            self.assertIn(audit.sha256_text(invalid_raw), prompts[1])
+            self.assertIn("<original_bound_prompt>", prompts[1])
+            self.assertIn("</original_bound_prompt>", prompts[1])
+            self.assertIn("<semantic_retry_instruction>", prompts[1])
+            self.assertIn("</semantic_retry_instruction>", prompts[1])
+            for expected in (unit, current_hash, current_clause, "只輸出一個完整 JSON object"):
+                self.assertIn(expected, prompts[1])
+
+    def test_semantic_retry_repairs_parse_json_value_error(self):
+        unit = "T1579-068-001"
+        current_hash = "a" * 64
+        current_clause = "T30n1579_p0001a01"
+        valid = self.semantic_payload(unit, current_hash, current_clause)
+        responses = ["```json\n{}\n```", json.dumps(valid, ensure_ascii=False)]
+        store, events = self.recording_store()
+
+        def fake_call(_job, _prompt, _stage, *, context, effort=None):
+            context.setdefault("_audit_event_ids", []).append(
+                f"llm-{3 - len(responses)}"
+            )
+            return responses.pop(0)
+
+        with patch.object(runner, "llm_call", side_effect=fake_call), \
+             patch.object(runner, "audit_store", return_value=store):
+            runner.semantic_translation_call(
+                {"id": "job"}, "prompt", "translate", context={},
+                expected_unit=unit, expected_hash=current_hash,
+                expected_clause=current_clause,
+            )
+        self.assertEqual(["fail", "pass"], [event["verdict"] for event in events])
+        self.assertIn("not one JSON object", events[0]["validator_error"])
+
+    def test_semantic_retry_raises_second_value_error_without_saving(self):
+        unit = "T1579-068-009"
+        current_hash = "a" * 64
+        current_clause = "T30n1579_p0675a18-p0675b01"
+        first_invalid = self.semantic_payload(unit, current_hash, current_clause)
+        first_invalid["clauses"][0]["references"] = [{
+            "clause_id": current_clause, "text": "所餘諦", "scope": "其餘三諦",
+        }]
+        second_invalid = self.semantic_payload(unit, current_hash, current_clause)
+        second_invalid["clauses"][0]["negation_scope"] = [{
+            "clause_id": "T30n1579_p0675b01", "text": "非", "scope": "否定",
+        }]
+        responses = [first_invalid, second_invalid]
+        store, events = self.recording_store()
+        calls = []
+
+        def fake_call(_job, prompt, _stage, *, context, effort=None):
+            calls.append(prompt)
+            context.setdefault("_audit_event_ids", []).append(f"llm-{len(calls)}")
+            return json.dumps(responses.pop(0), ensure_ascii=False)
+
+        with patch.object(runner, "llm_call", side_effect=fake_call), \
+             patch.object(runner, "audit_store", return_value=store), \
+             self.assertRaisesRegex(ValueError, "negation_scope item has an invalid shape"):
+            runner.semantic_translation_call(
+                {"id": "job"}, "prompt", "translate", context={},
+                expected_unit=unit, expected_hash=current_hash,
+                expected_clause=current_clause,
+            )
+        self.assertEqual(2, len(calls))
+        self.assertEqual([1, 2], [event["semantic_attempt"] for event in events])
+        self.assertEqual(["fail", "fail"], [event["verdict"] for event in events])
+
+    def test_semantic_retry_first_valid_has_one_call_and_validation_event(self):
+        unit = "T1579-068-001"
+        current_hash = "a" * 64
+        current_clause = "T30n1579_p0001a01"
+        valid = self.semantic_payload(unit, current_hash, current_clause)
+        store, events = self.recording_store()
+        calls = []
+
+        def fake_call(_job, prompt, _stage, *, context, effort=None):
+            calls.append((prompt, context["semantic_attempt"]))
+            context.setdefault("_audit_event_ids", []).append("llm-first")
+            return json.dumps(valid, ensure_ascii=False)
+
+        with patch.object(runner, "llm_call", side_effect=fake_call), \
+             patch.object(runner, "audit_store", return_value=store):
+            runner.semantic_translation_call(
+                {"id": "job"}, "prompt", "translate", context={},
+                expected_unit=unit, expected_hash=current_hash,
+                expected_clause=current_clause,
+            )
+        self.assertEqual([("prompt", 1)], calls)
+        self.assertEqual("pass", events[0]["verdict"])
+        self.assertIsNone(events[0]["validator_error"])
+
+    def test_semantic_retry_does_not_catch_llm_error(self):
+        store, events = self.recording_store()
+        with patch.object(runner, "llm_call", side_effect=llm.LLMError("provider failed")) as call, \
+             patch.object(runner, "audit_store", return_value=store), \
+             self.assertRaisesRegex(llm.LLMError, "provider failed"):
+            runner.semantic_translation_call(
+                {"id": "job"}, "prompt", "translate", context={},
+                expected_unit="unit", expected_hash="a" * 64,
+                expected_clause="clause",
+            )
+        call.assert_called_once()
+        self.assertEqual([], events)
+
+    def test_llm_attempt_records_semantic_attempt(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            store = audit.AuditStore(Path(tmp), "job")
+
+            def fake_backend(_model, _prompt, *, on_wait, log, effort, on_attempt):
+                result = llm.LLMResult(
+                    ok=True, text="{}", model="gpt-5.6-terra", effort=effort,
+                    sent_at="2026-07-14T00:00:00-04:00",
+                    received_at="2026-07-14T00:00:01-04:00", duration_ms=1000,
+                )
+                on_attempt(result, 1)
+                return result.text
+
+            job = {"id": "job", "model": "auto", "state": "running"}
+            with patch.object(runner, "audit_store", return_value=store), \
+                 patch.object(llm, "call_with_limit_retry", side_effect=fake_backend):
+                runner.llm_call(job, "prompt", "translate", context={"semantic_attempt": 2})
+
+            event = store.events()[0]
+            self.assertEqual("llm_attempt", event["type"])
+            self.assertEqual(2, event["semantic_attempt"])
+
+    def test_semantic_retry_audit_links_attempts_and_request_hashes(self):
+        unit = "T1579-068-009"
+        current_hash = "b31dd727b8ba28f2cd9c20c00803231812b4096b68241059a5e0491458fe5d2a"
+        current_clause = "T30n1579_p0675a18-p0675b01"
+        invalid = self.semantic_payload(unit, current_hash, current_clause)
+        invalid["clauses"][0]["references"] = [{
+            "clause_id": current_clause, "text": "所餘諦", "scope": "api_key=raw-secret",
+        }]
+        valid = self.semantic_payload(unit, current_hash, current_clause)
+        invalid_raw = json.dumps(invalid, ensure_ascii=False)
+        results = [
+            llm.LLMResult(
+                ok=False, error="temporary transport failure", model="gpt-5.6-terra",
+                effort="high", sent_at="2026-07-14T00:00:00-04:00",
+                received_at="2026-07-14T00:00:01-04:00", duration_ms=1000,
+                usage={"input_tokens": 10, "cached_input_tokens": 0, "output_tokens": 0,
+                       "reasoning_tokens": 0, "total_tokens": 10},
+            ),
+            llm.LLMResult(
+                ok=True, text=invalid_raw, model="gpt-5.6-terra", effort="high",
+                sent_at="2026-07-14T00:00:02-04:00",
+                received_at="2026-07-14T00:00:03-04:00", duration_ms=1000,
+                usage={"input_tokens": 20, "cached_input_tokens": 2, "output_tokens": 5,
+                       "reasoning_tokens": 1, "total_tokens": 26},
+            ),
+            llm.LLMResult(
+                ok=True, text=json.dumps(valid, ensure_ascii=False), model="gpt-5.6-terra",
+                effort="high", sent_at="2026-07-14T00:00:04-04:00",
+                received_at="2026-07-14T00:00:05-04:00", duration_ms=1000,
+                usage={"input_tokens": 30, "cached_input_tokens": 3, "output_tokens": 6,
+                       "reasoning_tokens": 2, "total_tokens": 38},
+            ),
+        ]
+        prompts = []
+
+        with tempfile.TemporaryDirectory() as tmp:
+            store = audit.AuditStore(Path(tmp), "job")
+
+            def fake_run(_model, prompt, *, effort):
+                prompts.append(prompt)
+                return results.pop(0)
+
+            job = {"id": "job", "model": "auto", "state": "running"}
+            with patch.object(runner, "audit_store", return_value=store), \
+                 patch.object(llm, "run_llm", side_effect=fake_run), \
+                 patch.object(llm.time, "sleep") as sleep:
+                runner.semantic_translation_call(
+                    job, "original prompt", "translate", context={"volume": 68},
+                    expected_unit=unit, expected_hash=current_hash,
+                    expected_clause=current_clause,
+                )
+
+            events = store.events()
+            llm_events = [event for event in events if event["type"] == "llm_attempt"]
+            validations = [event for event in events
+                           if event["type"] == "translation_contract_validation"]
+            self.assertEqual([1, 1, 2], [event["semantic_attempt"] for event in llm_events])
+            self.assertEqual([1, 2, 1], [event["attempt"] for event in llm_events])
+            self.assertEqual(["fail", "pass"], [event["verdict"] for event in validations])
+            self.assertEqual([llm_events[1]["event_id"], llm_events[2]["event_id"]],
+                             [event["llm_event_id"] for event in validations])
+            self.assertEqual(llm_events[0]["call_id"], llm_events[1]["call_id"])
+            self.assertNotEqual(llm_events[1]["call_id"], llm_events[2]["call_id"])
+            self.assertEqual(["gpt-5.6-terra"] * 3,
+                             [event["model"] for event in llm_events])
+            self.assertEqual(["high"] * 3, [event["effort"] for event in llm_events])
+            self.assertEqual(llm_events[0]["hashes"]["prompt_sha256"],
+                             llm_events[1]["hashes"]["prompt_sha256"])
+            self.assertNotEqual(llm_events[1]["hashes"]["prompt_sha256"],
+                                llm_events[2]["hashes"]["prompt_sha256"])
+            self.assertNotIn(invalid_raw, prompts[2])
+            self.assertNotIn("raw-secret", prompts[2])
+            self.assertIn(audit.sha256_text(invalid_raw), prompts[2])
+            response_ref = llm_events[1]["artifacts"]["response"]
+            self.assertEqual(
+                audit.sha256_text(audit.redact_secrets(invalid_raw)), response_ref["sha256"],
+            )
+            self.assertNotIn("raw-secret", json.dumps(validations, ensure_ascii=False))
+            sleep.assert_called_once_with(30)
+            for event in validations:
+                self.assertEqual(unit, event["unit_id"])
+                self.assertEqual(current_clause, event["clause_id"])
+                self.assertEqual(current_hash, event["source_hash"])
+            manifest = json.loads(store.manifest_path.read_text(encoding="utf-8"))
+            self.assertEqual(3, manifest["stages"]["translate"]["call_count"])
+            self.assertEqual({
+                "input": 60, "cached_input": 5, "output": 11,
+                "reasoning": 3, "total": 74,
+            }, manifest["stages"]["translate"]["usage"])
+
+    def test_semantic_retry_redacts_validator_error_and_never_sleeps(self):
+        unit = "T1579-068-001"
+        current_hash = "a" * 64
+        current_clause = "T30n1579_p0001a01"
+        valid = self.semantic_payload(unit, current_hash, current_clause)
+        invalid = copy.deepcopy(valid)
+        invalid["clauses"][0]["vernacular"] = "SENSITIVE_INVALID_BODY"
+        responses = [
+            json.dumps(invalid, ensure_ascii=False),
+            json.dumps(valid, ensure_ascii=False),
+        ]
+        store, events = self.recording_store()
+        prompts = []
+
+        def fake_call(_job, prompt, _stage, *, context, effort=None):
+            prompts.append(prompt)
+            context.setdefault("_audit_event_ids", []).append("llm-event")
+            return responses.pop(0)
+
+        with patch.object(runner, "llm_call", side_effect=fake_call), \
+             patch.object(runner, "audit_store", return_value=store), \
+             patch.object(runner, "validate_translation_contract", side_effect=[
+                 ValueError("api_key=super-secret"), valid["clauses"][0],
+             ]):
+            runner.semantic_translation_call(
+                {"id": "job"}, "prompt", "translate", context={},
+                expected_unit=unit, expected_hash=current_hash,
+                expected_clause=current_clause,
+            )
+
+        self.assertEqual("api_key=[REDACTED]", events[0]["validator_error"])
+        self.assertNotIn("super-secret", prompts[1])
+        self.assertNotIn("SENSITIVE_INVALID_BODY", prompts[1])
+        self.assertIn("api_key=[REDACTED]", prompts[1])
+        self.assertIn(audit.sha256_text(json.dumps(invalid, ensure_ascii=False)), prompts[1])
+        self.assertIn("references: clause_id, expression, referent", prompts[1])
+        self.assertIn("negation_scope: clause_id, text, scope", prompts[1])
+        self.assertNotIn("sleep", inspect.getsource(runner.semantic_translation_call))
+
+    def test_semantic_validation_requires_linked_llm_event(self):
+        valid = self.semantic_payload(
+            "T1579-068-001", "a" * 64, "T30n1579_p0001a01",
+        )
+        store, events = self.recording_store()
+        with patch.object(runner, "llm_call", return_value=json.dumps(valid, ensure_ascii=False)), \
+             patch.object(runner, "audit_store", return_value=store), \
+             self.assertRaisesRegex(RuntimeError, "LLM audit event"):
+            runner.semantic_translation_call(
+                {"id": "job"}, "prompt", "translate", context={},
+                expected_unit="T1579-068-001", expected_hash="a" * 64,
+                expected_clause="T30n1579_p0001a01",
+            )
+        self.assertEqual([], events)
+
+    def test_semantic_validation_rejects_stale_caller_llm_event_ids(self):
+        valid = self.semantic_payload(
+            "T1579-068-001", "a" * 64, "T30n1579_p0001a01",
+        )
+        store, events = self.recording_store()
+        caller_context = {"_audit_event_ids": ["stale-event-id"], "volume": 68}
+        with patch.object(runner, "llm_call", return_value=json.dumps(valid, ensure_ascii=False)), \
+             patch.object(runner, "audit_store", return_value=store), \
+             self.assertRaisesRegex(RuntimeError, "LLM audit event"):
+            runner.semantic_translation_call(
+                {"id": "job"}, "prompt", "translate", context=caller_context,
+                expected_unit="T1579-068-001", expected_hash="a" * 64,
+                expected_clause="T30n1579_p0001a01",
+            )
+        self.assertEqual([], events)
+        self.assertEqual(["stale-event-id"], caller_context["_audit_event_ids"])
+
+    def test_semantic_retry_makes_no_premature_translation_mutation(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            markdown = Path(tmp) / "translation.md"
+            self.markdown(markdown)
+            original = markdown.read_text(encoding="utf-8")
+            job = {"id": "job", "work": "T1579", "model": "echo"}
+            prog = {}
+            invalid = self.semantic_payload(
+                "T1579-068-001", audit.sha256_text("原文"), "T30n1579_p0001a01",
+            )
+            invalid["clauses"][0]["references"] = [{
+                "clause_id": "T30n1579_p0001a01", "text": "此", "scope": "原文",
+            }]
+            store, _events = self.recording_store()
+
+            def fake_call(_job, _prompt, _stage, *, context, effort=None):
+                context.setdefault("_audit_event_ids", []).append("llm-invalid")
+                return json.dumps(invalid, ensure_ascii=False)
+
+            with patch.object(runner, "llm_call", side_effect=fake_call), \
+                 patch.object(runner, "audit_store", return_value=store), \
+                 patch.object(runner, "save_job") as save, patch.object(runner, "log"), \
+                 self.assertRaises(ValueError):
+                runner.translate_sections(job, 68, markdown, prog)
+
+            self.assertEqual(original, markdown.read_text(encoding="utf-8"))
+            self.assertNotIn("clause_contracts", prog)
+            save.assert_not_called()
+
+    def test_prior_saved_contract_still_skips_semantic_call(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            markdown = Path(tmp) / "translation.md"
+            self.markdown(markdown, translation="既存譯")
+            current_hash = audit.sha256_text("原文")
+            prog = {"clause_contracts": {"T1579-068-001": {
+                "stage": "translate", "source_hash": current_hash,
+                "clause": {"clause_id": "T30n1579_p0001a01", "vernacular": "既存譯"},
+            }}}
+            job = {"id": "job", "work": "T1579", "model": "echo"}
+            with patch.object(runner, "semantic_translation_call") as semantic:
+                runner.translate_sections(job, 68, markdown, prog)
+            semantic.assert_not_called()
+
+    def test_all_translation_mutation_call_sites_use_semantic_retry(self):
+        for function in (runner.translate_sections, runner.merge_sections, runner.fix_findings):
+            source = inspect.getsource(function)
+            with self.subTest(function=function.__name__):
+                self.assertIn("semantic_translation_call(", source)
+                self.assertNotIn("parse_json_contract(raw", source)
+
     def test_translation_schema_exposes_exact_envelopes(self):
         schema = runner.TRANSLATION_SCHEMA
         self.assertFalse(schema["additionalProperties"])
@@ -136,7 +574,10 @@ class StructuredContractTests(unittest.TestCase):
                     "term_occurrences": [], "variants": [], "notes": [],
                 }],
             }, ensure_ascii=False)
-            with patch.object(runner, "llm_call", return_value=response), \
+            store, _events = self.recording_store()
+            with patch.object(
+                    runner, "llm_call", side_effect=self.audited_llm_response(response)), \
+                 patch.object(runner, "audit_store", return_value=store), \
                  patch.object(runner, "prompt_text", wraps=runner.prompt_text) as prompt, \
                  patch.object(runner, "save_job"), patch.object(runner, "log"):
                 runner.translate_sections(job, 67, markdown, {})
@@ -358,7 +799,10 @@ class StructuredContractTests(unittest.TestCase):
                     "term_occurrences": [], "variants": [], "notes": [],
                 }],
             }, ensure_ascii=False)
-            with patch.object(runner, "llm_call", return_value=response) as call, \
+            store, _events = self.recording_store()
+            with patch.object(
+                    runner, "llm_call", side_effect=self.audited_llm_response(response)) as call, \
+                 patch.object(runner, "audit_store", return_value=store), \
                  patch.object(runner, "save_job"), patch.object(runner, "log"):
                 runner.translate_sections(job, 67, markdown, prog)
 
@@ -393,7 +837,10 @@ class StructuredContractTests(unittest.TestCase):
                     "term_occurrences": [], "variants": [], "notes": [],
                 }],
             }, ensure_ascii=False)
-            with patch.object(runner, "llm_call", return_value=response) as call, \
+            store, _events = self.recording_store()
+            with patch.object(
+                    runner, "llm_call", side_effect=self.audited_llm_response(response)) as call, \
+                 patch.object(runner, "audit_store", return_value=store), \
                  patch.object(runner, "save_job"), patch.object(runner, "log"):
                 runner.merge_sections(job, 67, paths, prog)
             merged = bth.parse_entries(paths["md"].read_text(encoding="utf-8"))[0].translation

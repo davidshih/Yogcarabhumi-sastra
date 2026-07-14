@@ -698,6 +698,7 @@ def llm_call(job: dict, prompt: str, stage: str, *, context: dict | None = None,
             "type": "llm_attempt",
             "call_id": call_id,
             "attempt": attempt,
+            "semantic_attempt": context.get("semantic_attempt"),
             "volume": context.get("volume"),
             "unit_id": context.get("unit_id"),
             "clause_ids": context.get("clause_ids", []),
@@ -740,6 +741,87 @@ def llm_call(job: dict, prompt: str, stage: str, *, context: dict | None = None,
             set_volume_state(job, int(current_juan), "running")
         save_job(job)
     return text
+
+
+def semantic_retry_prompt(original_prompt: str, validator_error: str,
+                          previous_invalid_output_sha256: str, stage: str,
+                          expected_unit: str, expected_hash: str,
+                          expected_clause: str) -> str:
+    identities = {
+        "stage": stage,
+        "unit_id": expected_unit,
+        "source_hash": expected_hash,
+        "clause_id": expected_clause,
+    }
+    return (
+        f"<original_bound_prompt>\n{original_prompt}\n</original_bound_prompt>\n\n"
+        "<semantic_retry_instruction>\n"
+        "前次 JSON 未通過 semantic contract validation。請依上方原始 bound schema 完整重做。\n\n"
+        f"validator_error: {validator_error}\n"
+        f"previous_invalid_output_sha256: {previous_invalid_output_sha256}\n\n"
+        f"expected_identities:\n{json_text(identities)}\n\n"
+        "修正指令：只輸出一個完整 JSON object，不得使用 Markdown code fence 或附加說明；"
+        "必須保留 schema_version、stage、unit_id、source_hash、clauses 的完整 envelope；"
+        "clauses 必須恰有一項，主 clause_id 與每一個 nested item 的 clause_id 都必須完全等於"
+        " expected_identities.clause_id；references: clause_id, expression, referent；"
+        "negation_scope: clause_id, text, scope；其餘 nested arrays 必須依上方 bound schema 的 exact keys；"
+        "不得把完整 range 縮成單一 line id。\n"
+        "</semantic_retry_instruction>"
+    )
+
+
+def semantic_translation_call(job: dict, prompt: str, stage: str, *, context: dict,
+                              expected_unit: str, expected_hash: str,
+                              expected_clause: str) -> dict:
+    current_prompt = prompt
+    for semantic_attempt in (1, 2):
+        attempt_context = {
+            key: value for key, value in context.items() if key != "_audit_event_ids"
+        }
+        attempt_context["semantic_attempt"] = semantic_attempt
+        raw = llm_call(job, current_prompt, stage, context=attempt_context)
+        llm_event_ids = attempt_context.get("_audit_event_ids", [])
+        if not llm_event_ids:
+            raise RuntimeError("semantic validation requires a linked LLM audit event")
+        llm_event_id = llm_event_ids[-1]
+        try:
+            payload = parse_json_contract(raw, stage)
+            clause = validate_translation_contract(
+                payload, stage, expected_unit, expected_hash, expected_clause,
+            )
+        except ValueError as err:
+            validator_error = audit.redact_secrets(str(err))
+            audit_store(job).append({
+                "type": "translation_contract_validation",
+                "llm_event_id": llm_event_id,
+                "semantic_attempt": semantic_attempt,
+                "verdict": "fail",
+                "validator_error": validator_error,
+                "stage": stage,
+                "unit_id": expected_unit,
+                "clause_id": expected_clause,
+                "source_hash": expected_hash,
+            })
+            if semantic_attempt == 2:
+                raise
+            current_prompt = semantic_retry_prompt(
+                prompt, validator_error, audit.sha256_text(raw), stage,
+                expected_unit, expected_hash, expected_clause,
+            )
+            continue
+        audit_store(job).append({
+            "type": "translation_contract_validation",
+            "llm_event_id": llm_event_id,
+            "semantic_attempt": semantic_attempt,
+            "verdict": "pass",
+            "validator_error": None,
+            "stage": stage,
+            "unit_id": expected_unit,
+            "clause_id": expected_clause,
+            "source_hash": expected_hash,
+        })
+        return clause
+    raise AssertionError("semantic translation retry exhausted without a result")
 
 
 def llm_segment(job: dict, juan: int, lines: dict[str, str], tsv_path: Path) -> None:
@@ -836,7 +918,7 @@ def translate_sections(job: dict, juan: int, md_path: Path, prog: dict,
             "existing_note": entry.note,
             "repair_instruction": extra,
         }
-        raw = llm_call(
+        clause = semantic_translation_call(
             job,
             prompt_text(
                 "translate", input_json=json_text(input_payload),
@@ -849,10 +931,8 @@ def translate_sections(job: dict, juan: int, md_path: Path, prog: dict,
                 "volume": juan, "unit_id": current_unit, "clause_ids": [current_clause],
                 "source_hash": current_hash, "glossary_hash": audit.sha256_text(glossary_json),
             },
-        )
-        payload = parse_json_contract(raw, stage)
-        clause = validate_translation_contract(
-            payload, stage, current_unit, current_hash, current_clause,
+            expected_unit=current_unit, expected_hash=current_hash,
+            expected_clause=current_clause,
         )
         save_clause_contract(prog, current_unit, stage, current_hash, clause)
         splice(md_path, idx, clause["vernacular"], contract_note(clause))
@@ -892,7 +972,7 @@ def merge_sections(job: dict, juan: int, paths: dict[str, Path], prog: dict) -> 
             "draft_b": draft_b[idx].translation or "（缺稿）",
             "glossary": json.loads(glossary_subset),
         }
-        raw = llm_call(
+        clause = semantic_translation_call(
             job,
             prompt_text("merge", input_json=json_text(input_payload),
                         schema_json=json_text(translation_schema(
@@ -903,10 +983,8 @@ def merge_sections(job: dict, juan: int, paths: dict[str, Path], prog: dict) -> 
                 "volume": juan, "unit_id": current_unit, "clause_ids": [current_clause],
                 "source_hash": current_hash, "glossary_hash": audit.sha256_text(glossary_subset),
             },
-        )
-        payload = parse_json_contract(raw, "merge")
-        clause = validate_translation_contract(
-            payload, "merge", current_unit, current_hash, current_clause,
+            expected_unit=current_unit, expected_hash=current_hash,
+            expected_clause=current_clause,
         )
         save_clause_contract(prog, current_unit, "merge", current_hash, clause)
         splice(paths["md"], idx, clause["vernacular"], contract_note(clause))
@@ -1031,7 +1109,7 @@ def fix_findings(job: dict, juan: int, md_path: Path, findings: list[dict], prog
             },
             "findings": section_findings,
         }
-        raw = llm_call(
+        clause = semantic_translation_call(
             job,
             prompt_text("fix", input_json=json_text(input_payload),
                         schema_json=json_text(translation_schema(
@@ -1040,10 +1118,8 @@ def fix_findings(job: dict, juan: int, md_path: Path, findings: list[dict], prog
             "fix",
             context={"volume": juan, "unit_id": current_unit, "clause_ids": [current_clause],
                      "source_hash": current_hash},
-        )
-        payload = parse_json_contract(raw, "fix")
-        clause = validate_translation_contract(
-            payload, "fix", current_unit, current_hash, current_clause,
+            expected_unit=current_unit, expected_hash=current_hash,
+            expected_clause=current_clause,
         )
         save_clause_contract(prog, current_unit, "fix", current_hash, clause)
         splice(md_path, idx, clause["vernacular"], contract_note(clause))

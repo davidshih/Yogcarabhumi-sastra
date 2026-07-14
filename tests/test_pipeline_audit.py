@@ -1,4 +1,5 @@
 import json
+import re
 import sys
 import tempfile
 import unittest
@@ -58,7 +59,11 @@ class StructuredContractTests(unittest.TestCase):
                 self.assertEqual(set(fields), set(item["required"]))
                 self.assertEqual(set(fields), set(item["properties"]))
                 for name in set(fields) - {"clause_id"}:
-                    self.assertEqual(r"\S", item["properties"][name]["pattern"])
+                    expected_pattern = (
+                        r"^(?=[^〔〕]*\S)[^〔〕]+$"
+                        if field == "additions" and name == "text" else r"\S"
+                    )
+                    self.assertEqual(expected_pattern, item["properties"][name]["pattern"])
 
     def test_translation_contract_rejects_observed_nested_alias_shapes(self):
         observed = {
@@ -142,20 +147,77 @@ class StructuredContractTests(unittest.TestCase):
         clause = schema["properties"]["clauses"]["items"]
         self.assertEqual("T30n1579_p0001a01", clause["properties"]["clause_id"]["const"])
 
-    def test_addition_bracket_invariant_remains_validator_only(self):
+    def test_addition_schema_describes_inner_text_without_delimiters(self):
         schema = runner.translation_schema(
             "translate", "T1579-067-001", "a" * 64, "T30n1579_p0001a01",
         )
         addition_text = schema["properties"]["clauses"]["items"]["properties"] \
             ["additions"]["items"]["properties"]["text"]
-        self.assertEqual({"type": "string", "pattern": r"\S"}, addition_text)
-        self.assertIn("〔〕", (ROOT / "prompts" / "translate.txt").read_text(encoding="utf-8"))
+        self.assertEqual({
+            "type": "string",
+            "pattern": r"^(?=[^〔〕]*\S)[^〔〕]+$",
+            "description": (
+                "Inner text only. Do not include the 〔 or 〕 delimiters; "
+                "vernacular contains exactly one 〔text〕 wrapper."
+            ),
+        }, addition_text)
+        pattern = addition_text["pattern"]
+        self.assertIsNotNone(re.search(pattern, "專注觀修"))
+        for invalid in ("", "   ", "〔專注觀修〕", "專注〔觀修"):
+            with self.subTest(invalid=invalid):
+                self.assertIsNone(re.search(pattern, invalid))
 
+    def test_translate_prompt_requires_unwrapped_addition_text(self):
+        prompt = (ROOT / "prompts" / "translate.txt").read_text(encoding="utf-8")
+        self.assertIn("additions[].text", prompt)
+        self.assertIn("不得包含「〔」或「〕」", prompt)
+        self.assertIn("恰好包裹一次", prompt)
+
+    def test_bracketed_addition_text_is_rejected_but_inner_text_passes(self):
         payload = self.translation_payload()
+        payload["clauses"][0]["vernacular"] = (
+            "聲聞乘相應作意〔專注觀修〕修、有加行〔修行上的預備用功〕修。"
+        )
         payload["clauses"][0]["additions"] = [{
-            "clause_id": "T30n1579_p0001a01", "text": "補充",
+            "clause_id": "T30n1579_p0001a01", "text": "〔專注觀修〕",
+        }, {
+            "clause_id": "T30n1579_p0001a01", "text": "〔修行上的預備用功〕",
         }]
-        with self.assertRaisesRegex(ValueError, "inside 〔〕"):
+        with self.assertRaisesRegex(ValueError, "must not contain"):
+            runner.validate_translation_contract(
+                payload, "translate", "T1579-067-001", "a" * 64,
+                "T30n1579_p0001a01",
+            )
+
+        payload["clauses"][0]["additions"] = [{
+            "clause_id": "T30n1579_p0001a01", "text": "專注觀修",
+        }, {
+            "clause_id": "T30n1579_p0001a01", "text": "修行上的預備用功",
+        }]
+        runner.validate_translation_contract(
+            payload, "translate", "T1579-067-001", "a" * 64,
+            "T30n1579_p0001a01",
+        )
+
+    def test_addition_text_with_delimiters_is_rejected_even_if_double_wrapped(self):
+        payload = self.translation_payload()
+        payload["clauses"][0]["vernacular"] = "作意〔〔專注觀修〕〕修。"
+        payload["clauses"][0]["additions"] = [{
+            "clause_id": "T30n1579_p0001a01", "text": "〔專注觀修〕",
+        }]
+        with self.assertRaisesRegex(ValueError, "must not contain"):
+            runner.validate_translation_contract(
+                payload, "translate", "T1579-067-001", "a" * 64,
+                "T30n1579_p0001a01",
+            )
+
+    def test_addition_wrapper_must_appear_exactly_once(self):
+        payload = self.translation_payload()
+        payload["clauses"][0]["vernacular"] = "作意〔專注觀修〕修；再說〔專注觀修〕。"
+        payload["clauses"][0]["additions"] = [{
+            "clause_id": "T30n1579_p0001a01", "text": "專注觀修",
+        }]
+        with self.assertRaisesRegex(ValueError, "exactly once"):
             runner.validate_translation_contract(
                 payload, "translate", "T1579-067-001", "a" * 64,
                 "T30n1579_p0001a01",

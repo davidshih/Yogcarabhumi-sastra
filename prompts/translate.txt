@@ -9,6 +9,6 @@ $schema_json
 特別要求：
 - unit_id、source_hash、clause_id 必須逐字照抄。
 - literal 與 vernacular 都必須覆蓋該 clause 的全部命題。
-- additions 只列正文中「〔〕」補入內容；沒有就輸出空陣列。
+- additions[].text 只填補入的內文，不得包含「〔」或「〕」；vernacular 必須以「〔additions[].text〕」恰好包裹一次。沒有補入內容時輸出空陣列。
 - negation_scope、references、speakers、term_occurrences、variants、notes 均須依 schema 輸出；沒有內容用空陣列或 null，不可省略欄位。
 - notes 每條必須綁定 clause_id，且不得離題。

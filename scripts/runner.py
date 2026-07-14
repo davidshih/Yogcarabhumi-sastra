@@ -168,6 +168,12 @@ def translation_schema(stage: str | None = None, unit_id_value: str | None = Non
         },
         "speakers": {"type": ["object", "null"]},
     }
+    addition_text = clause_properties["additions"]["items"]["properties"]["text"]
+    addition_text["pattern"] = r"^(?=[^〔〕]*\S)[^〔〕]+$"
+    addition_text["description"] = (
+        "Inner text only. Do not include the 〔 or 〕 delimiters; "
+        "vernacular contains exactly one 〔text〕 wrapper."
+    )
     properties = {
         "schema_version": {"const": "1.0"},
         "stage": {"const": stage} if stage is not None else {"enum": list(TRANSLATION_STAGES)},
@@ -414,8 +420,11 @@ def validate_translation_contract(payload: dict, stage: str, expected_unit: str,
     if clause["speakers"] is not None and not isinstance(clause["speakers"], dict):
         raise ValueError(f"{stage}: speakers must be an object or null")
     for addition in clause["additions"]:
-        if f"〔{addition['text']}〕" not in clause["vernacular"]:
-            raise ValueError(f"{stage}: every addition must appear inside 〔〕")
+        text = addition["text"]
+        if "〔" in text or "〕" in text:
+            raise ValueError(f"{stage}: addition text must not contain 〔 or 〕")
+        if clause["vernacular"].count(f"〔{text}〕") != 1:
+            raise ValueError(f"{stage}: every addition must appear exactly once inside 〔〕")
     return clause
 
 

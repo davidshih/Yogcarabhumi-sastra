@@ -19,6 +19,148 @@ import runner
 
 
 class StructuredContractTests(unittest.TestCase):
+    def test_translation_schema_exposes_exact_envelopes(self):
+        schema = runner.TRANSLATION_SCHEMA
+        self.assertFalse(schema["additionalProperties"])
+        self.assertEqual(set(schema["required"]), set(schema["properties"]))
+
+        clauses = schema["properties"]["clauses"]
+        self.assertEqual(1, clauses["minItems"])
+        self.assertEqual(1, clauses["maxItems"])
+
+        clause = clauses["items"]
+        self.assertFalse(clause["additionalProperties"])
+        self.assertEqual(set(clause["required"]), set(clause["properties"]))
+
+    def test_translation_schema_exposes_nested_object_shapes(self):
+        expected = {
+            "additions": {"clause_id", "text"},
+            "negation_scope": {"clause_id", "text", "scope"},
+            "references": {"clause_id", "expression", "referent"},
+            "term_occurrences": {"clause_id", "term_id", "surface"},
+            "variants": {"clause_id", "text", "rationale"},
+            "notes": {"clause_id", "text"},
+        }
+        properties = runner.TRANSLATION_SCHEMA["properties"]["clauses"]["items"]["properties"]
+        for field, fields in expected.items():
+            item = properties[field]["items"]
+            with self.subTest(field=field):
+                self.assertEqual("object", item["type"])
+                self.assertFalse(item["additionalProperties"])
+                self.assertEqual(fields, set(item["required"]))
+                self.assertEqual(fields, set(item["properties"]))
+
+    def test_translation_schema_and_validator_share_nested_shapes(self):
+        properties = runner.TRANSLATION_SCHEMA["properties"]["clauses"]["items"]["properties"]
+        for field, fields in runner.TRANSLATION_NESTED_SHAPES.items():
+            item = properties[field]["items"]
+            with self.subTest(field=field):
+                self.assertEqual(set(fields), set(item["required"]))
+                self.assertEqual(set(fields), set(item["properties"]))
+                for name in set(fields) - {"clause_id"}:
+                    self.assertEqual(r"\S", item["properties"][name]["pattern"])
+
+    def test_translation_contract_rejects_observed_nested_alias_shapes(self):
+        observed = {
+            "term_occurrences": {
+                "source_term": "作意", "primary_term_id": "manaskara", "occurrence": 1,
+            },
+            "notes": {"clause_id": "T30n1579_p0001a01", "content": "校註"},
+        }
+        for field, item in observed.items():
+            payload = self.translation_payload()
+            payload["clauses"][0][field] = [item]
+            with self.subTest(field=field), self.assertRaisesRegex(ValueError, field):
+                runner.validate_translation_contract(
+                    payload, "translate", "T1579-067-001", "a" * 64,
+                    "T30n1579_p0001a01",
+                )
+
+    def test_translation_contract_rejects_nonstring_and_blank_text(self):
+        for field, value in (("literal", 123), ("vernacular", 7)):
+            payload = self.translation_payload()
+            payload["clauses"][0][field] = value
+            with self.subTest(field=field), self.assertRaisesRegex(ValueError, "non-empty text"):
+                runner.validate_translation_contract(
+                    payload, "translate", "T1579-067-001", "a" * 64,
+                    "T30n1579_p0001a01",
+                )
+
+        for value in (7, "   "):
+            payload = self.translation_payload()
+            payload["clauses"][0]["vernacular"] = f"完整白話〔{value}〕"
+            payload["clauses"][0]["additions"] = [{
+                "clause_id": "T30n1579_p0001a01", "text": value,
+            }]
+            with self.subTest(addition=value), self.assertRaisesRegex(ValueError, "non-empty text"):
+                runner.validate_translation_contract(
+                    payload, "translate", "T1579-067-001", "a" * 64,
+                    "T30n1579_p0001a01",
+                )
+
+    def test_bound_translation_schema_uses_contract_consts(self):
+        schema = runner.translation_schema(
+            "translate", "T1579-067-001", "a" * 64, "T30n1579_p0001a01",
+        )
+        properties = schema["properties"]
+        self.assertEqual("translate", properties["stage"]["const"])
+        self.assertEqual("T1579-067-001", properties["unit_id"]["const"])
+        self.assertEqual("a" * 64, properties["source_hash"]["const"])
+
+        clause = properties["clauses"]["items"]
+        self.assertEqual("T30n1579_p0001a01", clause["properties"]["clause_id"]["const"])
+        for field in runner.TRANSLATION_NESTED_SHAPES:
+            nested = clause["properties"][field]["items"]["properties"]["clause_id"]
+            self.assertEqual("T30n1579_p0001a01", nested["const"])
+
+    def test_translate_sections_passes_bound_schema_to_prompt(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            markdown = Path(tmp) / "translation.md"
+            markdown.write_text(
+                "# test\n\n## 01 Test\nRange: T30n1579_p0001a01\n\n"
+                "Source:\n<<<\n原文\n>>>\n\nTranslation:\n<<<\n\n>>>\n\nNote:\n<<<\n\n>>>\n",
+                encoding="utf-8",
+            )
+            job = {"id": "job", "work": "T1579", "model": "echo"}
+            response = json.dumps({
+                "schema_version": "1.0", "stage": "translate",
+                "unit_id": "T1579-067-001", "source_hash": audit.sha256_text("原文"),
+                "clauses": [{
+                    "clause_id": "T30n1579_p0001a01", "literal": "原文", "vernacular": "新譯",
+                    "additions": [], "negation_scope": [], "references": [], "speakers": None,
+                    "term_occurrences": [], "variants": [], "notes": [],
+                }],
+            }, ensure_ascii=False)
+            with patch.object(runner, "llm_call", return_value=response), \
+                 patch.object(runner, "prompt_text", wraps=runner.prompt_text) as prompt, \
+                 patch.object(runner, "save_job"), patch.object(runner, "log"):
+                runner.translate_sections(job, 67, markdown, {})
+
+        schema = json.loads(prompt.call_args.kwargs["schema_json"])
+        self.assertEqual("translate", schema["properties"]["stage"]["const"])
+        self.assertEqual("T1579-067-001", schema["properties"]["unit_id"]["const"])
+        clause = schema["properties"]["clauses"]["items"]
+        self.assertEqual("T30n1579_p0001a01", clause["properties"]["clause_id"]["const"])
+
+    def test_addition_bracket_invariant_remains_validator_only(self):
+        schema = runner.translation_schema(
+            "translate", "T1579-067-001", "a" * 64, "T30n1579_p0001a01",
+        )
+        addition_text = schema["properties"]["clauses"]["items"]["properties"] \
+            ["additions"]["items"]["properties"]["text"]
+        self.assertEqual({"type": "string", "pattern": r"\S"}, addition_text)
+        self.assertIn("〔〕", (ROOT / "prompts" / "translate.txt").read_text(encoding="utf-8"))
+
+        payload = self.translation_payload()
+        payload["clauses"][0]["additions"] = [{
+            "clause_id": "T30n1579_p0001a01", "text": "補充",
+        }]
+        with self.assertRaisesRegex(ValueError, "inside 〔〕"):
+            runner.validate_translation_contract(
+                payload, "translate", "T1579-067-001", "a" * 64,
+                "T30n1579_p0001a01",
+            )
+
     def test_translation_contract_requires_stable_identity_and_fields(self):
         payload = self.translation_payload()
         parsed = runner.parse_json_contract(json.dumps(payload), "translate")

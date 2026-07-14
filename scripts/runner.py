@@ -123,36 +123,76 @@ NOTE_BLOCK_RE = re.compile(r"(Note:\n<<<\n)(.*?)(\n?>>>)", re.DOTALL)
 POLICY_PATH = PROMPTS_DIR / "common_policy.txt"
 POLICY_VERSION = "T1579-auditable-v1"
 
-TRANSLATION_SCHEMA = {
-    "type": "object",
-    "required": ["schema_version", "stage", "unit_id", "source_hash", "clauses"],
-    "properties": {
-        "schema_version": {"const": "1.0"},
-        "stage": {"enum": ["translate", "draft_codex", "draft_glm", "merge", "repair", "fix"]},
-        "unit_id": {"type": "string"},
-        "source_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
-        "clauses": {
-            "type": "array", "minItems": 1,
+TRANSLATION_STAGES = ("translate", "draft_codex", "draft_glm", "merge", "repair", "fix")
+TRANSLATION_NESTED_SHAPES = {
+    "additions": ("clause_id", "text"),
+    "negation_scope": ("clause_id", "text", "scope"),
+    "references": ("clause_id", "expression", "referent"),
+    "term_occurrences": ("clause_id", "term_id", "surface"),
+    "variants": ("clause_id", "text", "rationale"),
+    "notes": ("clause_id", "text"),
+}
+
+
+def translation_schema(stage: str | None = None, unit_id_value: str | None = None,
+                       source_hash_value: str | None = None,
+                       clause_id_value: str | None = None) -> dict:
+    def nonblank_string() -> dict:
+        return {"type": "string", "pattern": r"\S"}
+
+    def bound_string(value: str | None) -> dict:
+        return {"const": value} if value is not None else nonblank_string()
+
+    def nested_array(fields: tuple[str, ...]) -> dict:
+        properties = {
+            field: bound_string(clause_id_value) if field == "clause_id" else nonblank_string()
+            for field in fields
+        }
+        return {
+            "type": "array",
             "items": {
                 "type": "object",
-                "required": ["clause_id", "literal", "vernacular", "additions", "negation_scope",
-                             "references", "speakers", "term_occurrences", "variants", "notes"],
-                "properties": {
-                    "clause_id": {"type": "string"},
-                    "literal": {"type": "string", "minLength": 1},
-                    "vernacular": {"type": "string", "minLength": 1},
-                    "additions": {"type": "array"},
-                    "negation_scope": {"type": "array"},
-                    "references": {"type": "array"},
-                    "speakers": {"type": ["object", "null"]},
-                    "term_occurrences": {"type": "array"},
-                    "variants": {"type": "array"},
-                    "notes": {"type": "array"},
-                },
+                "additionalProperties": False,
+                "required": list(fields),
+                "properties": properties,
+            },
+        }
+
+    clause_properties = {
+        "clause_id": bound_string(clause_id_value),
+        "literal": nonblank_string(),
+        "vernacular": nonblank_string(),
+        **{
+            field: nested_array(fields)
+            for field, fields in TRANSLATION_NESTED_SHAPES.items()
+        },
+        "speakers": {"type": ["object", "null"]},
+    }
+    properties = {
+        "schema_version": {"const": "1.0"},
+        "stage": {"const": stage} if stage is not None else {"enum": list(TRANSLATION_STAGES)},
+        "unit_id": bound_string(unit_id_value),
+        "source_hash": ({"const": source_hash_value} if source_hash_value is not None
+                        else {"type": "string", "pattern": "^[0-9a-f]{64}$"}),
+        "clauses": {
+            "type": "array", "minItems": 1, "maxItems": 1,
+            "items": {
+                "type": "object",
+                "additionalProperties": False,
+                "required": list(clause_properties),
+                "properties": clause_properties,
             },
         },
-    },
-}
+    }
+    return {
+        "type": "object",
+        "additionalProperties": False,
+        "required": list(properties),
+        "properties": properties,
+    }
+
+
+TRANSLATION_SCHEMA = translation_schema()
 REVIEW_SCHEMA = {
     "type": "object",
     "additionalProperties": False,
@@ -350,28 +390,21 @@ def validate_translation_contract(payload: dict, stage: str, expected_unit: str,
     if not isinstance(clauses, list) or len(clauses) != 1:
         raise ValueError(f"{stage}: expected exactly one clause")
     clause = clauses[0]
-    required = {
-        "clause_id", "literal", "vernacular", "additions", "negation_scope", "references",
-        "speakers", "term_occurrences", "variants", "notes",
-    }
+    required = {"clause_id", "literal", "vernacular", "speakers", *TRANSLATION_NESTED_SHAPES}
     if not isinstance(clause, dict) or set(clause) != required:
         raise ValueError(f"{stage}: clause is missing required fields")
     if clause.get("clause_id") != expected_clause:
         raise ValueError(f"{stage}: clause_id mismatch")
-    if not str(clause.get("literal", "")).strip() or not str(clause.get("vernacular", "")).strip():
-        raise ValueError(f"{stage}: literal and vernacular must be non-empty")
-    for key in ("additions", "negation_scope", "references", "term_occurrences", "variants", "notes"):
+    if any(not isinstance(clause.get(field), str) or not clause[field].strip()
+           for field in ("literal", "vernacular")):
+        raise ValueError(f"{stage}: literal and vernacular must be non-empty text")
+    for key in TRANSLATION_NESTED_SHAPES:
         if not isinstance(clause[key], list):
             raise ValueError(f"{stage}: {key} must be an array")
         if not all(isinstance(item, dict) for item in clause[key]):
             raise ValueError(f"{stage}: {key} items must be objects")
-    nested_shapes = {
-        "negation_scope": {"clause_id", "text", "scope"},
-        "references": {"clause_id", "expression", "referent"},
-        "term_occurrences": {"clause_id", "term_id", "surface"},
-        "variants": {"clause_id", "text", "rationale"},
-    }
-    for key, fields in nested_shapes.items():
+    for key, ordered_fields in TRANSLATION_NESTED_SHAPES.items():
+        fields = set(ordered_fields)
         for item in clause[key]:
             if set(item) != fields or item.get("clause_id") != expected_clause:
                 raise ValueError(f"{stage}: {key} item has an invalid shape")
@@ -381,16 +414,8 @@ def validate_translation_contract(payload: dict, stage: str, expected_unit: str,
     if clause["speakers"] is not None and not isinstance(clause["speakers"], dict):
         raise ValueError(f"{stage}: speakers must be an object or null")
     for addition in clause["additions"]:
-        if set(addition) != {"clause_id", "text"} or addition.get("clause_id") != expected_clause:
-            raise ValueError(f"{stage}: addition must bind to the reviewed clause")
-        text = addition.get("text")
-        if not text or f"〔{text}〕" not in clause["vernacular"]:
+        if f"〔{addition['text']}〕" not in clause["vernacular"]:
             raise ValueError(f"{stage}: every addition must appear inside 〔〕")
-    for note in clause["notes"]:
-        if set(note) != {"clause_id", "text"} or note.get("clause_id") != expected_clause:
-            raise ValueError(f"{stage}: note must bind to the reviewed clause")
-        if not isinstance(note.get("text"), str) or not note["text"].strip():
-            raise ValueError(f"{stage}: note text must be non-empty")
     return clause
 
 
@@ -806,7 +831,9 @@ def translate_sections(job: dict, juan: int, md_path: Path, prog: dict,
             job,
             prompt_text(
                 "translate", input_json=json_text(input_payload),
-                schema_json=json_text(TRANSLATION_SCHEMA),
+                schema_json=json_text(translation_schema(
+                    stage, current_unit, current_hash, current_clause,
+                )),
             ),
             stage,
             context={
@@ -859,7 +886,9 @@ def merge_sections(job: dict, juan: int, paths: dict[str, Path], prog: dict) -> 
         raw = llm_call(
             job,
             prompt_text("merge", input_json=json_text(input_payload),
-                        schema_json=json_text(TRANSLATION_SCHEMA)),
+                        schema_json=json_text(translation_schema(
+                            "merge", current_unit, current_hash, current_clause,
+                        ))),
             "merge",
             context={
                 "volume": juan, "unit_id": current_unit, "clause_ids": [current_clause],
@@ -996,7 +1025,9 @@ def fix_findings(job: dict, juan: int, md_path: Path, findings: list[dict], prog
         raw = llm_call(
             job,
             prompt_text("fix", input_json=json_text(input_payload),
-                        schema_json=json_text(TRANSLATION_SCHEMA)),
+                        schema_json=json_text(translation_schema(
+                            "fix", current_unit, current_hash, current_clause,
+                        ))),
             "fix",
             context={"volume": juan, "unit_id": current_unit, "clause_ids": [current_clause],
                      "source_hash": current_hash},

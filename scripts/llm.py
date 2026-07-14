@@ -1,17 +1,10 @@
 #!/usr/bin/env python3
-"""Subscription-CLI LLM backends with rate-limit auto-resume.
-
-Billing guarantee (correctness requirement, not style):
-- claude  -> Claude Code subscription: ANTHROPIC_* env vars are scrubbed so the
-             CLI uses OAuth login, never metered API billing.
-- codex   -> ChatGPT subscription: OPENAI_API_KEY scrubbed, ChatGPT login auth.
-- glm     -> z.ai GLM coding plan: claude CLI pointed at the coding-plan
-             endpoint via ANTHROPIC_BASE_URL/ANTHROPIC_AUTH_TOKEN.
-"""
+"""Codex subscription LLM backend with rate-limit auto-resume."""
 
 from __future__ import annotations
 
 import datetime as dt
+import json
 import os
 import re
 import subprocess
@@ -20,7 +13,7 @@ import time
 from dataclasses import dataclass, field
 from pathlib import Path
 
-MODELS = ("claude", "codex", "glm")
+MODELS = ("gpt-5.6-terra", "gpt-5.6-sol")
 FAKE_MODELS = ("echo", "echo-limit-once")
 
 ZAI_BASE_URL = "https://api.z.ai/api/anthropic"
@@ -74,19 +67,20 @@ class LLMResult:
     limit: bool = False
     resume_at: dt.datetime | None = None
     error: str = ""
+    sent_at: str | None = None
+    first_response_at: str | None = None
+    received_at: str | None = None
+    duration_ms: int | None = None
+    model: str | None = None
+    effort: str | None = None
+    request_id: str | None = None
+    usage: dict | None = None
+    exit_code: int | None = None
+    metadata_availability: dict[str, str] = field(default_factory=dict)
 
 
 class LLMError(Exception):
     pass
-
-
-def _zai_key() -> str:
-    key = os.environ.get("ZAI_API_KEY", "")
-    if not key and ZAI_KEY_FILE.exists():
-        key = ZAI_KEY_FILE.read_text(encoding="utf-8").strip()
-    if not key:
-        raise LLMError("no z.ai key: set ZAI_API_KEY or write ~/.zai_key")
-    return key
 
 
 def _env(model: str) -> dict[str, str]:
@@ -94,10 +88,6 @@ def _env(model: str) -> dict[str, str]:
     for var in ("ANTHROPIC_API_KEY", "ANTHROPIC_BASE_URL", "ANTHROPIC_AUTH_TOKEN",
                 "ANTHROPIC_MODEL", "OPENAI_API_KEY"):
         env.pop(var, None)
-    if model == "glm":
-        env["ANTHROPIC_BASE_URL"] = ZAI_BASE_URL
-        env["ANTHROPIC_AUTH_TOKEN"] = _zai_key()
-        env["ANTHROPIC_MODEL"] = ZAI_MODEL
     return env
 
 
@@ -166,12 +156,45 @@ def _run_fake(model: str, prompt: str) -> LLMResult:
             flag.write_text("1")
             return classify_output(1, "", "5-hour limit reached ∙ resets 3pm")
         model = "echo"
-    if "<TSV>" in prompt:
-        ids = re.findall(r"(T\d+n\d+[A-Za-z]?_p\d{4}[abc]\d{2})\t", prompt)
-        if not ids:
-            return LLMResult(ok=False, error="echo: no line ids in prompt")
-        text = f"<TSV>\n全卷\t{ids[0]}-p{ids[-1].split('_p')[1]}\t\n</TSV>"
-        return LLMResult(ok=True, text=text)
+    structured = re.search(r"輸入 JSON：\n(.*?)\n\n輸出 JSON Schema：", prompt, re.DOTALL)
+    if structured:
+        try:
+            payload = json.loads(structured.group(1))
+        except ValueError as error:
+            return LLMResult(ok=False, error=f"echo: invalid input JSON: {error}")
+        stage = payload.get("stage")
+        if stage == "segment":
+            lines = payload.get("lines", [])
+            if not lines:
+                return LLMResult(ok=False, error="echo: no source lines")
+            return LLMResult(ok=True, text=json.dumps({
+                "schema_version": "1.0", "stage": "segment", "work": payload["work"],
+                "juan": payload["juan"], "source_hash": payload["source_hash"],
+                "segments": [{
+                    "title": "全卷", "start_line_id": lines[0]["line_id"],
+                    "end_line_id": lines[-1]["line_id"], "note": "",
+                }],
+            }, ensure_ascii=False))
+        if stage in {"review_terms", "review_doctrine", "review_parallel"}:
+            verdict = "not_checked" if stage == "review_parallel" and not payload.get("review_evidence") else "pass"
+            return LLMResult(ok=True, text=json.dumps({
+                "schema_version": "1.0", "stage": stage, "unit_id": payload["unit_id"],
+                "source_hash": payload["source_hash"], "verdict": verdict,
+                "findings": [], "proposed_terms": [],
+            }, ensure_ascii=False))
+        clause = (payload.get("clauses") or [payload.get("clause")])[0]
+        source = clause.get("source", "")
+        body = clause.get("translation") or source or "（測試譯文）"
+        return LLMResult(ok=True, text=json.dumps({
+            "schema_version": "1.0", "stage": stage, "unit_id": payload["unit_id"],
+            "source_hash": payload["source_hash"],
+            "clauses": [{
+                "clause_id": clause["clause_id"], "literal": source or body,
+                "vernacular": body, "additions": [], "negation_scope": [],
+                "references": [], "speakers": None, "term_occurrences": [],
+                "variants": [], "notes": [],
+            }],
+        }, ensure_ascii=False))
     source = re.search(r"【原文】\n(.*?)\n【原文結束】", prompt, re.DOTALL)
     if "【譯稿A】" in prompt:  # merge prompts must produce a translation, not "OK"
         body = source.group(1).strip() if source else "（測試合稿）"
@@ -183,33 +206,66 @@ def _run_fake(model: str, prompt: str) -> LLMResult:
     return LLMResult(ok=True, text=f"<<<TRANSLATION\n{body}\n>>>\n<<<NOTE\n\n>>>")
 
 
-def run_llm(model: str, prompt: str, timeout: int = TIMEOUT) -> LLMResult:
+def _timestamp() -> str:
+    return dt.datetime.now().astimezone().isoformat(timespec="milliseconds")
+
+
+def _with_call_metadata(result: LLMResult, model: str, effort: str | None,
+                        sent_at: str, started: float, exit_code: int | None) -> LLMResult:
+    result.sent_at = sent_at
+    result.received_at = _timestamp()
+    result.duration_ms = round((time.monotonic() - started) * 1000)
+    result.model = model
+    result.effort = effort
+    result.exit_code = exit_code
+    result.metadata_availability = {
+        "first_response_at": "subscription CLI returns buffered output only",
+        "request_id": "provider did not expose a request ID",
+        "usage": "provider did not expose token usage",
+        "events": "provider did not expose a safe event stream",
+    }
+    if effort is None:
+        result.metadata_availability["effort"] = "reasoning effort was not configured"
+    return result
+
+
+def run_llm(model: str, prompt: str, timeout: int = TIMEOUT,
+            effort: str | None = None) -> LLMResult:
+    sent_at = _timestamp()
+    started = time.monotonic()
     SCRATCH.mkdir(parents=True, exist_ok=True)
     if model in FAKE_MODELS:
-        return _run_fake(model, prompt)
-    if model in ("claude", "glm"):
-        cmd = ["claude", "-p"]
-    elif model == "codex":
+        result = _run_fake(model, prompt)
+        return _with_call_metadata(result, model, effort, sent_at, started, 0 if result.ok else 1)
+    if model in MODELS:
+        if not effort:
+            raise LLMError(f"{model}: reasoning effort must be explicit")
         out_file = SCRATCH / f"codex-out-{os.getpid()}-{time.monotonic_ns()}.txt"
         cmd = ["codex", "exec", "-s", "read-only", "--skip-git-repo-check",
-               "--ephemeral", "--color", "never", "-o", str(out_file), "-"]
+               "--ephemeral", "--color", "never", "--model", model,
+               "-c", f'model_reasoning_effort="{effort}"']
+        cmd.extend(["-o", str(out_file), "-"])
     else:
         raise LLMError(f"unknown model: {model}")
     try:
         proc = subprocess.run(cmd, input=prompt, capture_output=True, text=True,
                               timeout=timeout, cwd=SCRATCH, env=_env(model))
     except subprocess.TimeoutExpired:
-        return LLMResult(ok=False, error=f"timeout after {timeout}s")
-    naive_tz = ZAI_TZ if model == "glm" else None
+        return _with_call_metadata(
+            LLMResult(ok=False, error=f"timeout after {timeout}s"),
+            model, effort, sent_at, started, None,
+        )
+    naive_tz = None
     stdout = proc.stdout
-    if model == "codex":
+    if model in MODELS:
         stdout = out_file.read_text(encoding="utf-8") if out_file.exists() else ""
         out_file.unlink(missing_ok=True)
-        return classify_output(proc.returncode, stdout, proc.stdout + proc.stderr, naive_tz)
-    return classify_output(proc.returncode, stdout, proc.stderr, naive_tz)
+        result = classify_output(proc.returncode, stdout, proc.stdout + proc.stderr, naive_tz)
+    return _with_call_metadata(result, model, effort, sent_at, started, proc.returncode)
 
 
-def call_with_limit_retry(model: str, prompt: str, on_wait=None, log=print) -> str:
+def call_with_limit_retry(model: str, prompt: str, on_wait=None, log=print,
+                          effort: str | None = None, on_attempt=None) -> str:
     """Blocking call that sleeps through rate limits and retries transient errors.
 
     on_wait(resume_at) is called before sleeping so callers can persist state.
@@ -218,7 +274,9 @@ def call_with_limit_retry(model: str, prompt: str, on_wait=None, log=print) -> s
     transient = 0
     limit_waits = 0
     while True:
-        result = run_llm(model, prompt)
+        result = run_llm(model, prompt, effort=effort)
+        if on_attempt:
+            on_attempt(result, limit_waits + transient + 1)
         if result.ok:
             return result.text
         if result.limit:
@@ -255,8 +313,6 @@ if __name__ == "__main__":
     assert r.limit and r.resume_at is not None, r
     r = run_llm("echo-limit-once", "審校【原文】\nx\n【原文結束】")
     assert r.ok and r.text == "OK", r
-    r = run_llm("echo", "<TSV>\nT30n1579_p0328c02\tabc\nT30n1579_p0335a10\tdef\n")
-    assert r.ok and "T30n1579_p0328c02-p0335a10" in r.text, r
     # limit-message formats seen from the three CLIs — every one must yield a reset time
     now = dt.datetime(2026, 7, 5, 12, 0, tzinfo=dt.timezone.utc).astimezone()
     cases = {

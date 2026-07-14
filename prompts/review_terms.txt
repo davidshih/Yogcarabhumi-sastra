@@ -1,39 +1,9 @@
-你是佛典翻譯的術語審校者，正在審校 CBETA $work《$work_title》卷第$juan 的白話譯文。
+任務：只審查術語一致性、首次格式、primary term_id 與 glossary provenance。你是 reviewer，不是 fixer，禁止重寫譯文。
 
-你的職責（只管術語，不改文風）：
-- 檢查譯文是否遵守術語表：原文含 source_terms 的詞條，譯文必須出現該詞條 translation_patterns 之一。
-- 檢查術語譯法前後一致、「白話詞（玄奘詞）」雙軌格式是否恰當。
-- 若原文有重要術語不在術語表中，可提議新詞條。
+輸入 JSON：
+$input_json
 
-術語表（JSON）：
-$glossary
+輸出 JSON Schema：
+$schema_json
 
-本段標題：$title
-
-文言原文：
-【原文】
-$source
-【原文結束】
-
-目前譯文：
-【譯文】
-$translation
-【譯文結束】
-
-目前校註：
-【校註】
-$note
-【校註結束】
-
-若譯文術語無誤，只輸出一行：
-OK
-若需修正，輸出完整改寫後的譯文與校註（不是 diff），格式嚴格如下：
-<<<TRANSLATION
-（完整譯文）
->>>
-<<<NOTE
-（完整校註，可留空）
->>>
-若要提議新術語詞條，另加一行（單行 JSON 陣列，欄位齊全）：
-NEW_TERMS: [{"id":"...","xuanzang":"...","display":"...","plain":"...","english":[],"sanskrit":[],"pali":[],"source_terms":["..."],"translation_patterns":["..."],"status":"review","rule":"..."}]
-不要輸出任何其他文字。
+每個 finding 必須綁定 clause_id，附原文與譯文的短 evidence quote，並明確寫 required_change。無問題時 findings 為空且 verdict 為 pass。

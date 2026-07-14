@@ -4,12 +4,15 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import html
 import json
 import re
 from dataclasses import dataclass
-from functools import lru_cache
 from pathlib import Path
+
+import publisher
+from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -26,6 +29,16 @@ class Entry:
     source: str
     translation: str
     note: str
+
+
+@dataclass(frozen=True)
+class TermTip:
+    word: str
+    term_id: str
+    xuanzang: str
+    plain: str
+    tip: str
+    alternate_ids: tuple[str, ...] = ()
 
 
 def parse_entries(text: str) -> list[Entry]:
@@ -61,42 +74,146 @@ def render_text(text: str) -> str:
     return "\n".join(paragraphs)
 
 
-@lru_cache(maxsize=1)
-def term_tips() -> tuple[tuple[str, str], ...]:
-    """Glossary words -> hover-tip text, longest word first (avoids partial shadowing)."""
-    try:
-        glossary = json.loads(GLOSSARY_PATH.read_text(encoding="utf-8"))
-    except (FileNotFoundError, json.JSONDecodeError):
-        return ()
-    tips: dict[str, str] = {}
-    for term in glossary.get("terms", []):
-        lines = [f"{term['xuanzang']}｜{term['plain']}"]
-        if term.get("sanskrit"):
-            lines.append("梵 " + " / ".join(term["sanskrit"]))
-        if term.get("english"):
-            lines.append("英 " + " / ".join(term["english"]))
-        tip = "\n".join(lines)
-        for word in {term["xuanzang"], term["plain"]}:
-            if word and len(word) >= 2:
-                tips.setdefault(word, tip)
-    return tuple(sorted(tips.items(), key=lambda kv: -len(kv[0])))
+def _tip_lines(term: dict[str, Any]) -> list[str]:
+    lines = [f"{term['xuanzang']}｜{term['plain']}"]
+    if term.get("sanskrit"):
+        lines.append("梵 " + " / ".join(term["sanskrit"]))
+    if term.get("english"):
+        lines.append("英 " + " / ".join(term["english"]))
+    return lines
 
 
-def wrap_terms(rendered_html: str) -> str:
+def build_term_tips(glossary: dict[str, Any]) -> tuple[TermTip, ...]:
+    """Build validated tooltip aliases with deterministic primary ownership."""
+    terms = glossary.get("terms")
+    if not isinstance(terms, list):
+        raise ValueError("Glossary must contain a terms list")
+
+    by_id: dict[str, dict[str, Any]] = {}
+    owners: dict[str, list[dict[str, Any]]] = {}
+    for term in terms:
+        if not isinstance(term, dict):
+            raise ValueError("Each glossary term must be an object")
+        term_id = term.get("id")
+        xuanzang = term.get("xuanzang")
+        plain = term.get("plain")
+        if not all(isinstance(value, str) and value for value in (term_id, xuanzang, plain)):
+            raise ValueError("Tooltip terms require non-empty id, xuanzang, and plain strings")
+        if term_id in by_id:
+            raise ValueError(f"Duplicate tooltip term id: {term_id}")
+        by_id[term_id] = term
+        for word in {xuanzang, plain}:
+            if len(word) >= 2:
+                owners.setdefault(word, []).append(term)
+
+    tips: list[TermTip] = []
+    for word, candidates in owners.items():
+        canonical = [term for term in candidates if term["xuanzang"] == word]
+        if len(canonical) == 1:
+            primary = canonical[0]
+        elif len(candidates) == 1:
+            primary = candidates[0]
+        else:
+            candidate_ids = ", ".join(sorted(term["id"] for term in candidates))
+            raise ValueError(f"Ambiguous tooltip alias {word!r}: {candidate_ids}")
+
+        alternates = sorted(
+            (term for term in candidates if term["id"] != primary["id"]),
+            key=lambda term: term["id"],
+        )
+        lines = _tip_lines(primary)
+        lines.extend(
+            f"其他義項 {term['xuanzang']}｜{term['plain']} [{term['id']}]"
+            for term in alternates
+        )
+        tips.append(
+            TermTip(
+                word=word,
+                term_id=primary["id"],
+                xuanzang=primary["xuanzang"],
+                plain=primary["plain"],
+                tip="\n".join(lines),
+                alternate_ids=tuple(term["id"] for term in alternates),
+            )
+        )
+
+    tips.sort(key=lambda tip: (-len(tip.word), tip.word, tip.term_id))
+    issues = validate_term_tips(tuple(tips))
+    if issues:
+        raise ValueError("; ".join(issues))
+    return tuple(tips)
+
+
+def validate_term_tips(tips: tuple[TermTip, ...]) -> list[str]:
+    """Validate unique aliases and longest-match ordering for overlapping words."""
+    issues: list[str] = []
+    seen_words: set[str] = set()
+    positions = {tip.word: index for index, tip in enumerate(tips)}
+    for tip in tips:
+        if tip.word in seen_words:
+            issues.append(f"Duplicate tooltip alias: {tip.word}")
+        seen_words.add(tip.word)
+    for shorter in tips:
+        for longer in tips:
+            if shorter.word != longer.word and shorter.word in longer.word:
+                if positions[longer.word] > positions[shorter.word]:
+                    issues.append(
+                        f"Overlapping tooltip alias {longer.word!r} must precede {shorter.word!r}"
+                    )
+    return issues
+
+
+def term_tips(glossary_path: Path = GLOSSARY_PATH) -> tuple[TermTip, ...]:
+    """Load fresh glossary data for each render to avoid stale process state."""
+    glossary = json.loads(glossary_path.read_text(encoding="utf-8"))
+    return build_term_tips(glossary)
+
+
+def wrap_terms(
+    rendered_html: str,
+    *,
+    tips: tuple[TermTip, ...] | None = None,
+    occurrence_prefix: str = "term",
+    first_terms: set[str] | None = None,
+) -> str:
     """Wrap glossary terms in already-escaped HTML with tooltip spans (text nodes only)."""
-    tips = term_tips()
+    if tips is None:
+        tips = term_tips()
     if not tips:
         return rendered_html
-    tipmap = dict(tips)
-    pattern = re.compile("|".join(re.escape(word) for word, _ in tips))
+    tipmap = {tip.word: tip for tip in tips}
+    pattern = re.compile("|".join(re.escape(tip.word) for tip in tips))
+    occurrence_counts: dict[str, int] = {}
+    seen_first = first_terms if first_terms is not None else set()
     out = []
+
+    def replacement(match: re.Match[str]) -> str:
+        tip = tipmap[match.group(0)]
+        occurrence_counts[tip.term_id] = occurrence_counts.get(tip.term_id, 0) + 1
+        occurrence_id = f"{occurrence_prefix}-{tip.term_id}-{occurrence_counts[tip.term_id]}"
+        visible_text = match.group(0)
+        attributes = [
+            'class="term"',
+            'tabindex="0"',
+            f'data-term-id="{html.escape(tip.term_id, quote=True)}"',
+            f'data-term-occurrence="{html.escape(occurrence_id, quote=True)}"',
+            f'data-tip="{html.escape(tip.tip, quote=True)}"',
+        ]
+        if tip.alternate_ids:
+            attributes.append(
+                f'data-term-alternates="{html.escape(" ".join(tip.alternate_ids), quote=True)}"'
+            )
+        if tip.term_id not in seen_first:
+            attributes.append('data-first-in-juan="true"')
+            seen_first.add(tip.term_id)
+            visible_text = f"{html.escape(tip.xuanzang)}〔{html.escape(tip.plain)}〕"
+        return f"<span {' '.join(attributes)}>{visible_text}</span>"
+
     for part in re.split(r"(<[^>]+>)", rendered_html):
         if part.startswith("<"):
             out.append(part)
         else:
-            out.append(pattern.sub(
-                lambda m: f'<span class="term" tabindex="0" data-tip="{html.escape(tipmap[m.group(0)])}">{m.group(0)}</span>',
-                part))
+            out.append(pattern.sub(replacement, part))
     return "".join(out)
 
 
@@ -134,8 +251,11 @@ def infer_title(text: str, juan: int) -> str:
 def render(entries: list[Entry], source: Path, juan: int, title: str) -> str:
     pairs = []
     toc_items = []
+    tips = term_tips()
+    first_terms: set[str] = set()
     for entry in entries:
         source_start, source_end = parse_range(entry.range_label)
+        occurrence_base = f"T1579-{juan:03d}-{source_start}"
         note_html = ""
         if entry.note:
             note_html = f"\n      <p class=\"translation-note\">{html.escape(entry.note)}</p>"
@@ -145,11 +265,11 @@ def render(entries: list[Entry], source: Path, juan: int, title: str) -> str:
       <h2>{html.escape(entry.title)}</h2>
       <div class="translation-text">
         <span class="line-range">白話譯文</span>
-{wrap_terms(render_text(entry.translation))}
+{wrap_terms(render_text(entry.translation), tips=tips, occurrence_prefix=occurrence_base + "-translation", first_terms=first_terms)}
       </div>
       <div class="source-text" aria-label="文言原文">
         <span class="line-range">文言原文 / {html.escape(entry.range_label)}</span>
-{render_text(entry.source)}
+{wrap_terms(render_text(entry.source), tips=tips, occurrence_prefix=occurrence_base + "-source", first_terms=first_terms)}
       </div>{note_html}
     </section>"""
         )
@@ -256,7 +376,10 @@ def render(entries: list[Entry], source: Path, juan: int, title: str) -> str:
 
 
 def parse_range(range_label: str) -> tuple[str, str]:
-    match = re.fullmatch(r"(T30n1579_p[0-9abc]+)(?:-(?:T30n1579_)?p?([0-9abc]+))?", range_label)
+    match = re.fullmatch(
+        r"(T30n1579_p\d{4}[abc]\d{2})(?:-(?:T30n1579_)?p?(\d{4}[abc]\d{2}))?",
+        range_label,
+    )
     if not match:
         raise ValueError(f"Invalid range: {range_label}")
     start = match.group(1)
@@ -264,27 +387,123 @@ def parse_range(range_label: str) -> tuple[str, str]:
     return start, end
 
 
-def main() -> int:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--translation", type=Path, default=DEFAULT_SOURCE)
-    parser.add_argument("--output", type=Path)
-    args = parser.parse_args()
-
-    source = args.translation
-    if not source.is_absolute():
-        source = ROOT / source
-    output = translation_output_path(source, args.output)
-    if not output.is_absolute():
-        output = ROOT / output
-
+def render_translation_bytes(source: Path) -> bytes:
     text = source.read_text(encoding="utf-8")
     entries = parse_entries(text)
     if not entries:
         raise ValueError(f"No entries found in {source}")
     juan = infer_juan(source)
     title = infer_title(text, juan)
-    output.parent.mkdir(parents=True, exist_ok=True)
-    output.write_text(render(entries, source, juan, title), encoding="utf-8")
+    return render(entries, source, juan, title).encode("utf-8")
+
+
+def _sealed_item_for_path(sealed: dict, path: Path) -> dict:
+    resolved = path.resolve()
+    for item in sealed.get("files", {}).values():
+        if (ROOT / item["path"]).resolve() == resolved:
+            return item
+    raise ValueError(f"attestation does not seal {path}")
+
+
+def build_translation(
+    source: Path,
+    output: Path | None = None,
+    *,
+    attestation: Path | None = None,
+    allow_unsealed: bool = False,
+) -> Path:
+    destination = output or translation_output_path(source, None)
+    docs_root = (ROOT / "docs").resolve()
+    if destination.resolve().is_relative_to(docs_root) and not (attestation or allow_unsealed):
+        raise PermissionError("writes under docs/ require an attestation or allow_unsealed=True")
+
+    sealed = None
+    expected_output = None
+    if attestation:
+        sealed = publisher.verify_attestation(ROOT, attestation)
+        _sealed_item_for_path(sealed, source)
+        expected_output = _sealed_item_for_path(sealed, destination)
+
+    candidate = render_translation_bytes(source)
+    if expected_output and hashlib.sha256(candidate).hexdigest() != expected_output["sha256"]:
+        raise ValueError("rendered candidate does not match the attested output SHA-256")
+
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    destination.write_bytes(candidate)
+    if sealed is not None:
+        publisher.verify_attestation(ROOT, attestation)
+    return destination
+
+
+def build_all(
+    source_dir: Path = ROOT / "translations",
+    output_dir: Path = DEFAULT_OUTPUT_DIR,
+    *,
+    allow_unsealed: bool = False,
+) -> list[Path]:
+    """Rebuild every translation page after shared glossary or renderer changes."""
+    outputs = []
+    for source in sorted(source_dir.glob("T1579-*-baihua.md")):
+        outputs.append(build_translation(
+            source,
+            output_dir / f"{source.stem}.html",
+            allow_unsealed=allow_unsealed,
+        ))
+    return outputs
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser()
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument("--translation", type=Path)
+    group.add_argument("--all", action="store_true", help="Rebuild every T1579 translation page")
+    outputs = parser.add_mutually_exclusive_group()
+    outputs.add_argument("--output", type=Path)
+    outputs.add_argument("--diagnostic-output", type=Path,
+                         help="Write an unsealed diagnostic outside docs/")
+    parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
+    parser.add_argument("--attestation", type=Path,
+                        help="Volume attestation required for writes under docs/")
+    parser.add_argument("--legacy-rebuild", action="store_true",
+                        help="Explicitly allow the legacy all-pages rebuild")
+    args = parser.parse_args()
+
+    if args.all:
+        if not args.legacy_rebuild:
+            parser.error("--all requires --legacy-rebuild")
+        if args.output:
+            parser.error("--output cannot be used with --all; use --output-dir")
+        output_dir = args.output_dir
+        if not output_dir.is_absolute():
+            output_dir = ROOT / output_dir
+        for output in build_all(output_dir=output_dir, allow_unsealed=True):
+            print(f"Wrote {output}")
+        return 0
+
+    source = args.translation or DEFAULT_SOURCE
+    if not source.is_absolute():
+        source = ROOT / source
+    if args.diagnostic_output and args.attestation:
+        parser.error("--diagnostic-output cannot be combined with --attestation")
+    output = args.diagnostic_output or translation_output_path(source, args.output)
+    if not output.is_absolute():
+        output = ROOT / output
+    docs_root = (ROOT / "docs").resolve()
+    if args.diagnostic_output:
+        if output.resolve().is_relative_to(docs_root):
+            parser.error("--diagnostic-output must be outside docs/")
+    else:
+        if not args.attestation:
+            parser.error("writes under docs/ require --attestation")
+        attestation = args.attestation if args.attestation.is_absolute() else ROOT / args.attestation
+    try:
+        build_translation(
+            source,
+            output,
+            attestation=attestation if not args.diagnostic_output else None,
+        )
+    except (PermissionError, ValueError, publisher.PublishError) as error:
+        parser.error(str(error))
     print(f"Wrote {output}")
     return 0
 

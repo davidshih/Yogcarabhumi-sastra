@@ -51,10 +51,10 @@ class StructuredContractTests(unittest.TestCase):
         return fake_call
 
     @staticmethod
-    def markdown(path: Path, *, translation: str = "") -> None:
+    def markdown(path: Path, *, source: str = "原文", translation: str = "") -> None:
         path.write_text(
             "# test\n\n## 01 Test\nRange: T30n1579_p0001a01\n\n"
-            "Source:\n<<<\n原文\n>>>\n\nTranslation:\n<<<\n"
+            f"Source:\n<<<\n{source}\n>>>\n\nTranslation:\n<<<\n"
             f"{translation}\n>>>\n\nNote:\n<<<\n\n>>>\n",
             encoding="utf-8",
         )
@@ -754,6 +754,34 @@ class StructuredContractTests(unittest.TestCase):
         self.assertEqual(1, verdict_rules["changes_required"]["minItems"])
         self.assertEqual(0, verdict_rules["not_checked"]["maxItems"])
 
+    def test_review_prompts_and_schema_require_contiguous_literal_evidence_quotes(self):
+        required_prompt_phrases = (
+            "逐字", "單一連續", "literal substring", "保留原始 whitespace",
+            "不得使用省略號", "不得串接",
+        )
+        for stage in runner.REVIEW_PASSES:
+            with self.subTest(stage=stage):
+                prompt = (runner.PROMPTS_DIR / f"{stage}.txt").read_text(encoding="utf-8")
+                for phrase in required_prompt_phrases:
+                    self.assertIn(phrase, prompt)
+
+        schema = runner.review_schema(
+            "review_terms", "T1579-067-001", "a" * 64,
+            "T30n1579_p0001a01", set(),
+        )
+        evidence = schema["properties"]["findings"]["items"]["properties"]["evidence"][
+            "properties"
+        ]
+        for field, reviewed_field in (
+            ("source_quote", "clause.source"),
+            ("translation_quote", "clause.translation"),
+        ):
+            description = evidence[field]["description"]
+            self.assertIn(reviewed_field, description)
+            for phrase in ("verbatim", "single contiguous literal substring",
+                           "whitespace", "ellipsis", "concatenation"):
+                self.assertIn(phrase, description)
+
     def test_review_schema_exposes_shape_that_rejects_observed_67_evidence_string(self):
         schema = runner.review_schema(
             "review_terms", "T1579-067-001", "a" * 64,
@@ -809,13 +837,19 @@ class StructuredContractTests(unittest.TestCase):
                 "unit_id": "T1579-067-001", "source_hash": current_hash,
                 "verdict": "pass", "findings": [], "proposed_terms": [],
             }, ensure_ascii=False)
+            store, validation_events = self.recording_store()
             with patch.object(runner, "prompt_text", side_effect=fake_prompt), \
                  patch.object(
                      runner, "llm_call", side_effect=self.audited_llm_response(response)
-                 ) as call, patch.object(runner, "save_job"):
+                 ) as call, patch.object(runner, "audit_store", return_value=store), \
+                 patch.object(runner, "save_job"):
                 runner.review_pass(job, 67, markdown, "review_terms", prog, 1)
 
         call.assert_called_once()
+        self.assertEqual(["pass"], [
+            event["verdict"] for event in validation_events
+            if event["type"] == "review_contract_validation"
+        ])
         structured = captured["input"]["structured_contract"]
         self.assertEqual(
             {"stage", "source_hash", "translation_sha256", "clause_id", "annotations"},
@@ -870,6 +904,7 @@ class StructuredContractTests(unittest.TestCase):
             call_order = []
             prompt_inputs = []
             llm_calls = []
+            llm_prompts = []
             new_term = {"id": "term-new", "source_terms": ["共同詞"]}
 
             def fake_load():
@@ -885,40 +920,201 @@ class StructuredContractTests(unittest.TestCase):
                 call_order.append("append")
                 glossary_state["terms"].extend(json.loads(raw))
 
+            invalid = {
+                "schema_version": "1.0", "stage": "review_terms",
+                "unit_id": "T1579-067-001",
+                "source_hash": audit.sha256_text("共同詞第一節"),
+                "verdict": "changes_required", "findings": [{
+                    "clause_id": "T30n1579_p0001a01", "severity": "med",
+                    "category": "format", "claim": "Malformed evidence quote.",
+                    "evidence": {
+                        "source_quote": "共同……第一節",
+                        "translation_quote": "第一……譯文",
+                        "reference_ids": [],
+                    },
+                    "required_change": "Use exact contiguous evidence.",
+                }],
+                "proposed_terms": [new_term],
+            }
+            valid_first = {
+                "schema_version": "1.0", "stage": "review_terms",
+                "unit_id": "T1579-067-001",
+                "source_hash": audit.sha256_text("共同詞第一節"),
+                "verdict": "pass", "findings": [], "proposed_terms": [new_term],
+            }
             responses = [
-                {"schema_version": "1.0", "stage": "review_terms",
-                 "unit_id": "T1579-067-001",
-                 "source_hash": audit.sha256_text("共同詞第一節"),
-                 "verdict": "pass", "findings": [], "proposed_terms": [new_term]},
+                invalid,
+                valid_first,
                 {"schema_version": "1.0", "stage": "review_terms",
                  "unit_id": "T1579-067-002",
                  "source_hash": audit.sha256_text("共同詞第二節"),
                  "verdict": "pass", "findings": [], "proposed_terms": []},
             ]
 
-            def fake_call(_job, _prompt, _stage, *, context, effort=None):
+            def fake_call(_job, prompt, _stage, *, context, effort=None):
                 llm_calls.append(context["unit_id"])
+                llm_prompts.append(prompt)
                 call_order.append(f"llm-{len(llm_calls)}")
                 context.setdefault("_audit_event_ids", []).append(
-                    f"event-{context['unit_id']}"
+                    f"event-{len(llm_calls)}"
                 )
                 return json.dumps(responses.pop(0), ensure_ascii=False)
 
+            store, validation_events = self.recording_store()
             with patch.object(runner, "load_glossary", side_effect=fake_load), \
                  patch.object(runner, "prompt_text", side_effect=fake_prompt), \
                  patch.object(runner, "append_new_terms", side_effect=fake_append), \
                  patch.object(runner, "llm_call", side_effect=fake_call), \
+                 patch.object(runner, "audit_store", return_value=store), \
                  patch.object(runner, "save_job"):
                 runner.review_pass(job, 67, markdown, "review_terms", prog, 1)
 
         self.assertEqual(
-            ["load", "prompt-1", "llm-1", "append", "load", "prompt-2", "llm-2"],
+            ["load", "prompt-1", "llm-1", "llm-2", "append", "load",
+             "prompt-2", "llm-3"],
             call_order,
         )
+        review_validations = [
+            event for event in validation_events
+            if event["type"] == "review_contract_validation"
+        ]
+        self.assertEqual(["fail", "pass", "pass"],
+                         [event["verdict"] for event in review_validations])
+        self.assertEqual(["event-1", "event-2", "event-3"],
+                         [event["llm_event_id"] for event in review_validations])
+        self.assertEqual(
+            "event-2",
+            prog["review_attestations"]["T1579-067-001"]["review_terms"][
+                "review_event_id"
+            ],
+        )
+        invalid_raw = json.dumps(invalid, ensure_ascii=False)
+        self.assertNotIn(invalid_raw, llm_prompts[1])
+        self.assertIn(audit.sha256_text(invalid_raw), llm_prompts[1])
+        self.assertIn("<original_bound_prompt>", llm_prompts[1])
+        self.assertEqual(1, call_order.count("append"))
         self.assertEqual([], prompt_inputs[0]["glossary"])
         self.assertEqual(["term-new"], [
             term["id"] for term in prompt_inputs[1]["glossary"]
         ])
+
+    def test_review_retry_second_failure_has_no_premature_mutations(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            markdown = Path(tmp) / "translation.md"
+            source = "這是一段足以觸發低比例路由的原文"
+            self.markdown(markdown, source=source, translation="譯")
+            current_hash = audit.sha256_text(source)
+            clause = self.translation_payload()["clauses"][0]
+            clause.update({
+                "clause_id": "T30n1579_p0001a01", "literal": source,
+                "vernacular": "譯",
+            })
+            prog = {"clause_contracts": {"T1579-067-001": {
+                "stage": "translate", "source_hash": current_hash, "clause": clause,
+            }}}
+            job = {"id": "job", "work": "T1579", "model": "auto"}
+            invalid = {
+                "schema_version": "1.0", "stage": "review_terms",
+                "unit_id": "T1579-067-001", "source_hash": current_hash,
+                "verdict": "changes_required", "findings": [{
+                    "clause_id": "T30n1579_p0001a01", "severity": "med",
+                    "category": "format", "claim": "Malformed evidence quote.",
+                    "evidence": {
+                        "source_quote": "原……文",
+                        "translation_quote": "譯……文",
+                        "reference_ids": [],
+                    },
+                    "required_change": "Use exact contiguous evidence.",
+                }],
+                "proposed_terms": [{"id": "must-not-append"}],
+            }
+            calls = []
+
+            def fake_call(_job, prompt, _stage, *, context, effort=None):
+                calls.append((prompt, effort, context["structured_contract_sha256"]))
+                context.setdefault("_audit_event_ids", []).append(f"event-{len(calls)}")
+                return json.dumps(invalid, ensure_ascii=False)
+
+            store, validation_events = self.recording_store()
+            with patch.object(runner, "llm_call", side_effect=fake_call), \
+                 patch.object(runner, "audit_store", return_value=store), \
+                 patch.object(runner, "append_new_terms") as append, \
+                 patch.object(runner, "save_job") as save, \
+                 self.assertRaisesRegex(ValueError, "evidence quotes"):
+                runner.review_pass(job, 67, markdown, "review_terms", prog, 1)
+
+        self.assertEqual(2, len(calls))
+        self.assertEqual(["high", "high"], [item[1] for item in calls])
+        self.assertEqual(1, len({item[2] for item in calls}))
+        self.assertEqual(["fail", "fail"], [
+            event["verdict"] for event in validation_events
+            if event["type"] == "review_contract_validation"
+        ])
+        append.assert_not_called()
+        save.assert_not_called()
+        self.assertNotIn("review_attestations", prog)
+        self.assertNotIn("review_verdicts", prog)
+        self.assertNotIn("section", prog)
+        self.assertNotIn("warnings", prog)
+
+    def test_review_retry_repairs_parse_error_but_does_not_catch_llm_error(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            markdown = Path(tmp) / "translation.md"
+            source = "這是一段足以觸發低比例路由的原文"
+            self.markdown(markdown, source=source, translation="譯")
+            current_hash = audit.sha256_text(source)
+            clause = self.translation_payload()["clauses"][0]
+            clause.update({
+                "clause_id": "T30n1579_p0001a01", "literal": source,
+                "vernacular": "譯",
+            })
+            initial_prog = {"clause_contracts": {"T1579-067-001": {
+                "stage": "translate", "source_hash": current_hash, "clause": clause,
+            }}}
+            job = {"id": "job", "work": "T1579", "model": "auto"}
+            valid = json.dumps({
+                "schema_version": "1.0", "stage": "review_terms",
+                "unit_id": "T1579-067-001", "source_hash": current_hash,
+                "verdict": "pass", "findings": [], "proposed_terms": [],
+            }, ensure_ascii=False)
+            responses = ["not json", valid]
+            calls = []
+
+            def fake_call(_job, _prompt, _stage, *, context, effort=None):
+                calls.append(context["semantic_attempt"])
+                context.setdefault("_audit_event_ids", []).append(f"event-{len(calls)}")
+                return responses.pop(0)
+
+            store, validation_events = self.recording_store()
+            prog = copy.deepcopy(initial_prog)
+            with patch.object(runner, "llm_call", side_effect=fake_call), \
+                 patch.object(runner, "audit_store", return_value=store), \
+                 patch.object(runner, "save_job"):
+                runner.review_pass(job, 67, markdown, "review_terms", prog, 1)
+
+            transport_prog = copy.deepcopy(initial_prog)
+            transport_store, transport_events = self.recording_store()
+            with patch.object(
+                    runner, "llm_call", side_effect=llm.LLMError("transport")
+                 ) as transport, \
+                 patch.object(runner, "audit_store", return_value=transport_store), \
+                 patch.object(runner, "save_job"), \
+                 self.assertRaisesRegex(llm.LLMError, "transport"):
+                runner.review_pass(
+                    job, 67, markdown, "review_terms", transport_prog, 1,
+                )
+
+        self.assertEqual([1, 2], calls)
+        self.assertEqual(["fail", "pass"], [
+            event["verdict"] for event in validation_events
+            if event["type"] == "review_contract_validation"
+        ])
+        self.assertEqual("xhigh", prog["warnings"][0]["routing"]["effort"])
+        transport.assert_called_once()
+        self.assertEqual([], transport_events)
+        self.assertNotIn("review_attestations", transport_prog)
+        self.assertNotIn("review_verdicts", transport_prog)
+        self.assertNotIn("section", transport_prog)
 
     def test_review_preflight_rejects_stale_or_malformed_contract_before_llm(self):
         cases = ("source_hash", "translation", "term_occurrences")
@@ -1145,13 +1341,19 @@ class StructuredContractTests(unittest.TestCase):
                 "unit_id": "T1579-067-001", "source_hash": current_hash,
                 "verdict": "not_checked", "findings": [],
             }, ensure_ascii=False)
+            store, validation_events = self.recording_store()
             with patch.object(runner, "load_glossary", side_effect=mutate_after_preflight), \
                  patch.object(runner, "prompt_text", side_effect=fake_prompt), \
                  patch.object(
                      runner, "llm_call", side_effect=self.audited_llm_response(response)
-                 ), patch.object(runner, "save_job"):
+                 ), patch.object(runner, "audit_store", return_value=store), \
+                 patch.object(runner, "save_job"):
                 runner.review_pass(job, 67, markdown, "review_parallel", prog, 1)
 
+        self.assertEqual(["pass"], [
+            event["verdict"] for event in validation_events
+            if event["type"] == "review_contract_validation"
+        ])
         self.assertEqual(
             ["ref-a"],
             [item["source_id"] for item in captured["input"]["review_evidence"]],
@@ -1562,10 +1764,23 @@ class AuditStoreTests(unittest.TestCase):
             prog = job["progress"]["67"]
             store = audit.AuditStore(root, "job")
             responses = [
-                {"schema_version": "1.0", "stage": stage,
+                {"schema_version": "1.0", "stage": "review_terms",
                  "unit_id": "T1579-067-001", "source_hash": current_hash,
-                 "verdict": "pass", "findings": [], "proposed_terms": []}
-                for stage in ("review_terms", "review_doctrine")
+                 "verdict": "changes_required", "findings": [{
+                     "clause_id": "T30n1579_p0001a01", "severity": "med",
+                     "category": "format", "claim": "Malformed evidence quote.",
+                     "evidence": {
+                         "source_quote": "原……文", "translation_quote": "譯……文",
+                         "reference_ids": [],
+                     },
+                     "required_change": "Use exact contiguous evidence.",
+                 }], "proposed_terms": []},
+                {"schema_version": "1.0", "stage": "review_terms",
+                 "unit_id": "T1579-067-001", "source_hash": current_hash,
+                 "verdict": "pass", "findings": [], "proposed_terms": []},
+                {"schema_version": "1.0", "stage": "review_doctrine",
+                 "unit_id": "T1579-067-001", "source_hash": current_hash,
+                 "verdict": "pass", "findings": [], "proposed_terms": []},
             ]
 
             def fake_backend(_model, _prompt, *, on_wait, log, effort, on_attempt):
@@ -1598,8 +1813,14 @@ class AuditStoreTests(unittest.TestCase):
                 ]["structured_contract_sha256"]
                 review_events = [
                     event for event in store.events()
-                    if event.get("stage") in {"review_terms", "review_doctrine"}
+                    if event.get("type") == "llm_attempt"
+                    and event.get("stage") in {"review_terms", "review_doctrine"}
                 ]
+                validation_events = [
+                    event for event in store.events()
+                    if event.get("type") == "review_contract_validation"
+                ]
+                manifest = json.loads(store.manifest_path.read_text(encoding="utf-8"))
 
                 clause["term_occurrences"] = [{
                     "clause_id": "T30n1579_p0001a01",
@@ -1624,12 +1845,43 @@ class AuditStoreTests(unittest.TestCase):
         self.assertTrue(passed["passed"])
         with self.subTest("event digest"):
             self.assertEqual(
-                [initial_digest, initial_digest],
+                [initial_digest, initial_digest, initial_digest],
                 [
                     event.get("hashes", {}).get("structured_contract_sha256")
                     for event in review_events
                 ],
             )
+        with self.subTest("validation event linkage and manifest"):
+            llm_event_ids = {event["event_id"] for event in review_events}
+            self.assertEqual(3, len(llm_event_ids))
+            self.assertEqual(3, len({event["call_id"] for event in review_events}))
+            self.assertEqual(3, len(validation_events))
+            self.assertEqual(llm_event_ids, {
+                event["llm_event_id"] for event in validation_events
+            })
+            self.assertEqual(["fail", "pass", "pass"], [
+                event["verdict"] for event in validation_events
+            ])
+            self.assertEqual([1, 2, 1], [
+                event["semantic_attempt"] for event in validation_events
+            ])
+            self.assertEqual([initial_digest, initial_digest, initial_digest], [
+                event["structured_contract_sha256"]
+                for event in validation_events
+            ])
+            winning_terms_event = next(
+                event["llm_event_id"] for event in validation_events
+                if event["stage"] == "review_terms" and event["verdict"] == "pass"
+            )
+            self.assertEqual(
+                winning_terms_event,
+                prog["review_attestations"]["T1579-067-001"]["review_terms"][
+                    "review_event_id"
+                ],
+            )
+            self.assertEqual(6, manifest["event_count"])
+            self.assertEqual(2, manifest["stages"]["review_terms"]["call_count"])
+            self.assertEqual(1, manifest["stages"]["review_doctrine"]["call_count"])
         with self.subTest("mutable digest cannot replace event"):
             self.assertFalse(tampered["passed"])
             self.assertEqual("missing", tampered["clauses"][0]["status"])

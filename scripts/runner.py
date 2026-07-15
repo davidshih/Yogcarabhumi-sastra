@@ -247,6 +247,16 @@ def review_schema(stage: str | None = None, unit_id_value: str | None = None,
         "translation_quote": nonblank_string(),
         "reference_ids": reference_ids,
     }
+    evidence_properties["source_quote"]["description"] = (
+        "Copy verbatim from clause.source as a single contiguous literal substring. "
+        "Preserve original whitespace and line breaks. Do not use ellipsis, paraphrase, "
+        "or concatenation."
+    )
+    evidence_properties["translation_quote"]["description"] = (
+        "Copy verbatim from clause.translation as a single contiguous literal substring. "
+        "Preserve original whitespace and line breaks. Do not use ellipsis, paraphrase, "
+        "or concatenation."
+    )
     finding_properties = {
         "clause_id": bound_string(clause_id_value),
         "severity": {"enum": ["crit", "high", "med", "low"]},
@@ -980,6 +990,98 @@ def semantic_translation_call(job: dict, prompt: str, stage: str, *, context: di
     raise AssertionError("semantic translation retry exhausted without a result")
 
 
+def semantic_review_retry_prompt(original_prompt: str, validator_error: str,
+                                 previous_invalid_output_sha256: str, stage: str,
+                                 expected_unit: str, expected_hash: str,
+                                 expected_clause: str) -> str:
+    identities = {
+        "stage": stage,
+        "unit_id": expected_unit,
+        "source_hash": expected_hash,
+        "clause_id": expected_clause,
+    }
+    return (
+        f"<original_bound_prompt>\n{original_prompt}\n</original_bound_prompt>\n\n"
+        "<semantic_retry_instruction>\n"
+        "前次 JSON 未通過 review contract validation。請依上方原始 bound schema 完整重做。\n\n"
+        f"validator_error: {validator_error}\n"
+        f"previous_invalid_output_sha256: {previous_invalid_output_sha256}\n\n"
+        f"expected_identities:\n{json_text(identities)}\n\n"
+        "修正指令：只輸出一個完整 JSON object，不得使用 Markdown code fence 或附加說明；"
+        "必須保留 schema_version、stage、unit_id、source_hash、verdict、findings 的完整 envelope；"
+        "每個 finding 的 clause_id 必須等於 expected_identities.clause_id；"
+        "evidence.source_quote 與 evidence.translation_quote 必須分別逐字複製自 clause.source "
+        "與 clause.translation，且各自是單一連續 literal substring；保留原始 whitespace 與換行，"
+        "不得使用省略號、不得改寫、不得串接多段。\n"
+        "</semantic_retry_instruction>"
+    )
+
+
+def semantic_review_call(job: dict, prompt: str, stage: str, *, context: dict,
+                         effort: str, expected_unit: str, expected_hash: str,
+                         expected_clause: str, source: str, translation: str,
+                         allowed_reference_ids: set[str]) -> tuple[dict, list[dict], str]:
+    current_prompt = prompt
+    for semantic_attempt in (1, 2):
+        attempt_context = {
+            key: value for key, value in context.items() if key != "_audit_event_ids"
+        }
+        attempt_context["semantic_attempt"] = semantic_attempt
+        raw = llm_call(
+            job, current_prompt, stage, context=attempt_context, effort=effort,
+        )
+        llm_event_ids = attempt_context.get("_audit_event_ids", [])
+        if not llm_event_ids:
+            raise RuntimeError("semantic validation requires a linked LLM audit event")
+        llm_event_id = llm_event_ids[-1]
+        try:
+            payload = parse_json_contract(raw, stage)
+            findings = validate_review_contract(
+                payload, stage, expected_unit, expected_hash, expected_clause,
+                source=source, translation=translation,
+                allowed_reference_ids=allowed_reference_ids,
+            )
+        except ValueError as err:
+            validator_error = audit.redact_secrets(str(err))
+            audit_store(job).append({
+                "type": "review_contract_validation",
+                "llm_event_id": llm_event_id,
+                "semantic_attempt": semantic_attempt,
+                "verdict": "fail",
+                "validator_error": validator_error,
+                "stage": stage,
+                "unit_id": expected_unit,
+                "clause_id": expected_clause,
+                "source_hash": expected_hash,
+                "structured_contract_sha256": context.get(
+                    "structured_contract_sha256"
+                ),
+            })
+            if semantic_attempt == 2:
+                raise
+            current_prompt = semantic_review_retry_prompt(
+                prompt, validator_error, audit.sha256_text(raw), stage,
+                expected_unit, expected_hash, expected_clause,
+            )
+            continue
+        audit_store(job).append({
+            "type": "review_contract_validation",
+            "llm_event_id": llm_event_id,
+            "semantic_attempt": semantic_attempt,
+            "verdict": "pass",
+            "validator_error": None,
+            "stage": stage,
+            "unit_id": expected_unit,
+            "clause_id": expected_clause,
+            "source_hash": expected_hash,
+            "structured_contract_sha256": context.get(
+                "structured_contract_sha256"
+            ),
+        })
+        return payload, findings, llm_event_id
+    raise AssertionError("semantic review retry exhausted without a result")
+
+
 def llm_segment(job: dict, juan: int, lines: dict[str, str], tsv_path: Path) -> None:
     ordered = sorted(((i, t) for i, t in lines.items() if t), key=lambda kv: line_key(kv[0]))
     input_payload = {
@@ -1160,7 +1262,6 @@ def review_pass(job: dict, juan: int, md_path: Path, pass_name: str,
                 prog: dict, round_number: int) -> list[dict]:
     entries = bth.parse_entries(md_path.read_text(encoding="utf-8"))
     prepared = []
-    pending_warnings = []
     existing_attestations = prog.get("review_attestations", {})
     if isinstance(existing_attestations, dict):
         for idx in range(len(entries)):
@@ -1178,8 +1279,9 @@ def review_pass(job: dict, juan: int, md_path: Path, pass_name: str,
         )
         ratio = translation_ratio(entry.source, entry.translation)
         low_ratio = ratio < (1 / 3)
+        warning = None
         if low_ratio:
-            pending_warnings.append({
+            warning = {
                 "unit_id": current_unit,
                 "clause_id": current_clause,
                 "translation_ratio": round(ratio, 4),
@@ -1187,7 +1289,7 @@ def review_pass(job: dict, juan: int, md_path: Path, pass_name: str,
                 "routing": {
                     "stage": "review_doctrine", "model": "gpt-5.6-sol", "effort": "xhigh",
                 },
-            })
+            }
         raw_evidence = job.get("review_evidence", {}).get(current_unit, [])
         evidence = json.loads(json.dumps([
             {**item, "source_id": item["source_id"].strip()}
@@ -1207,18 +1309,13 @@ def review_pass(job: dict, juan: int, md_path: Path, pass_name: str,
             "translation": entry.translation,
             "note": entry.note,
             "low_ratio": low_ratio,
+            "warning": warning,
             "review_evidence": evidence,
             "allowed_reference_ids": allowed_reference_ids,
             "structured_contract": structured_contract,
             "structured_contract_sha256": structured_contract_sha256(structured_contract),
             "effort": effort,
         })
-
-    if pending_warnings:
-        warnings = prog.setdefault("warnings", [])
-        for warning in pending_warnings:
-            if warning not in warnings:
-                warnings.append(warning)
 
     findings: list[dict] = []
     verdicts = []
@@ -1249,27 +1346,25 @@ def review_pass(job: dict, juan: int, md_path: Path, pass_name: str,
             "glossary_hash": audit.sha256_text(glossary_subset),
             "structured_contract_sha256": item["structured_contract_sha256"],
         }
-        raw = llm_call(
-            job,
-            prompt_text(
-                pass_name,
-                input_json=json_text(input_payload),
-                schema_json=json_text(review_schema(
-                    pass_name, current_unit, current_hash, current_clause,
-                    item["allowed_reference_ids"],
-                )),
-            ),
+        bound_prompt = prompt_text(
             pass_name,
-            context=call_context,
-            effort=item["effort"],
+            input_json=json_text(input_payload),
+            schema_json=json_text(review_schema(
+                pass_name, current_unit, current_hash, current_clause,
+                item["allowed_reference_ids"],
+            )),
         )
-        payload = parse_json_contract(raw, pass_name)
-        section_findings = validate_review_contract(
-            payload, pass_name, current_unit, current_hash, current_clause,
-            source=item["source"],
-            translation=item["translation"],
+        payload, section_findings, review_event_id = semantic_review_call(
+            job, bound_prompt, pass_name, context=call_context,
+            effort=item["effort"], expected_unit=current_unit,
+            expected_hash=current_hash, expected_clause=current_clause,
+            source=item["source"], translation=item["translation"],
             allowed_reference_ids=item["allowed_reference_ids"],
         )
+        if item["warning"] is not None:
+            warnings = prog.setdefault("warnings", [])
+            if item["warning"] not in warnings:
+                warnings.append(item["warning"])
         verdicts.append({
             "round": round_number, "stage": pass_name, "unit_id": current_unit,
             "verdict": payload["verdict"], "finding_count": len(section_findings),
@@ -1278,7 +1373,7 @@ def review_pass(job: dict, juan: int, md_path: Path, pass_name: str,
             prog.setdefault("review_attestations", {}).setdefault(current_unit, {})[pass_name] = {
                 "stage": pass_name,
                 "verdict": "pass",
-                "review_event_id": call_context.get("_audit_event_ids", [])[-1],
+                "review_event_id": review_event_id,
                 "model": stage_model(job, pass_name),
                 "effort": item["effort"],
                 "source_sha256": current_hash,

@@ -859,6 +859,11 @@ def llm_call(job: dict, prompt: str, stage: str, *, context: dict | None = None,
                 "reasoning": usage.get("reasoning_tokens"),
                 "total": usage.get("total_tokens"),
             }
+        retry_reason = None
+        if not result.ok:
+            reason_code = "rate_limited" if result.limit else "llm_error"
+            safe_error = audit.redact_secrets(result.error).strip()
+            retry_reason = f"{reason_code}: {safe_error}" if safe_error else reason_code
         record = store.append({
             "type": "llm_attempt",
             "call_id": call_id,
@@ -878,7 +883,16 @@ def llm_call(job: dict, prompt: str, stage: str, *, context: dict | None = None,
             "status": "ok" if result.ok else "rate_limited" if result.limit else "error",
             "exit_code": result.exit_code,
             "rate_limit": result.limit,
-            "retry_reason": audit.redact_secrets(result.error) if not result.ok else None,
+            "retry_reason": retry_reason,
+            "provider_resume_at": (
+                result.provider_resume_at.isoformat()
+                if result.provider_resume_at is not None else None
+            ),
+            "effective_resume_at": (
+                result.effective_resume_at.isoformat()
+                if result.effective_resume_at is not None else None
+            ),
+            "rate_limit_decision": result.resume_decision,
             "usage": usage,
             "tokens": tokens,
             "availability_reason": availability,

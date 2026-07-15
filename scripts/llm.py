@@ -12,6 +12,7 @@ import tempfile
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 MODELS = ("gpt-5.6-terra", "gpt-5.6-sol")
 FAKE_MODELS = ("echo", "echo-limit-once")
@@ -33,6 +34,11 @@ TRANSIENT_RETRIES = 3
 # limit message can never strand a job short of the next window.
 BACKOFF_MINUTES = [15, 30, 45, 60]
 MAX_LIMIT_WAITS = 10
+DEFAULT_TZ_NAME = os.environ.get("YOGACARA_TIMEZONE", "America/New_York")
+try:
+    DEFAULT_TZ = ZoneInfo(DEFAULT_TZ_NAME)
+except ZoneInfoNotFoundError as error:
+    raise RuntimeError(f"unknown YOGACARA_TIMEZONE: {DEFAULT_TZ_NAME}") from error
 
 LIMIT_PATTERNS = re.compile(
     r"(?i)usage limit|limit reached|5-hour limit|hit your usage limit"
@@ -58,6 +64,24 @@ RESET_IN_RE = re.compile(
 RESET_ISO_RE = re.compile(r"(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:Z|[+-]\d{2}:?\d{2})?)")
 # "will reset at 2026-07-06 06:10:27" (z.ai bare datetime, naive — tz from caller)
 RESET_DATETIME_RE = re.compile(r"(?i)reset(?:s)?\s+at\s+(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2}:\d{2})")
+# "try again at Jul 21st, 2026 5:43 AM" (Codex subscription CLI)
+RESET_HUMAN_DATETIME_RE = re.compile(
+    r"(?i)(?:reset(?:s)?|try again|available|retry)[^\n.]{0,24}?\bat\s+"
+    r"(Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|"
+    r"Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\s+"
+    r"(\d{1,2})(?:st|nd|rd|th)?,\s+(\d{4})\s+"
+    r"(\d{1,2}):(\d{2})\s*(a\.?m\.?|p\.?m\.?)"
+    r"(?:\s*\(([^)]+)\))?"
+)
+ERROR_LINE_RE = re.compile(r"(?i)^\s*(?:error|fatal)\s*:")
+PROMPT_ECHO_PREFIX_RE = re.compile(
+    r"(?i)^\s*(?:(?:user|prompt|input|stdin|\[user\])\s*:?\s*|>\s*)"
+)
+MIN_FRAMED_PROMPT_CHARS = 16
+MONTHS = {
+    "jan": 1, "feb": 2, "mar": 3, "apr": 4, "may": 5, "jun": 6,
+    "jul": 7, "aug": 8, "sep": 9, "oct": 10, "nov": 11, "dec": 12,
+}
 
 
 @dataclass
@@ -66,6 +90,9 @@ class LLMResult:
     text: str = ""
     limit: bool = False
     resume_at: dt.datetime | None = None
+    provider_resume_at: dt.datetime | None = None
+    effective_resume_at: dt.datetime | None = None
+    resume_decision: str | None = None
     error: str = ""
     sent_at: str | None = None
     first_response_at: str | None = None
@@ -91,61 +118,190 @@ def _env(model: str) -> dict[str, str]:
     return env
 
 
-def parse_resume_at(text: str, now: dt.datetime | None = None,
-                    naive_tz: dt.timezone | None = None) -> dt.datetime | None:
-    now = now or dt.datetime.now().astimezone()
-    match = RESET_TS_RE.search(text)
-    if match:
-        return dt.datetime.fromtimestamp(int(match.group(1))).astimezone()
-    match = RESET_ISO_RE.search(text)
-    if match:
+def _now() -> dt.datetime:
+    return dt.datetime.now(DEFAULT_TZ)
+
+
+def _target_tz(now: dt.datetime, naive_tz: dt.tzinfo | None) -> dt.tzinfo:
+    return naive_tz or now.tzinfo or DEFAULT_TZ
+
+
+def _human_timezone(name: str | None, fallback: dt.tzinfo) -> dt.tzinfo:
+    if not name:
+        return fallback
+    try:
+        return ZoneInfo(name)
+    except ZoneInfoNotFoundError:
+        return fallback
+
+
+def _line_candidates(text: str, now: dt.datetime,
+                     naive_tz: dt.tzinfo | None) -> list[dt.datetime]:
+    target_tz = _target_tz(now, naive_tz)
+    local_now = now.astimezone(target_tz)
+    candidates: list[dt.datetime] = []
+    protected_spans: list[tuple[int, int]] = []
+
+    def overlaps_protected(match: re.Match) -> bool:
+        start, end = match.span()
+        return any(start < protected_end and protected_start < end
+                   for protected_start, protected_end in protected_spans)
+
+    human_matches = list(RESET_HUMAN_DATETIME_RE.finditer(text))
+    for match in human_matches:
+        protected_spans.append(match.span())
+        meridiem = match.group(6).lower().replace(".", "")
+        hour = int(match.group(4)) % 12 + (12 if meridiem.startswith("p") else 0)
+        zone = _human_timezone(match.group(7), target_tz)
+        try:
+            candidates.append(dt.datetime(
+                int(match.group(3)), MONTHS[match.group(1)[:3].lower()],
+                int(match.group(2)), hour, int(match.group(5)), tzinfo=zone,
+            ))
+        except ValueError:
+            pass
+
+    for match in RESET_TS_RE.finditer(text):
+        try:
+            candidates.append(dt.datetime.fromtimestamp(int(match.group(1)), tz=target_tz))
+        except (OverflowError, OSError, ValueError):
+            pass
+    for match in RESET_ISO_RE.finditer(text):
+        protected_spans.append(match.span())
         try:
             parsed = dt.datetime.fromisoformat(match.group(1).replace("Z", "+00:00"))
-            if parsed.tzinfo is None:
-                parsed = parsed.astimezone()
-            return parsed.astimezone()
+            candidates.append(parsed.replace(tzinfo=target_tz) if parsed.tzinfo is None
+                              else parsed.astimezone(target_tz))
         except ValueError:
             pass
-    match = RESET_DATETIME_RE.search(text)  # before clock24: "…-06 06:10:27" would false-hit it
-    if match:
+    for match in RESET_DATETIME_RE.finditer(text):
+        protected_spans.append(match.span())
         try:
             parsed = dt.datetime.fromisoformat(f"{match.group(1)}T{match.group(2)}")
-            return parsed.replace(tzinfo=naive_tz or now.tzinfo).astimezone()
+            candidates.append(parsed.replace(tzinfo=target_tz))
         except ValueError:
             pass
-    match = RESET_CLOCK_RE.search(text)
-    if match:
+
+    # Explicit datetimes and 12-hour clocks also contain text that can look
+    # like a bare 24-hour clock. Suppress only overlapping, less-specific hits.
+    for match in RESET_CLOCK_RE.finditer(text):
+        if overlaps_protected(match):
+            continue
+        protected_spans.append(match.span())
         meridiem = match.group(3).lower().replace(".", "")
         hour = int(match.group(1)) % 12 + (12 if meridiem.startswith("p") else 0)
-        candidate = now.replace(hour=hour, minute=int(match.group(2) or 0), second=0, microsecond=0)
-        if candidate <= now:
+        candidate = local_now.replace(
+            hour=hour, minute=int(match.group(2) or 0), second=0, microsecond=0,
+        )
+        if candidate <= local_now:
             candidate += dt.timedelta(days=1)
-        return candidate
-    match = RESET_CLOCK24_RE.search(text)
-    if match:
-        candidate = now.replace(hour=int(match.group(1)), minute=int(match.group(2)),
-                                second=0, microsecond=0)
-        if candidate <= now:
+        candidates.append(candidate)
+    for match in RESET_CLOCK24_RE.finditer(text):
+        if overlaps_protected(match):
+            continue
+        candidate = local_now.replace(
+            hour=int(match.group(1)), minute=int(match.group(2)),
+            second=0, microsecond=0,
+        )
+        if candidate <= local_now:
             candidate += dt.timedelta(days=1)
-        return candidate
-    match = RESET_IN_RE.search(text)
-    if match and (match.group(1) or match.group(2)):
-        return now + dt.timedelta(hours=int(match.group(1) or 0), minutes=int(match.group(2) or 0))
-    return None
+        candidates.append(candidate)
+    for match in RESET_IN_RE.finditer(text):
+        if match.group(1) or match.group(2):
+            candidates.append(local_now + dt.timedelta(
+                hours=int(match.group(1) or 0), minutes=int(match.group(2) or 0),
+            ))
+    return candidates
 
 
-def classify_output(exit_code: int, stdout: str, stderr: str,
-                    naive_tz: dt.timezone | None = None) -> LLMResult:
-    combined = f"{stdout}\n{stderr}"
-    if LIMIT_PATTERNS.search(combined):
+def _latest_candidate(candidates: list[dt.datetime], now: dt.datetime) -> dt.datetime | None:
+    if not candidates:
+        return None
+    future = [candidate for candidate in candidates if candidate > now]
+    return max(future or candidates)
+
+
+def parse_resume_at(text: str, now: dt.datetime | None = None,
+                    naive_tz: dt.tzinfo | None = None) -> dt.datetime | None:
+    now = now or _now()
+    error_lines = [line for line in text.splitlines() if ERROR_LINE_RE.match(line)]
+    for line in reversed(error_lines):
+        candidate = _latest_candidate(_line_candidates(line, now, naive_tz), now)
+        if candidate is not None:
+            return candidate
+    return _latest_candidate(_line_candidates(text, now, naive_tz), now)
+
+
+def _dedupe_lines(lines: list[str]) -> list[str]:
+    seen: set[str] = set()
+    unique = []
+    for line in lines:
+        normalized = line.strip()
+        if normalized and normalized not in seen:
+            seen.add(normalized)
+            unique.append(normalized)
+    return unique
+
+
+def _bounded_contains(text: str, fragment: str) -> bool:
+    start = text.find(fragment)
+    while start >= 0:
+        end = start + len(fragment)
+        left_boundary = start == 0 or not (text[start - 1].isalnum() or text[start - 1] == "_")
+        right_boundary = end == len(text) or not (text[end].isalnum() or text[end] == "_")
+        if left_boundary and right_boundary:
+            return True
+        start = text.find(fragment, start + 1)
+    return False
+
+
+def _is_prompt_echo(line: str, prompt_lines: list[str]) -> bool:
+    raw = line.strip()
+    candidate = PROMPT_ECHO_PREFIX_RE.sub("", raw).strip()
+    if not candidate:
+        return True
+    for prompt_line in prompt_lines:
+        if len(prompt_line) >= MIN_FRAMED_PROMPT_CHARS and _bounded_contains(raw, prompt_line):
+            return True
+    if ERROR_LINE_RE.match(raw):
+        return False
+    for prompt_line in prompt_lines:
+        if len(candidate) >= MIN_FRAMED_PROMPT_CHARS and _bounded_contains(prompt_line, candidate):
+            return True
+    return False
+
+
+def authoritative_diagnostics(_model_output: str, diagnostics: str,
+                              echoed_prompt: str | None = None) -> str:
+    prompt_lines = _dedupe_lines(echoed_prompt.splitlines()) if echoed_prompt else []
+    lines = [
+        line.strip() for line in diagnostics.splitlines()
+        if not prompt_lines or not _is_prompt_echo(line, prompt_lines)
+    ]
+    provider_errors = [line for line in lines if ERROR_LINE_RE.match(line)]
+    if provider_errors:
+        return provider_errors[-1]
+    limit_lines = [line for line in lines if LIMIT_PATTERNS.search(line)]
+    if limit_lines:
+        return limit_lines[-1]
+    return "\n".join(_dedupe_lines(lines))[-500:]
+
+
+def classify_output(exit_code: int, model_output: str, diagnostics: str,
+                    naive_tz: dt.tzinfo | None = None,
+                    echoed_prompt: str | None = None) -> LLMResult:
+    safe_diagnostics = authoritative_diagnostics(model_output, diagnostics, echoed_prompt)
+    if LIMIT_PATTERNS.search(safe_diagnostics):
+        provider_resume_at = parse_resume_at(safe_diagnostics, naive_tz=naive_tz)
         return LLMResult(ok=False, limit=True,
-                         resume_at=parse_resume_at(combined, naive_tz=naive_tz),
-                         error=combined.strip()[-500:])
+                         resume_at=provider_resume_at,
+                         provider_resume_at=provider_resume_at,
+                         error=safe_diagnostics)
     if exit_code != 0:
-        return LLMResult(ok=False, error=combined.strip()[-500:] or f"exit {exit_code}")
-    if not stdout.strip():
+        return LLMResult(ok=False, error=safe_diagnostics or f"exit {exit_code}")
+    if not model_output.strip():
         return LLMResult(ok=False, error="empty output")
-    return LLMResult(ok=True, text=stdout.strip())
+    return LLMResult(ok=True, text=model_output.strip())
 
 
 def _run_fake(model: str, prompt: str) -> LLMResult:
@@ -260,8 +416,24 @@ def run_llm(model: str, prompt: str, timeout: int = TIMEOUT,
     if model in MODELS:
         stdout = out_file.read_text(encoding="utf-8") if out_file.exists() else ""
         out_file.unlink(missing_ok=True)
-        result = classify_output(proc.returncode, stdout, proc.stdout + proc.stderr, naive_tz)
+        result = classify_output(
+            proc.returncode, stdout, f"{proc.stdout}\n{proc.stderr}", naive_tz,
+            echoed_prompt=prompt,
+        )
     return _with_call_metadata(result, model, effort, sent_at, started, proc.returncode)
+
+
+def limit_wait_decision(provider_resume_at: dt.datetime | None, limit_waits: int,
+                        now: dt.datetime | None = None) -> tuple[dt.datetime, str]:
+    now = now or _now()
+    fallback = now + dt.timedelta(
+        minutes=BACKOFF_MINUTES[min(limit_waits, len(BACKOFF_MINUTES) - 1)],
+    )
+    if provider_resume_at is None:
+        return fallback, "fallback_unparsable"
+    if provider_resume_at <= now or provider_resume_at > now + dt.timedelta(hours=6):
+        return fallback, "fallback_out_of_policy"
+    return provider_resume_at, "provider"
 
 
 def call_with_limit_retry(model: str, prompt: str, on_wait=None, log=print,
@@ -275,6 +447,16 @@ def call_with_limit_retry(model: str, prompt: str, on_wait=None, log=print,
     limit_waits = 0
     while True:
         result = run_llm(model, prompt, effort=effort)
+        wait_now = None
+        if result.limit:
+            wait_now = _now()
+            provider_resume_at = result.provider_resume_at or result.resume_at
+            effective_resume_at, decision = limit_wait_decision(
+                provider_resume_at, limit_waits, wait_now,
+            )
+            result.provider_resume_at = provider_resume_at
+            result.effective_resume_at = effective_resume_at
+            result.resume_decision = decision
         if on_attempt:
             on_attempt(result, limit_waits + transient + 1)
         if result.ok:
@@ -282,19 +464,28 @@ def call_with_limit_retry(model: str, prompt: str, on_wait=None, log=print,
         if result.limit:
             if limit_waits >= MAX_LIMIT_WAITS:
                 raise LLMError(f"{model}: gave up after {limit_waits} limit waits")
-            fallback = dt.datetime.now().astimezone() + dt.timedelta(
-                minutes=BACKOFF_MINUTES[min(limit_waits, len(BACKOFF_MINUTES) - 1)])
-            resume_at = result.resume_at or fallback
-            # never trust a resume time in the past or beyond one 5h window + slack
-            now = dt.datetime.now().astimezone()
-            if resume_at <= now or resume_at > now + dt.timedelta(hours=6):
-                resume_at = fallback
+            resume_at = result.effective_resume_at
+            if resume_at is None or wait_now is None:
+                raise RuntimeError("rate-limit wait decision was not computed")
             limit_waits += 1
             if on_wait:
                 on_wait(resume_at)
-            # retry 5 minutes AFTER the reset time — never race the window edge
-            log(f"[{model}] usage limit, sleeping until {resume_at:%m-%d %H:%M} +5min")
-            time.sleep(max(60.0, (resume_at - now).total_seconds() + 300))
+            if result.resume_decision == "provider":
+                log(
+                    f"[{model}] usage limit, provider reset at "
+                    f"{resume_at.isoformat()}; sleeping until reset +5min"
+                )
+            else:
+                provider_text = (
+                    result.provider_resume_at.isoformat()
+                    if result.provider_resume_at is not None else "unparsable"
+                )
+                log(
+                    f"[{model}] usage limit, provider reset {provider_text}; "
+                    f"next quota probe at {resume_at.isoformat()} +5min "
+                    f"({result.resume_decision})"
+                )
+            time.sleep(max(60.0, (resume_at - wait_now).total_seconds() + 300))
             continue
         transient += 1
         if transient > TRANSIENT_RETRIES:
@@ -329,7 +520,7 @@ if __name__ == "__main__":
         '429 {"error":{"message":"quota exhausted","resets_at":"2026-07-05T21:00:00Z"}}': None,
     }
     for msg, hm in cases.items():
-        c = classify_output(0, msg, "")
+        c = classify_output(1, "", msg)
         assert c.limit, f"not flagged as limit: {msg}"
         got = parse_resume_at(msg, now)
         assert got is not None, f"no reset parsed: {msg}"

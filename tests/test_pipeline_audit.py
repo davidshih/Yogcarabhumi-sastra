@@ -1057,6 +1057,156 @@ class StructuredContractTests(unittest.TestCase):
         self.assertNotIn("section", prog)
         self.assertNotIn("warnings", prog)
 
+    def test_doctrine_retry_offers_safe_single_line_evidence_candidates(self):
+        stage = "review_doctrine"
+        unit = "T1579-069-015"
+        clause_id = "T30n1579_p0700a01-p0700a12"
+        source = "復次，應知。\n又諸菩薩，\n有五種相能攝一切菩薩正行。"
+        translation = "再者，應當知道。\n另外，諸菩薩有五種相，可以統攝一切菩薩正行。"
+        source_hash = audit.sha256_text(source)
+        valid_translation_quote = "諸菩薩有五種相"
+
+        def payload(source_quote):
+            return {
+                "schema_version": "1.0", "stage": stage,
+                "unit_id": unit, "source_hash": source_hash,
+                "verdict": "changes_required", "findings": [{
+                    "clause_id": clause_id, "severity": "med",
+                    "category": "doctrine", "claim": "菩薩正行的範圍需要核對。",
+                    "evidence": {
+                        "source_quote": source_quote,
+                        "translation_quote": valid_translation_quote,
+                        "reference_ids": [],
+                    },
+                    "required_change": "確認五種相與菩薩正行的關係。",
+                }],
+            }
+
+        observed_first = payload("又諸\n菩薩，\n有五種相")
+        observed_second = payload("又諸\n菩薩，有五種相")
+        for observed in (observed_first, observed_second):
+            with self.assertRaisesRegex(ValueError, "evidence quotes"):
+                runner.validate_review_contract(
+                    observed, stage, unit, source_hash, clause_id,
+                    source=source, translation=translation,
+                    allowed_reference_ids=set(),
+                )
+
+        repaired = payload("又諸菩薩，")
+        responses = [observed_first, repaired]
+        prompts = []
+        store, events = self.recording_store()
+        job = {"id": "job"}
+        context = {"structured_contract_sha256": "c" * 64}
+
+        def fake_call(_job, prompt, _stage, *, context, effort=None):
+            prompts.append(prompt)
+            context.setdefault("_audit_event_ids", []).append(f"llm-{len(prompts)}")
+            return json.dumps(responses.pop(0), ensure_ascii=False)
+
+        with patch.object(runner, "llm_call", side_effect=fake_call), \
+             patch.object(runner, "audit_store", return_value=store):
+            _, findings, event_id = runner.semantic_review_call(
+                job, "bound review prompt", stage,
+                context=context, effort="high",
+                expected_unit=unit, expected_hash=source_hash,
+                expected_clause=clause_id, source=source, translation=translation,
+                allowed_reference_ids=set(),
+            )
+
+        self.assertEqual("llm-2", event_id)
+        self.assertEqual("又諸菩薩，", findings[0]["evidence"]["source_quote"])
+        self.assertEqual(["fail", "pass"], [event["verdict"] for event in events])
+        self.assertEqual(["llm-1", "llm-2"], [event["llm_event_id"] for event in events])
+        self.assertEqual({"id": "job"}, job)
+        self.assertEqual({"structured_contract_sha256": "c" * 64}, context)
+        retry_prompt = prompts[1]
+        invalid_raw = json.dumps(observed_first, ensure_ascii=False)
+        self.assertNotIn(invalid_raw, retry_prompt)
+        self.assertIn(audit.sha256_text(invalid_raw), retry_prompt)
+        candidate_match = re.search(
+            r"<safe_evidence_candidates>\n(.*?)\n</safe_evidence_candidates>",
+            retry_prompt, re.DOTALL,
+        )
+        self.assertIsNotNone(candidate_match)
+        candidates = json.loads(candidate_match.group(1))
+        self.assertIn("又諸菩薩，", candidates["source_quote"])
+        self.assertTrue(all("\n" not in item and item in source
+                            for item in candidates["source_quote"]))
+        self.assertTrue(all("\n" not in item and item in translation
+                            for item in candidates["translation_quote"]))
+        self.assertIn("short", retry_prompt)
+        self.assertIn("single-line", retry_prompt)
+        self.assertIn("literal", retry_prompt)
+
+    def test_safe_evidence_candidates_cover_production_shaped_18_units(self):
+        source_counts = (21, 28, 22, 21, 27, 21, 35, 18, 20,
+                         26, 16, 38, 48, 62, 35, 10, 31, 32)
+        translation_counts = (14, 10, 12, 9, 16, 9, 19, 12, 15,
+                              19, 8, 19, 20, 30, 26, 7, 17, 18)
+        for field, counts in (("source", source_counts),
+                              ("translation", translation_counts)):
+            for unit, count in enumerate(counts, start=1):
+                lines = [
+                    f"{field}-{unit:02d}-literal-line-{line:02d}"
+                    for line in range(1, count + 1)
+                ]
+                text = "\n".join(lines)
+                with self.subTest(field=field, unit=unit, count=count):
+                    expected = runner.safe_evidence_candidates(
+                        text, max_candidates=1000,
+                    )
+                    candidates = runner.safe_evidence_candidates(text)
+                    self.assertEqual(count, len(expected))
+                    self.assertEqual(expected, candidates)
+                    self.assertIn(lines[-1], candidates)
+                    self.assertTrue(all(candidate in text and "\n" not in candidate
+                                        for candidate in candidates))
+
+    def test_safe_evidence_candidates_do_not_split_unicode_graphemes(self):
+        family = "👨‍👩‍👧‍👦"
+        cases = (
+            "a" * 47 + "e\u0301" + "z",
+            "a" * 47 + "❤\ufe0f" + "z",
+            "a" * 47 + family + "z",
+        )
+        for text in cases:
+            with self.subTest(text=text):
+                candidates = runner.safe_evidence_candidates(
+                    text, max_candidates=32,
+                )
+                self.assertEqual(text, "".join(candidates))
+                self.assertTrue(all(candidate in text and "\n" not in candidate
+                                    for candidate in candidates))
+                self.assertTrue(all(
+                    not candidate.startswith(("\u0301", "\ufe0f", "\u200d"))
+                    and not candidate.endswith("\u200d")
+                    for candidate in candidates
+                ))
+                if family in text:
+                    self.assertTrue(any(family in candidate for candidate in candidates))
+
+    def test_safe_evidence_candidates_skip_clusters_longer_than_max_chars(self):
+        combining_cluster = "e" + "\u0301" * 60
+        zwj_cluster = "👨" + "\u200d👩" * 30
+        for cluster in (combining_cluster, zwj_cluster):
+            with self.subTest(cluster=cluster):
+                text = f"before{cluster}after"
+                candidates = runner.safe_evidence_candidates(
+                    text, max_chars=8, max_candidates=32,
+                )
+                self.assertTrue(candidates)
+                self.assertTrue(all(len(candidate) <= 8 for candidate in candidates))
+                self.assertTrue(all(candidate in text for candidate in candidates))
+                self.assertFalse(any(cluster in candidate for candidate in candidates))
+
+    def test_safe_evidence_candidates_define_nonpositive_cap_policy(self):
+        self.assertEqual([], runner.safe_evidence_candidates(
+            "literal evidence", max_candidates=0,
+        ))
+        with self.assertRaisesRegex(ValueError, "max_candidates"):
+            runner.safe_evidence_candidates("literal evidence", max_candidates=-1)
+
     def test_review_retry_repairs_parse_error_but_does_not_catch_llm_error(self):
         with tempfile.TemporaryDirectory() as tmp:
             markdown = Path(tmp) / "translation.md"

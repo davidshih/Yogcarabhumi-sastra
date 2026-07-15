@@ -21,6 +21,7 @@ import re
 import sys
 import threading
 import time
+import unicodedata
 import uuid
 from contextlib import contextmanager
 from dataclasses import dataclass
@@ -1004,15 +1005,84 @@ def semantic_translation_call(job: dict, prompt: str, stage: str, *, context: di
     raise AssertionError("semantic translation retry exhausted without a result")
 
 
+def _is_grapheme_extend(char: str) -> bool:
+    codepoint = ord(char)
+    return (
+        unicodedata.combining(char) != 0
+        or unicodedata.category(char) in {"Mn", "Mc", "Me"}
+        or 0xFE00 <= codepoint <= 0xFE0F
+        or 0xE0100 <= codepoint <= 0xE01EF
+        or 0x1F3FB <= codepoint <= 0x1F3FF
+    )
+
+
+def _grapheme_safe_chunks(text: str, max_chars: int) -> list[str]:
+    if max_chars < 1:
+        raise ValueError("max_chars must be positive")
+    clusters = []
+    current_cluster = ""
+    for char in text:
+        if (not current_cluster or _is_grapheme_extend(char)
+                or char == "\u200d" or current_cluster.endswith("\u200d")):
+            current_cluster += char
+        else:
+            clusters.append(current_cluster)
+            current_cluster = char
+    if current_cluster:
+        clusters.append(current_cluster)
+
+    chunks = []
+    current_chunk = ""
+    for cluster in clusters:
+        if len(cluster) > max_chars:
+            if current_chunk:
+                chunks.append(current_chunk)
+                current_chunk = ""
+            continue
+        if current_chunk and len(current_chunk) + len(cluster) > max_chars:
+            chunks.append(current_chunk)
+            current_chunk = cluster
+        else:
+            current_chunk += cluster
+    if current_chunk:
+        chunks.append(current_chunk)
+    return chunks
+
+
+def safe_evidence_candidates(text: str, *, max_chars: int = 48,
+                             max_candidates: int = 64) -> list[str]:
+    if max_candidates < 0:
+        raise ValueError("max_candidates must not be negative")
+    if max_candidates == 0:
+        return []
+    candidates = []
+    for raw_line in text.splitlines():
+        line = raw_line.strip()
+        if not line:
+            continue
+        for chunk in _grapheme_safe_chunks(line, max_chars):
+            candidate = chunk.strip()
+            if candidate and candidate not in candidates:
+                candidates.append(candidate)
+            if len(candidates) >= max_candidates:
+                return candidates
+    return candidates
+
+
 def semantic_review_retry_prompt(original_prompt: str, validator_error: str,
                                  previous_invalid_output_sha256: str, stage: str,
                                  expected_unit: str, expected_hash: str,
-                                 expected_clause: str) -> str:
+                                 expected_clause: str, source: str,
+                                 translation: str) -> str:
     identities = {
         "stage": stage,
         "unit_id": expected_unit,
         "source_hash": expected_hash,
         "clause_id": expected_clause,
+    }
+    evidence_candidates = {
+        "source_quote": safe_evidence_candidates(source),
+        "translation_quote": safe_evidence_candidates(translation),
     }
     return (
         f"<original_bound_prompt>\n{original_prompt}\n</original_bound_prompt>\n\n"
@@ -1021,12 +1091,18 @@ def semantic_review_retry_prompt(original_prompt: str, validator_error: str,
         f"validator_error: {validator_error}\n"
         f"previous_invalid_output_sha256: {previous_invalid_output_sha256}\n\n"
         f"expected_identities:\n{json_text(identities)}\n\n"
+        "以下候選只由 original bound clause.source / clause.translation 逐字產生，"
+        "不含前次 invalid output。每一項都是可直接複製的 short, single-line, literal quote；"
+        "不得串接不同候選：\n"
+        f"<safe_evidence_candidates>\n{json_text(evidence_candidates)}\n"
+        "</safe_evidence_candidates>\n\n"
         "修正指令：只輸出一個完整 JSON object，不得使用 Markdown code fence 或附加說明；"
         "必須保留 schema_version、stage、unit_id、source_hash、verdict、findings 的完整 envelope；"
         "每個 finding 的 clause_id 必須等於 expected_identities.clause_id；"
         "evidence.source_quote 與 evidence.translation_quote 必須分別逐字複製自 clause.source "
-        "與 clause.translation，且各自是單一連續 literal substring；保留原始 whitespace 與換行，"
-        "不得使用省略號、不得改寫、不得串接多段。\n"
+        "與 clause.translation，且各自是單一連續 literal substring。優先逐字採用上方與 finding "
+        "相符的 short, single-line candidate；若候選語義不足，才從 bound text 另選短的單行連續"
+        "substring。不得插入或刪除 whitespace/newline，不得使用省略號、不得改寫、不得串接多段。\n"
         "</semantic_retry_instruction>"
     )
 
@@ -1075,7 +1151,7 @@ def semantic_review_call(job: dict, prompt: str, stage: str, *, context: dict,
                 raise
             current_prompt = semantic_review_retry_prompt(
                 prompt, validator_error, audit.sha256_text(raw), stage,
-                expected_unit, expected_hash, expected_clause,
+                expected_unit, expected_hash, expected_clause, source, translation,
             )
             continue
         audit_store(job).append({

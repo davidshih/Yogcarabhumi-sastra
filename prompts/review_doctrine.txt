@@ -6,4 +6,4 @@ $input_json
 輸出 JSON Schema：
 $schema_json
 
-每個 finding 必須綁定 clause_id，附可定位的原文與譯文短引文。不可只說「感覺不完整」；必須指出具體缺漏、增譯或誤解。無問題時 findings 為空且 verdict 為 pass。
+每個 finding 必須綁定 clause_id，附可定位的原文與譯文短引文。evidence.source_quote 與 evidence.translation_quote 必須分別從 clause.source 與 clause.translation 逐字複製，且各自只能是單一連續 literal substring；必須保留原始 whitespace 與換行，不得使用省略號、不得改寫、不得串接多段。不可只說「感覺不完整」；必須指出具體缺漏、增譯或誤解。無問題時 findings 為空且 verdict 為 pass。

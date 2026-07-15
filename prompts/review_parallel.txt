@@ -6,4 +6,4 @@ $input_json
 輸出 JSON Schema：
 $schema_json
 
-若 review_evidence 為空或不足，findings 輸出空陣列、verdict 輸出 not_checked。若有 finding，evidence.reference_ids 只能列輸入已提供的 source_id。
+若 review_evidence 為空或不足，findings 輸出空陣列、verdict 輸出 not_checked。若有 finding，evidence.reference_ids 只能列輸入已提供的 source_id；evidence.source_quote 與 evidence.translation_quote 必須分別從 clause.source 與 clause.translation 逐字複製，且各自只能是單一連續 literal substring；必須保留原始 whitespace 與換行，不得使用省略號、不得改寫、不得串接多段。

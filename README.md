@@ -8,6 +8,7 @@
 - `docs/T1579/sections/*.html`：各章節 HTML
 - `docs/T1579/translations/T1579-XXX-baihua.html`：各卷白話左右對照翻譯
 - `docs/T1579/docs/translation-workflow.html`：後續卷次白話翻譯工作流程與 agent 分工
+- `docs/status.html`：各論典每卷翻譯進度（已翻／進行中／未開始），runner 發佈狀態時自動重建
 - `data/*.json`：下載時保留的 CBETA API 原始回應
 - `translations/*.md`：白話翻譯來源稿
 - `translations/segments/*.tsv`：每卷翻譯段落切分表，可重建來源稿骨架

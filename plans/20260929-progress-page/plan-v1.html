@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Plan v1 — translation progress page</title>
+<style>
+  body { margin: 0; background: #fbfbf9; color: #1d1d1f; font: 15px/1.6 -apple-system, "PingFang TC", "Helvetica Neue", sans-serif; }
+  main { max-width: 920px; margin: 0 auto; padding: 32px 20px 64px; }
+  h1 { font-size: 28px; margin: 0 0 4px; }
+  h2 { font-size: 20px; margin: 36px 0 8px; padding-top: 12px; border-top: 1px solid #ddd; }
+  h3 { font-size: 16px; margin: 22px 0 6px; }
+  code, pre { font: 13px/1.5 ui-monospace, Menlo, monospace; }
+  code { background: #f0f0ec; padding: 1px 4px; border-radius: 4px; }
+  pre { background: #f4f4f0; border: 1px solid #e2e2dc; padding: 12px; overflow-x: auto; border-radius: 6px; }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; }
+  th, td { border: 1px solid #ddd; padding: 6px 8px; text-align: left; vertical-align: top; }
+  th { background: #f0f0ec; }
+  .meta { color: #666; font-size: 13px; }
+  .note { background: #fff8e6; border-left: 3px solid #e0a800; padding: 8px 12px; }
+</style>
+</head>
+<body>
+<main>
+<h1>Plan v1 — per-juan translation progress page (MangaReader style)</h1>
+<p class="meta">Repo: <code>~/projects/translation/yogacara</code> · Base: <code>b703390</code> · Run folder: <code>plans/20260929-progress-page/</code> · Planner: Opus 5.5</p>
+
+<h2>1. Goal and non-goals</h2>
+<h3>Goal</h3>
+<ul>
+  <li>Replace the placeholder <code>docs/status.html</code> (「翻譯進度」, linked from every page's rail footer) with a real progress page: for every work in <code>works.json</code>, one cell per 卷 (juan), each in exactly one of three states: <strong>已翻</strong> (done), <strong>進行中</strong> (active), <strong>未開始</strong> (todo).</li>
+  <li>Present it in the format of the user's iPhone app <code>~/projects/import firefox ios history/ios/MangaReader</code> (「追更簿」): paper/ink palette with a vermilion accent, Mincho masthead with a screentone dot band, ink-outlined pill tab chips with counts, dashed hairline rules, one "series" block per work with a tilted round red stamp, and a chapter list per work (here: a grid of 卷 cells).</li>
+  <li>Done cells link to the existing 白話對照 page so the translated content is directly readable. Todo cells are greyed out and not clickable.</li>
+  <li>The page is regenerated automatically by the runner whenever it publishes status, so it stays current without manual steps.</li>
+</ul>
+<h3>Non-goals</h3>
+<ul>
+  <li>No change to the iPhone app in this run (the user asked for the app too; that is a separate, later pipeline run in the other repo).</li>
+  <li>No redesign of other site pages, no change to <code>docs/index.html</code>, work index pages, or translation pages.</li>
+  <li>No live polling / JavaScript rendering. The page is static HTML generated in Python; filtering uses CSS only.</li>
+  <li>No change to the webapp (<code>scripts/webapp.py</code>), which has its own live job UI via <code>/api/status</code>.</li>
+  <li>No refactor of the duplicated rail markup in <code>build_site_index</code> / <code>build_simple_work_index</code>.</li>
+</ul>
+
+<h2>2. Current behavior</h2>
+<ul>
+  <li><code>docs/status.html</code> (hand-written, last changed in commit <code>3035138</code>, 2026-07-05): a topbar page with <code>meta refresh 30</code> that <code>fetch("status.json")</code>es and lists jobs. With no active jobs it shows only 「尚無進行中的翻譯工作。」. It has no per-juan view and no notion of what has been translated.</li>
+  <li><code>scripts/runner.py:47</code> <code>STATUS_JSON = ROOT / "docs" / "status.json"</code>.</li>
+  <li><code>scripts/runner.py:200-205</code> <code>save_job()</code> writes <code>jobs/&lt;id&gt;.json</code> and calls <code>publish_status()</code> on every save (under <code>JOB_WRITE_LOCK</code>, an RLock).</li>
+  <li><code>scripts/runner.py:208-218</code> <code>publish_status()</code> loads every <code>JOBS_DIR/*.json</code> (skipping unreadable files, dropping <code>pid</code>) and atomically writes <code>{"generated", "jobs"}</code> to <code>STATUS_JSON</code>. Also called from <code>archive_job</code> (line 509) and <code>git_commit_push</code> (line 1240, right before <code>git add -A data translations docs</code>, so the output is committed and pushed by the runner).</li>
+  <li><code>scripts/runner.py:221-283</code> <code>build_site_index()</code> writes <code>docs/index.html</code> with the site rail markup (brand, 藏經 nav with one link per work whose <code>docs/&lt;id&gt;/index.html</code> exists, rail footer with <code>&lt;a href="status.html"&gt;翻譯進度&lt;/a&gt;</code> and theme toggle, <code>rail-toggle</code> button, <code>site-frame</code>). Stylesheet link: <code>style.css?v=20260711</code>, script <code>theme.js?v=20260711</code>.</li>
+  <li><code>scripts/runner.py:1166-1221</code> <code>build_simple_work_index()</code> same rail pattern for non-T1579 works. <code>scripts/runner.py:1224-1232</code> <code>build_html()</code> builds a translation page to <code>docs/&lt;work&gt;/translations/&lt;work&gt;-&lt;NNN&gt;-baihua.html</code> (3-digit juan).</li>
+  <li><code>works.json</code>: 4 works — T1579 瑜伽師地論 (scope 聲聞地), T1585 成唯識論, T1558 阿毘達磨俱舍論, T1821 俱舍論記. No juan totals are stored anywhere in the repo.</li>
+  <li>Job JSON (<code>jobs/</code> is git-ignored): <code>{"id","work","juans":[int],"state","progress":{"&lt;juan&gt;":{"step":...}}}</code>. Job states used by <code>runner.py</code>: <code>queued, running, waiting_limit, waiting_model, awaiting_approval, done, failed, cancelled</code>. Per-juan <code>step</code> values include <code>availability, fetch, segment, skeleton, translate, merge, checks, html, commit, done, cancelled, waiting_limit, waiting_model</code>, plus review pass names. Archived jobs live in <code>jobs/archive/</code> and are not globbed by <code>publish_status</code>.</li>
+  <li>Translation pages on disk today: T1579 44 (卷1–12, 33, 34, 51–80), T1558 30 (1–30), T1585 5 (1–5), T1821 2 (1–2). The only job in <code>jobs/</code> is the cancelled T1821 job.</li>
+  <li><code>docs/style.css</code>: tokens on <code>:root</code>, dark tokens under <code>@media (prefers-color-scheme: dark) { :root:not([data-theme]) {…} }</code> and <code>:root[data-theme="dark"] {…}</code> (lines 37-63); <code>theme.js</code> sets <code>data-theme</code> and wires <code>.theme-toggle</code> and <code>.rail-toggle</code>. Layout vars include <code>--rail-w</code>, <code>--page-gutter</code>, <code>--measure</code>.</li>
+  <li>Tests: stdlib <code>unittest</code>, run with <code>python3 -m unittest discover -s tests</code> (22 tests, all pass). <code>tests/test_runner_parallel.py</code> patches <code>JOBS_DIR</code>, <code>ARCHIVED_JOBS_DIR</code>, <code>LOCKS_DIR</code>, <code>STATUS_JSON</code> to a temp dir but <strong>not</strong> <code>ROOT</code> or <code>WORKS_PATH</code>, and <code>save_job()</code> runs inside those tests.</li>
+  <li>Reference app styling: <code>ios/MangaReader/Theme.swift</code> (palette, Stamp, Screentone, DashedRule), <code>LibraryView.swift</code> (masthead, tab chips, rows), <code>SeriesView.swift</code> (header + 「章節 · 共 N 話」 list).</li>
+</ul>
+
+<h2>3. Approach</h2>
+<ol>
+  <li><strong>Juan totals</strong> go into <code>works.json</code> as <code>"juans": N</code> (T1579 100, T1585 10, T1558 30, T1821 30 — the Taishō fascicle counts). If a work has no <code>juans</code>, the grid runs to the highest juan seen on disk or in an active job (0 → empty grid).</li>
+  <li><strong>States</strong> (per work, per juan 1..total):
+    <ul>
+      <li><em>進行中</em> if the juan is in <code>job["juans"]</code> of a job in <code>JOBS_DIR/*.json</code> whose <code>state</code> is not in <code>{"done","failed","cancelled"}</code>, and that juan's <code>progress[str(juan)]</code> has no <code>step</code> of <code>"done"</code> or <code>"cancelled"</code> and no truthy <code>cancelled</code> key. A missing progress entry counts as active (queued job). The step string (or <code>"queued"</code> when absent) is kept for the tooltip.</li>
+      <li>else <em>已翻</em> if <code>&lt;docs&gt;/&lt;work&gt;/translations/&lt;work&gt;-&lt;NNN&gt;-baihua.html</code> exists (the readable page, not the Markdown source: a draft Markdown file exists mid-job, the HTML only after publishing).</li>
+      <li>else <em>未開始</em>.</li>
+    </ul>
+    Active wins over done (a re-translation in progress), but an active cell still links to its existing page.</li>
+  <li><strong>Where</strong>: a new <code>build_status_page(jobs)</code> in <code>scripts/runner.py</code>, called at the end of <code>publish_status()</code> with the jobs list it already loaded. Output path and docs root are both derived from <code>STATUS_JSON.parent</code>, never from <code>ROOT</code>, so tests that patch <code>STATUS_JSON</code> to a temp dir cannot overwrite the real page. Works come from <code>WORKS_PATH</code>.</li>
+  <li><strong>Look</strong>: keep the site rail (navigation stays consistent with every other page) and restyle only the content column as the 追更簿. CSS lives in <code>docs/style.css</code> under a new, scoped <code>.progress-page</code> section; the page links <code>style.css?v=20260930</code> / <code>theme.js?v=20260930</code> so browsers refetch the stylesheet.</li>
+  <li><strong>Filter</strong>: four visually hidden radio inputs + <code>&lt;label&gt;</code> chips; <code>:checked ~</code> sibling selectors hide non-matching cells. No JavaScript.</li>
+</ol>
+<h3>Rejected alternatives</h3>
+<ul>
+  <li><em>Client-side rendering from <code>status.json</code></em> (keep the current fetch pattern): the translated set is not in <code>status.json</code>, so it would need a new JSON manifest plus a JS renderer; more moving parts and untestable with the repo's stdlib tests.</li>
+  <li><em>A new standalone script</em> (<code>scripts/build_status_page.py</code>): the page must be rebuilt whenever job state changes, and the only hook for that is <code>publish_status()</code> inside <code>runner.py</code>; the other page builders (<code>build_site_index</code>, <code>build_simple_work_index</code>) already live there.</li>
+  <li><em>"Done" = Markdown has any translated entry</em> (<code>juan_translated()</code>, runner.py:625): true mid-job for partial drafts and requires parsing ~40 MB of Markdown on every <code>save_job()</code>. HTML existence is cheap and matches "readable".</li>
+  <li><em>Inline <code>&lt;style&gt;</code> in the page</em>: would need doubled braces inside the Python f-string and would split the site's dark-mode convention across two places.</li>
+  <li><em>Keep <code>meta refresh</code></em>: it would reset the filter and scroll every N seconds; the static file only changes when the runner rewrites it anyway.</li>
+</ul>
+
+<h2>4. Steps</h2>
+
+<h3>4.1 <code>works.json</code></h3>
+<p>Add <code>"juans"</code> to each entry, keeping key order otherwise unchanged and 2-space indentation: T1579 → <code>100</code>, T1585 → <code>10</code>, T1558 → <code>30</code>, T1821 → <code>30</code>. Place it after <code>"subtitle"</code> (after <code>"scope"</code> for T1579), before <code>"pipeline_ready"</code>.</p>
+
+<h3>4.2 <code>scripts/runner.py</code></h3>
+<ol>
+  <li>Add <code>from html import escape</code> to the imports (runner.py has no existing <code>html</code> import or top-level <code>html</code> name).</li>
+  <li>Add a module constant next to <code>STATUS_JSON</code>: <code>INACTIVE_JOB_STATES = ("done", "failed", "cancelled")</code>.</li>
+  <li>In <code>publish_status()</code>, after the <code>atomic_write(STATUS_JSON, …)</code> line and still inside the lock, call <code>build_status_page(jobs)</code>.</li>
+  <li>Add <code>def build_status_page(jobs: list[dict]) -&gt; None:</code> directly after <code>publish_status()</code>. Behavior:
+    <ul>
+      <li><code>docs = STATUS_JSON.parent</code>; <code>works = json.loads(WORKS_PATH.read_text(encoding="utf-8"))["works"]</code>.</li>
+      <li>Build <code>active: dict[tuple[str, int], str]</code> from <code>jobs</code> per §3.2 (ignore jobs whose state is in <code>INACTIVE_JOB_STATES</code>; skip non-int juans defensively; unknown work ids simply never match a work).</li>
+      <li>For each work in <code>works.json</code> order: <code>done_on_disk</code> = juans parsed from <code>docs/&lt;id&gt;/translations/&lt;id&gt;-*-baihua.html</code> (the 3-digit field; ignore names that don't parse). <code>total = work.get("juans") or max(done_on_disk ∪ active juans of this work, default=0)</code>. For juan in <code>1..total</code> compute the state.</li>
+      <li>Write <code>docs / "status.html"</code> with <code>atomic_write</code> (already exists at runner.py:179) using the markup contract in §4.3. Escape every value that comes from JSON (titles, subtitles, step strings) with <code>escape(…, quote=True)</code>.</li>
+    </ul>
+  </li>
+</ol>
+
+<h3>4.3 Markup contract for <code>docs/status.html</code> (exact class/attribute spelling; the acceptance checks parse it)</h3>
+<pre>&lt;!doctype html&gt;
+&lt;html lang="zh-Hant"&gt;
+&lt;head&gt;
+  &lt;meta charset="utf-8"&gt;
+  &lt;meta name="viewport" content="width=device-width, initial-scale=1"&gt;
+  &lt;title&gt;翻譯進度&lt;/title&gt;
+  &lt;link rel="stylesheet" href="style.css?v=20260930"&gt;
+  &lt;script src="theme.js?v=20260930"&gt;&lt;/script&gt;
+&lt;/head&gt;
+&lt;body class="progress-page"&gt;
+  &lt;a class="skip-link" href="#progressList"&gt;跳至卷次&lt;/a&gt;
+  &lt;aside class="site-rail" id="siteRail" aria-label="網站導覽"&gt;
+    …same brand + 「藏經」 nav as build_site_index(): 總目錄 link (no aria-current) + one link per work whose docs/&lt;id&gt;/index.html exists…
+    &lt;div class="rail-footer"&gt;
+      &lt;a href="status.html" aria-current="page"&gt;翻譯進度&lt;/a&gt;
+      &lt;button class="rail-control theme-toggle" type="button" aria-label="切換深色或淺色模式"&gt;&lt;/button&gt;
+    &lt;/div&gt;
+  &lt;/aside&gt;
+  &lt;button class="rail-toggle" type="button" aria-expanded="false" aria-controls="siteRail"&gt;目錄&lt;/button&gt;
+  &lt;div class="site-frame"&gt;
+    &lt;header class="progress-masthead"&gt;
+      &lt;div class="progress-kicker"&gt;佛典白話翻譯 · 進度&lt;/div&gt;
+      &lt;h1&gt;翻譯進度&lt;/h1&gt;
+      &lt;p class="progress-tally"&gt;共 &lt;b&gt;4&lt;/b&gt; 部 · &lt;b&gt;81&lt;/b&gt; 卷已翻 · &lt;b&gt;0&lt;/b&gt; 卷進行中 · &lt;b&gt;89&lt;/b&gt; 卷未開始&lt;/p&gt;
+    &lt;/header&gt;
+    &lt;input class="progress-filter" type="radio" name="progress-filter" id="filter-all" checked&gt;
+    &lt;input class="progress-filter" type="radio" name="progress-filter" id="filter-done"&gt;
+    &lt;input class="progress-filter" type="radio" name="progress-filter" id="filter-active"&gt;
+    &lt;input class="progress-filter" type="radio" name="progress-filter" id="filter-todo"&gt;
+    &lt;div class="progress-tabs"&gt;
+      &lt;label for="filter-all"&gt;全部 &lt;b&gt;170&lt;/b&gt;&lt;/label&gt;
+      &lt;label for="filter-done"&gt;已翻 &lt;b&gt;81&lt;/b&gt;&lt;/label&gt;
+      &lt;label for="filter-active"&gt;進行中 &lt;b&gt;0&lt;/b&gt;&lt;/label&gt;
+      &lt;label for="filter-todo"&gt;未開始 &lt;b&gt;89&lt;/b&gt;&lt;/label&gt;
+    &lt;/div&gt;
+    &lt;ul class="progress-legend"&gt;
+      &lt;li&gt;&lt;i class="juan-swatch is-done"&gt;&lt;/i&gt;已翻（點開閱讀）&lt;/li&gt;
+      &lt;li&gt;&lt;i class="juan-swatch is-active"&gt;&lt;/i&gt;進行中&lt;/li&gt;
+      &lt;li&gt;&lt;i class="juan-swatch is-todo"&gt;&lt;/i&gt;未開始&lt;/li&gt;
+    &lt;/ul&gt;
+    &lt;main class="progress-list" id="progressList"&gt;
+      &lt;section class="progress-work" id="work-T1579" data-total="100" data-done="44" data-active="0" data-todo="56"&gt;
+        &lt;header class="progress-work-head"&gt;
+          &lt;div class="progress-work-text"&gt;
+            &lt;h2&gt;&lt;a href="T1579/index.html"&gt;瑜伽師地論&lt;/a&gt;&lt;small&gt;T1579&lt;/small&gt;&lt;/h2&gt;
+            &lt;p class="progress-work-sub"&gt;彌勒菩薩說 / 玄奘譯&lt;/p&gt;
+            &lt;p class="progress-work-label"&gt;已翻 44 / 100 卷&lt;/p&gt;
+          &lt;/div&gt;
+          (only when active &gt; 0:)
+          &lt;span class="progress-stamp" aria-label="2 卷翻譯中"&gt;&lt;b&gt;2&lt;/b&gt;&lt;small&gt;卷&lt;/small&gt;&lt;/span&gt;
+        &lt;/header&gt;
+        &lt;div class="progress-section-title"&gt;卷次 · 共 100 卷&lt;/div&gt;
+        &lt;ol class="progress-grid"&gt;
+          &lt;li class="juan is-done" data-juan="1"&gt;&lt;a href="T1579/translations/T1579-001-baihua.html" aria-label="卷第1 已翻"&gt;1&lt;/a&gt;&lt;/li&gt;
+          &lt;li class="juan is-active" data-juan="2" title="進行中：segment"&gt;&lt;span aria-label="卷第2 進行中"&gt;2&lt;/span&gt;&lt;/li&gt;
+          &lt;li class="juan is-active" data-juan="5" title="進行中：merge"&gt;&lt;a href="…-005-baihua.html" aria-label="卷第5 進行中"&gt;5&lt;/a&gt;&lt;/li&gt;
+          &lt;li class="juan is-todo" data-juan="13"&gt;&lt;span aria-disabled="true" aria-label="卷第13 未開始"&gt;13&lt;/span&gt;&lt;/li&gt;
+        &lt;/ol&gt;
+      &lt;/section&gt;
+      …one section per work, works.json order…
+    &lt;/main&gt;
+  &lt;/div&gt;
+&lt;/body&gt;
+&lt;/html&gt;</pre>
+<ul>
+  <li><code>data-*</code> attributes appear on the <code>&lt;section&gt;</code> opening tag in the order total, done, active, todo.</li>
+  <li><code>&lt;h2&gt;</code>: title is a link only if <code>docs/&lt;id&gt;/index.html</code> exists, otherwise plain escaped text; the id always follows in <code>&lt;small&gt;</code>. Do not append <code>scope</code> (the grid covers the whole work, not only 聲聞地).</li>
+  <li><code>progress-work-label</code>: if <code>total &gt; 0 and done == total</code> → text 「已全部譯完」 with extra class <code>is-complete</code>; else 「已翻 D / T 卷」, and when <code>active &gt; 0</code> append 「 · 翻譯中 A 卷」 and extra class <code>is-active</code>. If <code>total == 0</code>, the grid is empty and the label reads 「尚無卷次資料」.</li>
+  <li>The <code>title</code> tooltip on active cells is 「進行中：&lt;escaped step&gt;」 (step <code>"queued"</code> when the progress entry is missing).</li>
+  <li>Page-wide tab counts are sums across all works; 全部 = sum of totals.</li>
+  <li>No <code>meta refresh</code>, no <code>&lt;script&gt;</code> other than <code>theme.js</code>, no timestamp (keeps the file byte-stable when nothing changed).</li>
+</ul>
+
+<h3>4.4 <code>docs/style.css</code> — append a section <code>/* Translation progress page (status.html), 追更簿 look */</code></h3>
+<p>Palette copied from <code>MangaReader/Theme.swift</code>, as scoped tokens:</p>
+<table>
+<tr><th>token</th><th>light</th><th>dark</th></tr>
+<tr><td><code>--pg-paper</code></td><td>#F6F6F3</td><td>#131316</td></tr>
+<tr><td><code>--pg-sheet</code></td><td>#FFFFFF</td><td>#1C1C21</td></tr>
+<tr><td><code>--pg-ink</code></td><td>#17171B</td><td>#ECECEF</td></tr>
+<tr><td><code>--pg-ink2</code></td><td>#55555F</td><td>#B1B1BB</td></tr>
+<tr><td><code>--pg-ink3</code></td><td>#8A8A94</td><td>#7C7C87</td></tr>
+<tr><td><code>--pg-rule</code></td><td>#DCDCD6</td><td>#2E2E35</td></tr>
+<tr><td><code>--pg-tone</code></td><td>#C9C9C2</td><td>#34343C</td></tr>
+<tr><td><code>--pg-red</code></td><td>#C8102E</td><td>#FF5A6E</td></tr>
+<tr><td><code>--pg-ok</code></td><td>#2F7A4F</td><td>#7FCF9C</td></tr>
+</table>
+<ul>
+  <li>Light tokens on <code>.progress-page { … }</code>. Dark tokens duplicated, following the file's convention, as <code>@media (prefers-color-scheme: dark) { :root:not([data-theme]) .progress-page { … } }</code> and a top-level rule starting at column 0: <code>:root[data-theme="dark"] .progress-page { … }</code>.</li>
+  <li><code>body.progress-page</code> background <code>var(--pg-paper)</code>; content column (<code>.progress-masthead</code>, <code>.progress-tabs</code>, <code>.progress-legend</code>, <code>.progress-list</code>) max-width <code>var(--measure)</code>, centered, horizontal padding <code>var(--page-gutter)</code>.</li>
+  <li><strong>Masthead</strong>: position relative; kicker 12px bold, letter-spacing 0.25em, <code>--pg-red</code>; h1 in Mincho <code>"Hiragino Mincho ProN", "HiraMinProN-W6", var(--serif)</code>, weight 700, ~40px (clamp 32–48px), <code>--pg-ink</code>; tally 13px <code>--pg-ink2</code>, <code>&lt;b&gt;</code> in <code>--pg-ink</code> (the 進行中 number in <code>--pg-red</code> is optional). Screentone: a <code>::after</code> pseudo-element top-right, ~170×110px, <code>background-image: radial-gradient(var(--pg-tone) 1.1px, transparent 1.4px); background-size: 6px 6px;</code> masked with <code>mask-image: linear-gradient(to bottom left, #000, transparent)</code> (+ <code>-webkit-mask-image</code>), <code>pointer-events: none</code>, <code>aria</code>-irrelevant.</li>
+  <li><strong>Filter radios</strong> <code>.progress-filter</code>: visually hidden but focusable (<code>position:absolute; opacity:0; width:1px; height:1px; pointer-events:none</code>).</li>
+  <li><strong>Tab chips</strong> <code>.progress-tabs label</code>: inline-flex, gap 4px, padding 6px 12px, 14px medium, capsule (<code>border-radius: 999px</code>), <code>1.5px solid var(--pg-ink)</code>, cursor pointer; the number <code>&lt;b&gt;</code> heavy rounded tabular digits (<code>font-variant-numeric: tabular-nums; font-weight: 800</code>). Selected chip filled: <code>#filter-X:checked ~ .progress-tabs label[for="filter-X"] { background: var(--pg-ink); color: var(--pg-paper); }</code> for all four ids. Keyboard focus ring: <code>.progress-filter:focus-visible ~ .progress-tabs label[for=…]</code> outline (one rule per id is fine). Below the tabs a dashed rule: <code>border-bottom: 1px dashed var(--pg-rule)</code>.</li>
+  <li><strong>Filtering</strong>: <code>#filter-done:checked ~ .progress-list .juan:not(.is-done)</code>, <code>#filter-active:checked ~ .progress-list .juan:not(.is-active)</code>, <code>#filter-todo:checked ~ .progress-list .juan:not(.is-todo)</code> → <code>display: none</code>.</li>
+  <li><strong>Legend</strong>: small inline list, 12px <code>--pg-ink2</code>; <code>.juan-swatch</code> 12×12 squares using the same three cell styles.</li>
+  <li><strong>Work block</strong> <code>.progress-work</code>: padding 20px 0, <code>border-bottom: 1px dashed var(--pg-rule)</code>. Head: flex, space-between, align start. h2 18px bold <code>--pg-ink</code>, link inherits color (underline on hover); <code>&lt;small&gt;</code> 12px <code>--pg-ink3</code>, margin-left 8px. Sub 14px <code>--pg-ink2</code>. Label 14px medium <code>--pg-ink2</code>; <code>.is-complete</code> → <code>--pg-ok</code>; <code>.is-active</code> → <code>--pg-red</code>.</li>
+  <li><strong>Stamp</strong> <code>.progress-stamp</code>: 50×50 circle, <code>2.5px solid var(--pg-red)</code> border, inner ring via <code>box-shadow: inset 0 0 0 4.5px var(--pg-paper), inset 0 0 0 5.3px color-mix(in srgb, var(--pg-red) 55%, transparent)</code> (or an equivalent <code>::before</code>), <code>--pg-red</code> text, column flex centered, <code>transform: rotate(-8deg)</code>, <code>&lt;b&gt;</code> 18px weight 800, <code>&lt;small&gt;</code> 10px bold, flex-shrink 0.</li>
+  <li><strong>Section title</strong> <code>.progress-section-title</code>: 12px bold, letter-spacing 0.15em, <code>--pg-ink2</code>, margin 12px 0 8px.</li>
+  <li><strong>Grid</strong> <code>.progress-grid</code>: list-style none, margin 0, padding 0, <code>display: grid; grid-template-columns: repeat(auto-fill, minmax(44px, 1fr)); gap: 6px</code>. Cell <code>.juan &gt; a, .juan &gt; span</code>: block, height 44px (tap target), flex-centered, 14px tabular digits, radius 6px, no underline.
+    <ul>
+      <li><code>.is-done</code>: background <code>--pg-sheet</code>, <code>1px solid var(--pg-ink)</code>, text <code>--pg-ink</code>; hover/focus: background <code>--pg-ink</code>, text <code>--pg-paper</code>.</li>
+      <li><code>.is-active</code>: background <code>--pg-sheet</code>, <code>1.5px solid var(--pg-red)</code>, text <code>--pg-red</code>, weight 700.</li>
+      <li><code>.is-todo</code> (greyed out): background <code>color-mix(in srgb, var(--pg-tone) 35%, transparent)</code>, <code>1px dashed var(--pg-rule)</code>, text <code>--pg-ink3</code>, <code>cursor: default</code>.</li>
+    </ul>
+  </li>
+  <li>Must fit a 375px-wide viewport with no horizontal scroll (the rail already collapses on narrow screens; do not change that CSS).</li>
+</ul>
+
+<h3>4.5 Regenerate the real page</h3>
+<p>From the repo root: <code>python3 -c 'import sys; sys.path.insert(0, "scripts"); import runner; runner.publish_status()'</code>. This rewrites <code>docs/status.html</code> and refreshes the <code>generated</code> timestamp in <code>docs/status.json</code> (expected diff). Expected result today: T1579 44/100, T1558 30/30 (label 「已全部譯完」), T1585 5/10, T1821 2/30; 81 已翻, 0 進行中, 89 未開始.</p>
+
+<h3>4.6 <code>tests/test_status_page.py</code> (new, stdlib unittest)</h3>
+<p>Class <code>StatusPageTests(unittest.TestCase)</code>, set up like <code>tests/test_runner_parallel.py</code> (temp dir; patch <code>JOBS_DIR</code>, <code>ARCHIVED_JOBS_DIR</code>, <code>LOCKS_DIR</code>, <code>STATUS_JSON</code>, <code>WORKS_PATH</code>), with at least these two tests, named exactly:</p>
+<ul>
+  <li><code>test_cell_states_and_counts</code>: a work with <code>juans: 4</code>, pages for juans 1 and 2, an active job on juans 2 and 3 and a cancelled job on juan 4 → states done/active/active/todo, juan 2 links, juan 3 and 4 do not, section counts <code>data-total="4" data-done="1" data-active="2" data-todo="1"</code>, stamp present.</li>
+  <li><code>test_work_without_juans_uses_highest_seen_juan</code>: a work with no <code>juans</code> key and only a page for juan 3 → exactly 3 cells: todo, todo, done.</li>
+</ul>
+
+<h3>4.7 <code>README.md</code></h3>
+<p>Add one bullet to the 「輸出位置」 list: <code>- `docs/status.html`：各論典每卷翻譯進度（已翻／進行中／未開始），runner 發佈狀態時自動重建</code>.</p>
+
+<h2>5. Verification</h2>
+<table>
+<tr><th>Command</th><th>Proves</th></tr>
+<tr><td><code>bash plans/20260929-progress-page/acceptance.sh</code></td><td>Locked oracle (below). Must exit 0.</td></tr>
+<tr><td><code>python3 -m unittest discover -s tests -q</code></td><td>Existing 22 tests + new ones pass; <code>save_job()</code> in old tests no longer touches the real page.</td></tr>
+<tr><td><code>python3 scripts/check_html_links.py</code></td><td>Every relative link in <code>docs/</code>, including the new cell links, resolves.</td></tr>
+<tr><td><code>git diff --stat</code></td><td>Only <code>works.json</code>, <code>scripts/runner.py</code>, <code>docs/style.css</code>, <code>docs/status.html</code>, <code>docs/status.json</code>, <code>README.md</code>, <code>tests/test_status_page.py</code> change.</td></tr>
+<tr><td>Browser (stage 5, by the planner): open <code>docs/status.html</code> via a local static server at 1280px and 375px, light and dark, click each tab chip, click a done cell</td><td>Visual match to the 追更簿 look, filter works, no horizontal scroll, done cell opens the translation page, todo cells are grey and inert.</td></tr>
+</table>
+<p>The repo has no <code>.claude/verify.sh</code>, linter, or type checker; the unittest suite and link checker are its gates.</p>
+<h3><code>acceptance.sh</code> (locked)</h3>
+<ol>
+  <li><strong>Fixture</strong>: temp works/docs/jobs (3 works incl. one without <code>juans</code>; running, queued, cancelled, failed, archived, unknown-work and broken-JSON jobs; a step string containing <code>&lt;b&gt;x&lt;/b&gt;</code>) → <code>publish_status()</code> must write <code>status.html</code> next to the patched <code>STATUS_JSON</code>, keep writing <code>status.json</code> (6 jobs), leave the real <code>docs/status.html</code> byte-identical, and produce the exact states, links, counts, stamps, title links, escaping, tab counts, radios and rail <code>aria-current</code> per §4.3.</li>
+  <li><strong>Real repo</strong>: committed <code>docs/status.html</code> has one section per work with <code>data-total</code> = works.json <code>juans</code>, that many cells, and done cells equal to the translation pages on disk.</li>
+  <li><code>works.json</code> totals are exactly {T1579: 100, T1585: 10, T1558: 30, T1821: 30}.</li>
+  <li>The two named tests in <code>tests/test_status_page.py</code> run and pass (a missing test yields "NO TESTS RAN", exit 5 → FAIL).</li>
+  <li>Full unittest suite passes; link checker passes.</li>
+  <li><code>docs/style.css</code> has both dark rules for <code>.progress-page</code> (<code>^:root[data-theme="dark"] .progress-page</code> and <code>:root:not([data-theme]) .progress-page</code>).</li>
+  <li><code>README.md</code> mentions <code>docs/status.html</code>.</li>
+</ol>
+<p><strong>Red on base <code>b703390</code></strong> (run 2026-09-29): 7 FAIL — fixture (no <code>status.html</code> written), real repo (no sections), works.json totals (all <code>None</code>), both named tests (NO TESTS RAN), CSS dark rules, README. 2 PASS — full unittest suite, link checker (guards against regressions). Runtime ≈ 2.5 s.</p>
+
+<h2>6. Difficulty tier</h2>
+<p><strong>standard</strong> — one generator function, CSS and tests in a small stdlib-only codebase; the only subtlety is keeping the output path tied to <code>STATUS_JSON</code> so existing tests don't overwrite the real page.</p>
+
+<h2>7. Human approval required</h2>
+<p>None. (The final push to <code>main</code> triggers the existing GitHub Pages deploy, exactly as every runner commit does; the user's standing rule authorizes commit + push after verification, and that is done by the planner in stage 5, not the implementer.)</p>
+
+<h2>8. Risks and rollback</h2>
+<ul>
+  <li><em>Hot path</em>: <code>build_status_page</code> runs on every <code>save_job()</code>. Cost is one small JSON read, 4 globs and ~170 string pieces; negligible next to the LLM calls. It must not raise on odd job data (non-int juans, missing progress) — a crash here would fail job saves. Guard with the defensive parsing in §4.2; do not wrap it in a blanket <code>except</code>.</li>
+  <li><em>Test pollution</em>: covered by deriving paths from <code>STATUS_JSON</code> and by the byte-identical check in the oracle.</li>
+  <li><em>CSS bleed</em>: every new rule is scoped under <code>.progress-page</code> / <code>.progress-*</code> / <code>.juan</code> inside the status page; other pages don't use these classes.</li>
+  <li><em>Rollback</em>: <code>git revert</code> the single commit; the old page is restored and the runner's extra call disappears with it.</li>
+</ul>
+
+<h2>9. Open questions</h2>
+<p>None. (Decided with the user: web page first, iPhone app in a separate run; the uncommitted T1821 juans 1–2 were committed and built before this plan as <code>b703390</code>.)</p>
+</main>
+</body>
+</html>

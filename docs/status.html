@@ -3,33 +3,269 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta http-equiv="refresh" content="30">
   <title>翻譯進度</title>
-  <link rel="stylesheet" href="style.css">
-  <script src="theme.js"></script>
+  <link rel="stylesheet" href="style.css?v=20260930">
+  <script src="theme.js?v=20260930"></script>
 </head>
-<body>
-  <div class="topbar">
-    <a class="topbar-brand" href="index.html">佛典白話翻譯</a>
-    <button class="theme-toggle" type="button" aria-label="切換深色或淺色模式"></button>
+<body class="progress-page">
+  <a class="skip-link" href="#progressList">跳至卷次</a>
+  <aside class="site-rail" id="siteRail" aria-label="網站導覽">
+    <a class="rail-brand" href="index.html"><strong>佛典白話翻譯</strong><span>CBETA 對照閱讀</span></a>
+    <nav class="rail-nav" aria-label="主要導覽">
+      <span class="rail-label">藏經</span>
+      <a href="index.html">總目錄</a>
+      <a href="T1579/index.html">瑜伽師地論</a>
+      <a href="T1585/index.html">成唯識論</a>
+      <a href="T1558/index.html">阿毘達磨俱舍論</a>
+      <a href="T1821/index.html">俱舍論記</a>
+    </nav>
+    <div class="rail-footer">
+      <a href="status.html" aria-current="page">翻譯進度</a>
+      <button class="rail-control theme-toggle" type="button" aria-label="切換深色或淺色模式"></button>
+    </div>
+  </aside>
+  <button class="rail-toggle" type="button" aria-expanded="false" aria-controls="siteRail">目錄</button>
+  <div class="site-frame">
+    <header class="progress-masthead">
+      <div class="progress-kicker">佛典白話翻譯 · 進度</div>
+      <h1>翻譯進度</h1>
+      <p class="progress-tally">共 <b>4</b> 部 · <b>81</b> 卷已翻 · <b>0</b> 卷進行中 · <b>89</b> 卷未開始</p>
+    </header>
+    <input class="progress-filter" type="radio" name="progress-filter" id="filter-all" checked>
+    <input class="progress-filter" type="radio" name="progress-filter" id="filter-done">
+    <input class="progress-filter" type="radio" name="progress-filter" id="filter-active">
+    <input class="progress-filter" type="radio" name="progress-filter" id="filter-todo">
+    <div class="progress-tabs">
+      <label for="filter-all">全部 <b>170</b></label>
+      <label for="filter-done">已翻 <b>81</b></label>
+      <label for="filter-active">進行中 <b>0</b></label>
+      <label for="filter-todo">未開始 <b>89</b></label>
+    </div>
+    <ul class="progress-legend">
+      <li><i class="juan-swatch is-done"></i>已翻（點開閱讀）</li>
+      <li><i class="juan-swatch is-active"></i>進行中</li>
+      <li><i class="juan-swatch is-todo"></i>未開始</li>
+    </ul>
+    <main class="progress-list" id="progressList">
+      <section class="progress-work" id="work-T1579" data-total="100" data-done="44" data-active="0" data-todo="56">
+        <header class="progress-work-head">
+          <div class="progress-work-text">
+            <h2><a href="T1579/index.html">瑜伽師地論</a><small>T1579</small></h2>
+            <p class="progress-work-sub">彌勒菩薩說 / 玄奘譯</p>
+            <p class="progress-work-label">已翻 44 / 100 卷</p>
+          </div>
+        </header>
+        <div class="progress-section-title">卷次 · 共 100 卷</div>
+        <ol class="progress-grid">
+          <li class="juan is-done" data-juan="1"><a href="T1579/translations/T1579-001-baihua.html" aria-label="卷第1 已翻">1</a></li>
+          <li class="juan is-done" data-juan="2"><a href="T1579/translations/T1579-002-baihua.html" aria-label="卷第2 已翻">2</a></li>
+          <li class="juan is-done" data-juan="3"><a href="T1579/translations/T1579-003-baihua.html" aria-label="卷第3 已翻">3</a></li>
+          <li class="juan is-done" data-juan="4"><a href="T1579/translations/T1579-004-baihua.html" aria-label="卷第4 已翻">4</a></li>
+          <li class="juan is-done" data-juan="5"><a href="T1579/translations/T1579-005-baihua.html" aria-label="卷第5 已翻">5</a></li>
+          <li class="juan is-done" data-juan="6"><a href="T1579/translations/T1579-006-baihua.html" aria-label="卷第6 已翻">6</a></li>
+          <li class="juan is-done" data-juan="7"><a href="T1579/translations/T1579-007-baihua.html" aria-label="卷第7 已翻">7</a></li>
+          <li class="juan is-done" data-juan="8"><a href="T1579/translations/T1579-008-baihua.html" aria-label="卷第8 已翻">8</a></li>
+          <li class="juan is-done" data-juan="9"><a href="T1579/translations/T1579-009-baihua.html" aria-label="卷第9 已翻">9</a></li>
+          <li class="juan is-done" data-juan="10"><a href="T1579/translations/T1579-010-baihua.html" aria-label="卷第10 已翻">10</a></li>
+          <li class="juan is-done" data-juan="11"><a href="T1579/translations/T1579-011-baihua.html" aria-label="卷第11 已翻">11</a></li>
+          <li class="juan is-done" data-juan="12"><a href="T1579/translations/T1579-012-baihua.html" aria-label="卷第12 已翻">12</a></li>
+          <li class="juan is-todo" data-juan="13"><span aria-disabled="true" aria-label="卷第13 未開始">13</span></li>
+          <li class="juan is-todo" data-juan="14"><span aria-disabled="true" aria-label="卷第14 未開始">14</span></li>
+          <li class="juan is-todo" data-juan="15"><span aria-disabled="true" aria-label="卷第15 未開始">15</span></li>
+          <li class="juan is-todo" data-juan="16"><span aria-disabled="true" aria-label="卷第16 未開始">16</span></li>
+          <li class="juan is-todo" data-juan="17"><span aria-disabled="true" aria-label="卷第17 未開始">17</span></li>
+          <li class="juan is-todo" data-juan="18"><span aria-disabled="true" aria-label="卷第18 未開始">18</span></li>
+          <li class="juan is-todo" data-juan="19"><span aria-disabled="true" aria-label="卷第19 未開始">19</span></li>
+          <li class="juan is-todo" data-juan="20"><span aria-disabled="true" aria-label="卷第20 未開始">20</span></li>
+          <li class="juan is-todo" data-juan="21"><span aria-disabled="true" aria-label="卷第21 未開始">21</span></li>
+          <li class="juan is-todo" data-juan="22"><span aria-disabled="true" aria-label="卷第22 未開始">22</span></li>
+          <li class="juan is-todo" data-juan="23"><span aria-disabled="true" aria-label="卷第23 未開始">23</span></li>
+          <li class="juan is-todo" data-juan="24"><span aria-disabled="true" aria-label="卷第24 未開始">24</span></li>
+          <li class="juan is-todo" data-juan="25"><span aria-disabled="true" aria-label="卷第25 未開始">25</span></li>
+          <li class="juan is-todo" data-juan="26"><span aria-disabled="true" aria-label="卷第26 未開始">26</span></li>
+          <li class="juan is-todo" data-juan="27"><span aria-disabled="true" aria-label="卷第27 未開始">27</span></li>
+          <li class="juan is-todo" data-juan="28"><span aria-disabled="true" aria-label="卷第28 未開始">28</span></li>
+          <li class="juan is-todo" data-juan="29"><span aria-disabled="true" aria-label="卷第29 未開始">29</span></li>
+          <li class="juan is-todo" data-juan="30"><span aria-disabled="true" aria-label="卷第30 未開始">30</span></li>
+          <li class="juan is-todo" data-juan="31"><span aria-disabled="true" aria-label="卷第31 未開始">31</span></li>
+          <li class="juan is-todo" data-juan="32"><span aria-disabled="true" aria-label="卷第32 未開始">32</span></li>
+          <li class="juan is-done" data-juan="33"><a href="T1579/translations/T1579-033-baihua.html" aria-label="卷第33 已翻">33</a></li>
+          <li class="juan is-done" data-juan="34"><a href="T1579/translations/T1579-034-baihua.html" aria-label="卷第34 已翻">34</a></li>
+          <li class="juan is-todo" data-juan="35"><span aria-disabled="true" aria-label="卷第35 未開始">35</span></li>
+          <li class="juan is-todo" data-juan="36"><span aria-disabled="true" aria-label="卷第36 未開始">36</span></li>
+          <li class="juan is-todo" data-juan="37"><span aria-disabled="true" aria-label="卷第37 未開始">37</span></li>
+          <li class="juan is-todo" data-juan="38"><span aria-disabled="true" aria-label="卷第38 未開始">38</span></li>
+          <li class="juan is-todo" data-juan="39"><span aria-disabled="true" aria-label="卷第39 未開始">39</span></li>
+          <li class="juan is-todo" data-juan="40"><span aria-disabled="true" aria-label="卷第40 未開始">40</span></li>
+          <li class="juan is-todo" data-juan="41"><span aria-disabled="true" aria-label="卷第41 未開始">41</span></li>
+          <li class="juan is-todo" data-juan="42"><span aria-disabled="true" aria-label="卷第42 未開始">42</span></li>
+          <li class="juan is-todo" data-juan="43"><span aria-disabled="true" aria-label="卷第43 未開始">43</span></li>
+          <li class="juan is-todo" data-juan="44"><span aria-disabled="true" aria-label="卷第44 未開始">44</span></li>
+          <li class="juan is-todo" data-juan="45"><span aria-disabled="true" aria-label="卷第45 未開始">45</span></li>
+          <li class="juan is-todo" data-juan="46"><span aria-disabled="true" aria-label="卷第46 未開始">46</span></li>
+          <li class="juan is-todo" data-juan="47"><span aria-disabled="true" aria-label="卷第47 未開始">47</span></li>
+          <li class="juan is-todo" data-juan="48"><span aria-disabled="true" aria-label="卷第48 未開始">48</span></li>
+          <li class="juan is-todo" data-juan="49"><span aria-disabled="true" aria-label="卷第49 未開始">49</span></li>
+          <li class="juan is-todo" data-juan="50"><span aria-disabled="true" aria-label="卷第50 未開始">50</span></li>
+          <li class="juan is-done" data-juan="51"><a href="T1579/translations/T1579-051-baihua.html" aria-label="卷第51 已翻">51</a></li>
+          <li class="juan is-done" data-juan="52"><a href="T1579/translations/T1579-052-baihua.html" aria-label="卷第52 已翻">52</a></li>
+          <li class="juan is-done" data-juan="53"><a href="T1579/translations/T1579-053-baihua.html" aria-label="卷第53 已翻">53</a></li>
+          <li class="juan is-done" data-juan="54"><a href="T1579/translations/T1579-054-baihua.html" aria-label="卷第54 已翻">54</a></li>
+          <li class="juan is-done" data-juan="55"><a href="T1579/translations/T1579-055-baihua.html" aria-label="卷第55 已翻">55</a></li>
+          <li class="juan is-done" data-juan="56"><a href="T1579/translations/T1579-056-baihua.html" aria-label="卷第56 已翻">56</a></li>
+          <li class="juan is-done" data-juan="57"><a href="T1579/translations/T1579-057-baihua.html" aria-label="卷第57 已翻">57</a></li>
+          <li class="juan is-done" data-juan="58"><a href="T1579/translations/T1579-058-baihua.html" aria-label="卷第58 已翻">58</a></li>
+          <li class="juan is-done" data-juan="59"><a href="T1579/translations/T1579-059-baihua.html" aria-label="卷第59 已翻">59</a></li>
+          <li class="juan is-done" data-juan="60"><a href="T1579/translations/T1579-060-baihua.html" aria-label="卷第60 已翻">60</a></li>
+          <li class="juan is-done" data-juan="61"><a href="T1579/translations/T1579-061-baihua.html" aria-label="卷第61 已翻">61</a></li>
+          <li class="juan is-done" data-juan="62"><a href="T1579/translations/T1579-062-baihua.html" aria-label="卷第62 已翻">62</a></li>
+          <li class="juan is-done" data-juan="63"><a href="T1579/translations/T1579-063-baihua.html" aria-label="卷第63 已翻">63</a></li>
+          <li class="juan is-done" data-juan="64"><a href="T1579/translations/T1579-064-baihua.html" aria-label="卷第64 已翻">64</a></li>
+          <li class="juan is-done" data-juan="65"><a href="T1579/translations/T1579-065-baihua.html" aria-label="卷第65 已翻">65</a></li>
+          <li class="juan is-done" data-juan="66"><a href="T1579/translations/T1579-066-baihua.html" aria-label="卷第66 已翻">66</a></li>
+          <li class="juan is-done" data-juan="67"><a href="T1579/translations/T1579-067-baihua.html" aria-label="卷第67 已翻">67</a></li>
+          <li class="juan is-done" data-juan="68"><a href="T1579/translations/T1579-068-baihua.html" aria-label="卷第68 已翻">68</a></li>
+          <li class="juan is-done" data-juan="69"><a href="T1579/translations/T1579-069-baihua.html" aria-label="卷第69 已翻">69</a></li>
+          <li class="juan is-done" data-juan="70"><a href="T1579/translations/T1579-070-baihua.html" aria-label="卷第70 已翻">70</a></li>
+          <li class="juan is-done" data-juan="71"><a href="T1579/translations/T1579-071-baihua.html" aria-label="卷第71 已翻">71</a></li>
+          <li class="juan is-done" data-juan="72"><a href="T1579/translations/T1579-072-baihua.html" aria-label="卷第72 已翻">72</a></li>
+          <li class="juan is-done" data-juan="73"><a href="T1579/translations/T1579-073-baihua.html" aria-label="卷第73 已翻">73</a></li>
+          <li class="juan is-done" data-juan="74"><a href="T1579/translations/T1579-074-baihua.html" aria-label="卷第74 已翻">74</a></li>
+          <li class="juan is-done" data-juan="75"><a href="T1579/translations/T1579-075-baihua.html" aria-label="卷第75 已翻">75</a></li>
+          <li class="juan is-done" data-juan="76"><a href="T1579/translations/T1579-076-baihua.html" aria-label="卷第76 已翻">76</a></li>
+          <li class="juan is-done" data-juan="77"><a href="T1579/translations/T1579-077-baihua.html" aria-label="卷第77 已翻">77</a></li>
+          <li class="juan is-done" data-juan="78"><a href="T1579/translations/T1579-078-baihua.html" aria-label="卷第78 已翻">78</a></li>
+          <li class="juan is-done" data-juan="79"><a href="T1579/translations/T1579-079-baihua.html" aria-label="卷第79 已翻">79</a></li>
+          <li class="juan is-done" data-juan="80"><a href="T1579/translations/T1579-080-baihua.html" aria-label="卷第80 已翻">80</a></li>
+          <li class="juan is-todo" data-juan="81"><span aria-disabled="true" aria-label="卷第81 未開始">81</span></li>
+          <li class="juan is-todo" data-juan="82"><span aria-disabled="true" aria-label="卷第82 未開始">82</span></li>
+          <li class="juan is-todo" data-juan="83"><span aria-disabled="true" aria-label="卷第83 未開始">83</span></li>
+          <li class="juan is-todo" data-juan="84"><span aria-disabled="true" aria-label="卷第84 未開始">84</span></li>
+          <li class="juan is-todo" data-juan="85"><span aria-disabled="true" aria-label="卷第85 未開始">85</span></li>
+          <li class="juan is-todo" data-juan="86"><span aria-disabled="true" aria-label="卷第86 未開始">86</span></li>
+          <li class="juan is-todo" data-juan="87"><span aria-disabled="true" aria-label="卷第87 未開始">87</span></li>
+          <li class="juan is-todo" data-juan="88"><span aria-disabled="true" aria-label="卷第88 未開始">88</span></li>
+          <li class="juan is-todo" data-juan="89"><span aria-disabled="true" aria-label="卷第89 未開始">89</span></li>
+          <li class="juan is-todo" data-juan="90"><span aria-disabled="true" aria-label="卷第90 未開始">90</span></li>
+          <li class="juan is-todo" data-juan="91"><span aria-disabled="true" aria-label="卷第91 未開始">91</span></li>
+          <li class="juan is-todo" data-juan="92"><span aria-disabled="true" aria-label="卷第92 未開始">92</span></li>
+          <li class="juan is-todo" data-juan="93"><span aria-disabled="true" aria-label="卷第93 未開始">93</span></li>
+          <li class="juan is-todo" data-juan="94"><span aria-disabled="true" aria-label="卷第94 未開始">94</span></li>
+          <li class="juan is-todo" data-juan="95"><span aria-disabled="true" aria-label="卷第95 未開始">95</span></li>
+          <li class="juan is-todo" data-juan="96"><span aria-disabled="true" aria-label="卷第96 未開始">96</span></li>
+          <li class="juan is-todo" data-juan="97"><span aria-disabled="true" aria-label="卷第97 未開始">97</span></li>
+          <li class="juan is-todo" data-juan="98"><span aria-disabled="true" aria-label="卷第98 未開始">98</span></li>
+          <li class="juan is-todo" data-juan="99"><span aria-disabled="true" aria-label="卷第99 未開始">99</span></li>
+          <li class="juan is-todo" data-juan="100"><span aria-disabled="true" aria-label="卷第100 未開始">100</span></li>
+        </ol>
+      </section>
+      <section class="progress-work" id="work-T1585" data-total="10" data-done="5" data-active="0" data-todo="5">
+        <header class="progress-work-head">
+          <div class="progress-work-text">
+            <h2><a href="T1585/index.html">成唯識論</a><small>T1585</small></h2>
+            <p class="progress-work-sub">護法等菩薩造 / 玄奘譯</p>
+            <p class="progress-work-label">已翻 5 / 10 卷</p>
+          </div>
+        </header>
+        <div class="progress-section-title">卷次 · 共 10 卷</div>
+        <ol class="progress-grid">
+          <li class="juan is-done" data-juan="1"><a href="T1585/translations/T1585-001-baihua.html" aria-label="卷第1 已翻">1</a></li>
+          <li class="juan is-done" data-juan="2"><a href="T1585/translations/T1585-002-baihua.html" aria-label="卷第2 已翻">2</a></li>
+          <li class="juan is-done" data-juan="3"><a href="T1585/translations/T1585-003-baihua.html" aria-label="卷第3 已翻">3</a></li>
+          <li class="juan is-done" data-juan="4"><a href="T1585/translations/T1585-004-baihua.html" aria-label="卷第4 已翻">4</a></li>
+          <li class="juan is-done" data-juan="5"><a href="T1585/translations/T1585-005-baihua.html" aria-label="卷第5 已翻">5</a></li>
+          <li class="juan is-todo" data-juan="6"><span aria-disabled="true" aria-label="卷第6 未開始">6</span></li>
+          <li class="juan is-todo" data-juan="7"><span aria-disabled="true" aria-label="卷第7 未開始">7</span></li>
+          <li class="juan is-todo" data-juan="8"><span aria-disabled="true" aria-label="卷第8 未開始">8</span></li>
+          <li class="juan is-todo" data-juan="9"><span aria-disabled="true" aria-label="卷第9 未開始">9</span></li>
+          <li class="juan is-todo" data-juan="10"><span aria-disabled="true" aria-label="卷第10 未開始">10</span></li>
+        </ol>
+      </section>
+      <section class="progress-work" id="work-T1558" data-total="30" data-done="30" data-active="0" data-todo="0">
+        <header class="progress-work-head">
+          <div class="progress-work-text">
+            <h2><a href="T1558/index.html">阿毘達磨俱舍論</a><small>T1558</small></h2>
+            <p class="progress-work-sub">世親菩薩造 / 玄奘譯</p>
+            <p class="progress-work-label is-complete">已全部譯完</p>
+          </div>
+        </header>
+        <div class="progress-section-title">卷次 · 共 30 卷</div>
+        <ol class="progress-grid">
+          <li class="juan is-done" data-juan="1"><a href="T1558/translations/T1558-001-baihua.html" aria-label="卷第1 已翻">1</a></li>
+          <li class="juan is-done" data-juan="2"><a href="T1558/translations/T1558-002-baihua.html" aria-label="卷第2 已翻">2</a></li>
+          <li class="juan is-done" data-juan="3"><a href="T1558/translations/T1558-003-baihua.html" aria-label="卷第3 已翻">3</a></li>
+          <li class="juan is-done" data-juan="4"><a href="T1558/translations/T1558-004-baihua.html" aria-label="卷第4 已翻">4</a></li>
+          <li class="juan is-done" data-juan="5"><a href="T1558/translations/T1558-005-baihua.html" aria-label="卷第5 已翻">5</a></li>
+          <li class="juan is-done" data-juan="6"><a href="T1558/translations/T1558-006-baihua.html" aria-label="卷第6 已翻">6</a></li>
+          <li class="juan is-done" data-juan="7"><a href="T1558/translations/T1558-007-baihua.html" aria-label="卷第7 已翻">7</a></li>
+          <li class="juan is-done" data-juan="8"><a href="T1558/translations/T1558-008-baihua.html" aria-label="卷第8 已翻">8</a></li>
+          <li class="juan is-done" data-juan="9"><a href="T1558/translations/T1558-009-baihua.html" aria-label="卷第9 已翻">9</a></li>
+          <li class="juan is-done" data-juan="10"><a href="T1558/translations/T1558-010-baihua.html" aria-label="卷第10 已翻">10</a></li>
+          <li class="juan is-done" data-juan="11"><a href="T1558/translations/T1558-011-baihua.html" aria-label="卷第11 已翻">11</a></li>
+          <li class="juan is-done" data-juan="12"><a href="T1558/translations/T1558-012-baihua.html" aria-label="卷第12 已翻">12</a></li>
+          <li class="juan is-done" data-juan="13"><a href="T1558/translations/T1558-013-baihua.html" aria-label="卷第13 已翻">13</a></li>
+          <li class="juan is-done" data-juan="14"><a href="T1558/translations/T1558-014-baihua.html" aria-label="卷第14 已翻">14</a></li>
+          <li class="juan is-done" data-juan="15"><a href="T1558/translations/T1558-015-baihua.html" aria-label="卷第15 已翻">15</a></li>
+          <li class="juan is-done" data-juan="16"><a href="T1558/translations/T1558-016-baihua.html" aria-label="卷第16 已翻">16</a></li>
+          <li class="juan is-done" data-juan="17"><a href="T1558/translations/T1558-017-baihua.html" aria-label="卷第17 已翻">17</a></li>
+          <li class="juan is-done" data-juan="18"><a href="T1558/translations/T1558-018-baihua.html" aria-label="卷第18 已翻">18</a></li>
+          <li class="juan is-done" data-juan="19"><a href="T1558/translations/T1558-019-baihua.html" aria-label="卷第19 已翻">19</a></li>
+          <li class="juan is-done" data-juan="20"><a href="T1558/translations/T1558-020-baihua.html" aria-label="卷第20 已翻">20</a></li>
+          <li class="juan is-done" data-juan="21"><a href="T1558/translations/T1558-021-baihua.html" aria-label="卷第21 已翻">21</a></li>
+          <li class="juan is-done" data-juan="22"><a href="T1558/translations/T1558-022-baihua.html" aria-label="卷第22 已翻">22</a></li>
+          <li class="juan is-done" data-juan="23"><a href="T1558/translations/T1558-023-baihua.html" aria-label="卷第23 已翻">23</a></li>
+          <li class="juan is-done" data-juan="24"><a href="T1558/translations/T1558-024-baihua.html" aria-label="卷第24 已翻">24</a></li>
+          <li class="juan is-done" data-juan="25"><a href="T1558/translations/T1558-025-baihua.html" aria-label="卷第25 已翻">25</a></li>
+          <li class="juan is-done" data-juan="26"><a href="T1558/translations/T1558-026-baihua.html" aria-label="卷第26 已翻">26</a></li>
+          <li class="juan is-done" data-juan="27"><a href="T1558/translations/T1558-027-baihua.html" aria-label="卷第27 已翻">27</a></li>
+          <li class="juan is-done" data-juan="28"><a href="T1558/translations/T1558-028-baihua.html" aria-label="卷第28 已翻">28</a></li>
+          <li class="juan is-done" data-juan="29"><a href="T1558/translations/T1558-029-baihua.html" aria-label="卷第29 已翻">29</a></li>
+          <li class="juan is-done" data-juan="30"><a href="T1558/translations/T1558-030-baihua.html" aria-label="卷第30 已翻">30</a></li>
+        </ol>
+      </section>
+      <section class="progress-work" id="work-T1821" data-total="30" data-done="2" data-active="0" data-todo="28">
+        <header class="progress-work-head">
+          <div class="progress-work-text">
+            <h2><a href="T1821/index.html">俱舍論記</a><small>T1821</small></h2>
+            <p class="progress-work-sub">唐 普光述</p>
+            <p class="progress-work-label">已翻 2 / 30 卷</p>
+          </div>
+        </header>
+        <div class="progress-section-title">卷次 · 共 30 卷</div>
+        <ol class="progress-grid">
+          <li class="juan is-done" data-juan="1"><a href="T1821/translations/T1821-001-baihua.html" aria-label="卷第1 已翻">1</a></li>
+          <li class="juan is-done" data-juan="2"><a href="T1821/translations/T1821-002-baihua.html" aria-label="卷第2 已翻">2</a></li>
+          <li class="juan is-todo" data-juan="3"><span aria-disabled="true" aria-label="卷第3 未開始">3</span></li>
+          <li class="juan is-todo" data-juan="4"><span aria-disabled="true" aria-label="卷第4 未開始">4</span></li>
+          <li class="juan is-todo" data-juan="5"><span aria-disabled="true" aria-label="卷第5 未開始">5</span></li>
+          <li class="juan is-todo" data-juan="6"><span aria-disabled="true" aria-label="卷第6 未開始">6</span></li>
+          <li class="juan is-todo" data-juan="7"><span aria-disabled="true" aria-label="卷第7 未開始">7</span></li>
+          <li class="juan is-todo" data-juan="8"><span aria-disabled="true" aria-label="卷第8 未開始">8</span></li>
+          <li class="juan is-todo" data-juan="9"><span aria-disabled="true" aria-label="卷第9 未開始">9</span></li>
+          <li class="juan is-todo" data-juan="10"><span aria-disabled="true" aria-label="卷第10 未開始">10</span></li>
+          <li class="juan is-todo" data-juan="11"><span aria-disabled="true" aria-label="卷第11 未開始">11</span></li>
+          <li class="juan is-todo" data-juan="12"><span aria-disabled="true" aria-label="卷第12 未開始">12</span></li>
+          <li class="juan is-todo" data-juan="13"><span aria-disabled="true" aria-label="卷第13 未開始">13</span></li>
+          <li class="juan is-todo" data-juan="14"><span aria-disabled="true" aria-label="卷第14 未開始">14</span></li>
+          <li class="juan is-todo" data-juan="15"><span aria-disabled="true" aria-label="卷第15 未開始">15</span></li>
+          <li class="juan is-todo" data-juan="16"><span aria-disabled="true" aria-label="卷第16 未開始">16</span></li>
+          <li class="juan is-todo" data-juan="17"><span aria-disabled="true" aria-label="卷第17 未開始">17</span></li>
+          <li class="juan is-todo" data-juan="18"><span aria-disabled="true" aria-label="卷第18 未開始">18</span></li>
+          <li class="juan is-todo" data-juan="19"><span aria-disabled="true" aria-label="卷第19 未開始">19</span></li>
+          <li class="juan is-todo" data-juan="20"><span aria-disabled="true" aria-label="卷第20 未開始">20</span></li>
+          <li class="juan is-todo" data-juan="21"><span aria-disabled="true" aria-label="卷第21 未開始">21</span></li>
+          <li class="juan is-todo" data-juan="22"><span aria-disabled="true" aria-label="卷第22 未開始">22</span></li>
+          <li class="juan is-todo" data-juan="23"><span aria-disabled="true" aria-label="卷第23 未開始">23</span></li>
+          <li class="juan is-todo" data-juan="24"><span aria-disabled="true" aria-label="卷第24 未開始">24</span></li>
+          <li class="juan is-todo" data-juan="25"><span aria-disabled="true" aria-label="卷第25 未開始">25</span></li>
+          <li class="juan is-todo" data-juan="26"><span aria-disabled="true" aria-label="卷第26 未開始">26</span></li>
+          <li class="juan is-todo" data-juan="27"><span aria-disabled="true" aria-label="卷第27 未開始">27</span></li>
+          <li class="juan is-todo" data-juan="28"><span aria-disabled="true" aria-label="卷第28 未開始">28</span></li>
+          <li class="juan is-todo" data-juan="29"><span aria-disabled="true" aria-label="卷第29 未開始">29</span></li>
+          <li class="juan is-todo" data-juan="30"><span aria-disabled="true" aria-label="卷第30 未開始">30</span></li>
+        </ol>
+      </section>
+    </main>
   </div>
-  <header class="site-header">
-    <div class="kicker">Pipeline</div>
-    <h1>翻譯進度</h1>
-  </header>
-  <main class="index-list">
-    <div id="status">尚無進行中的翻譯工作。</div>
-  </main>
-  <script>
-    fetch("status.json").then(r => r.ok ? r.json() : null).then(data => {
-      if (!data || !data.jobs || !data.jobs.length) return;
-      const zh = {queued: "排隊中", running: "進行中", done: "完成", failed: "失敗", waiting_limit: "等待額度重置"};
-      document.getElementById("status").innerHTML = "<ol>" + data.jobs.map(j => {
-        const prog = Object.entries(j.progress || {}).map(([k, v]) =>
-          `卷${k}:${v.step}${v.sections_total ? `（${v.section || 0}/${v.sections_total} 段）` : ""}`).join("、");
-        return `<li class="level-0"><strong>${j.work} 卷 ${j.juans.join(",")}</strong>（${j.model}）— ${zh[j.state] || j.state}<span>${prog}</span></li>`;
-      }).join("") + "</ol>";
-    }).catch(() => {});
-  </script>
 </body>
 </html>

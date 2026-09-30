@@ -25,6 +25,7 @@ import shutil
 from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, wait
 from contextlib import contextmanager
 from datetime import datetime, timedelta
+from html import escape
 from pathlib import Path
 from string import Template
 from subprocess import run as sh
@@ -45,6 +46,9 @@ LOCKS_DIR = ROOT / "locks"
 PROMPTS_DIR = ROOT / "prompts"
 WORKS_PATH = ROOT / "works.json"
 STATUS_JSON = ROOT / "docs" / "status.json"
+INACTIVE_JOB_STATES = ("done", "failed", "cancelled")
+# Step commit counts as published because git_commit_push() pushes the page before mark_juan_done().
+INACTIVE_JUAN_STEPS = ("done", "cancelled", "commit")
 REVIEW_PASSES = ("review_terms", "review_doctrine", "review_parallel")
 POLL_SECONDS = 10
 MODEL_WAIT_FALLBACK_MINUTES = 15
@@ -216,6 +220,169 @@ def publish_status() -> None:
             job.pop("pid", None)
             jobs.append(job)
         atomic_write(STATUS_JSON, json.dumps({"generated": now_iso(), "jobs": jobs}, ensure_ascii=False))
+        build_status_page(jobs)
+
+
+def build_status_page(jobs: list[dict]) -> None:
+    docs = STATUS_JSON.parent
+    works = json.loads(WORKS_PATH.read_text(encoding="utf-8"))["works"]
+    active: dict[tuple[str, int], str] = {}
+    for job in jobs:
+        if job.get("state") in INACTIVE_JOB_STATES:
+            continue
+        progress = job.get("progress") or {}
+        for juan in job.get("juans") or []:
+            if not isinstance(juan, int) or isinstance(juan, bool):
+                continue
+            juan_progress = progress.get(str(juan)) or {}
+            step = juan_progress.get("step")
+            tasks = juan_progress.get("tasks") or {}
+            has_failed_task = isinstance(tasks, dict) and any(
+                isinstance(task, dict) and task.get("state") == "failed"
+                for task in tasks.values()
+            )
+            if (step in INACTIVE_JUAN_STEPS or juan_progress.get("cancelled")
+                    or has_failed_task):
+                continue
+            active[(job.get("work", ""), juan)] = str(step or "queued")
+
+    work_rows = []
+    page_total = page_done = page_active = page_todo = 0
+    for work in works:
+        work_id = str(work["id"])
+        translations = docs / work_id / "translations"
+        done_on_disk = set()
+        for page in translations.glob(f"{work_id}-*-baihua.html"):
+            match = re.fullmatch(rf"{re.escape(work_id)}-(\d{{3}})-baihua\.html", page.name)
+            if match:
+                done_on_disk.add(int(match.group(1)))
+        active_for_work = {juan for (wid, juan) in active if wid == work_id}
+        total = work.get("juans") or max(done_on_disk | active_for_work, default=0)
+        cells = []
+        done_count = active_count = 0
+        for juan in range(1, total + 1):
+            page_href = f"{work_id}/translations/{work_id}-{juan:03d}-baihua.html"
+            if juan in active_for_work:
+                state = "active"
+                active_count += 1
+                title = f' title="進行中：{escape(active[(work_id, juan)], quote=True)}"'
+                label = f"卷第{juan} 進行中"
+                content = (f'<a href="{escape(page_href, quote=True)}" aria-label="{label}">{juan}</a>'
+                           if juan in done_on_disk else f'<span aria-label="{label}">{juan}</span>')
+            elif juan in done_on_disk:
+                state = "done"
+                done_count += 1
+                title = ""
+                content = (f'<a href="{escape(page_href, quote=True)}" '
+                           f'aria-label="卷第{juan} 已翻">{juan}</a>')
+            else:
+                state = "todo"
+                title = ""
+                content = f'<span aria-disabled="true" aria-label="卷第{juan} 未開始">{juan}</span>'
+            cells.append(
+                f'          <li class="juan is-{state}" data-juan="{juan}"{title}>{content}</li>'
+            )
+        todo_count = total - done_count - active_count
+        page_total += total
+        page_done += done_count
+        page_active += active_count
+        page_todo += todo_count
+        work_rows.append((work, work_id, total, done_count, active_count, todo_count, cells))
+
+    rail_items = []
+    sections = []
+    for work, work_id, total, done_count, active_count, todo_count, cells in work_rows:
+        safe_id = escape(work_id, quote=True)
+        title = escape(str(work.get("title", "")), quote=True)
+        subtitle = escape(str(work.get("subtitle", "")), quote=True)
+        work_index = docs / work_id / "index.html"
+        if work_index.exists():
+            rail_items.append(f'      <a href="{safe_id}/index.html">{title}</a>')
+            heading = f'<a href="{safe_id}/index.html">{title}</a>'
+        else:
+            heading = title
+        if total == 0:
+            label = "尚無卷次資料"
+            label_class = ""
+        elif done_count == total:
+            label = "已全部譯完"
+            label_class = " is-complete"
+        else:
+            label = f"已翻 {done_count} / {total} 卷"
+            label_class = ""
+            if active_count:
+                label += f" · 翻譯中 {active_count} 卷"
+                label_class = " is-active"
+        stamp = ""
+        if active_count:
+            stamp = (f'          <span class="progress-stamp" aria-label="{active_count} 卷翻譯中">'
+                     f'<b>{active_count}</b><small>卷</small></span>\n')
+        sections.append(f"""      <section class="progress-work" id="work-{safe_id}" data-total="{total}" data-done="{done_count}" data-active="{active_count}" data-todo="{todo_count}">
+        <header class="progress-work-head">
+          <div class="progress-work-text">
+            <h2>{heading}<small>{safe_id}</small></h2>
+            <p class="progress-work-sub">{subtitle}</p>
+            <p class="progress-work-label{label_class}">{label}</p>
+          </div>
+{stamp}        </header>
+        <div class="progress-section-title">卷次 · 共 {total} 卷</div>
+        <ol class="progress-grid">
+{chr(10).join(cells)}
+        </ol>
+      </section>""")
+
+    atomic_write(docs / "status.html", f"""<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>翻譯進度</title>
+  <link rel="stylesheet" href="style.css?v=20260930">
+  <script src="theme.js?v=20260930"></script>
+</head>
+<body class="progress-page">
+  <a class="skip-link" href="#progressList">跳至卷次</a>
+  <aside class="site-rail" id="siteRail" aria-label="網站導覽">
+    <a class="rail-brand" href="index.html"><strong>佛典白話翻譯</strong><span>CBETA 對照閱讀</span></a>
+    <nav class="rail-nav" aria-label="主要導覽">
+      <span class="rail-label">藏經</span>
+      <a href="index.html">總目錄</a>
+{chr(10).join(rail_items)}
+    </nav>
+    <div class="rail-footer">
+      <a href="status.html" aria-current="page">翻譯進度</a>
+      <button class="rail-control theme-toggle" type="button" aria-label="切換深色或淺色模式"></button>
+    </div>
+  </aside>
+  <button class="rail-toggle" type="button" aria-expanded="false" aria-controls="siteRail">目錄</button>
+  <div class="site-frame">
+    <header class="progress-masthead">
+      <div class="progress-kicker">佛典白話翻譯 · 進度</div>
+      <h1>翻譯進度</h1>
+      <p class="progress-tally">共 <b>{len(works)}</b> 部 · <b>{page_done}</b> 卷已翻 · <b>{page_active}</b> 卷進行中 · <b>{page_todo}</b> 卷未開始</p>
+    </header>
+    <input class="progress-filter" type="radio" name="progress-filter" id="filter-all" checked>
+    <input class="progress-filter" type="radio" name="progress-filter" id="filter-done">
+    <input class="progress-filter" type="radio" name="progress-filter" id="filter-active">
+    <input class="progress-filter" type="radio" name="progress-filter" id="filter-todo">
+    <div class="progress-tabs">
+      <label for="filter-all">全部 <b>{page_total}</b></label>
+      <label for="filter-done">已翻 <b>{page_done}</b></label>
+      <label for="filter-active">進行中 <b>{page_active}</b></label>
+      <label for="filter-todo">未開始 <b>{page_todo}</b></label>
+    </div>
+    <ul class="progress-legend">
+      <li><i class="juan-swatch is-done"></i>已翻（點開閱讀）</li>
+      <li><i class="juan-swatch is-active"></i>進行中</li>
+      <li><i class="juan-swatch is-todo"></i>未開始</li>
+    </ul>
+    <main class="progress-list" id="progressList">
+{chr(10).join(sections)}
+    </main>
+  </div>
+</body>
+</html>
+""")
 
 
 def build_site_index() -> None:

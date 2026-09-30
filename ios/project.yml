@@ -1,0 +1,41 @@
+name: MangaReader
+options:
+  deploymentTarget:
+    iOS: "18.0"
+packages:
+  ReaderCore:
+    path: ReaderCore
+targets:
+  MangaReader:
+    type: application
+    platform: iOS
+    sources:
+      - MangaReader
+    dependencies:
+      - package: ReaderCore
+        product: ReaderCore
+    scheme: {}
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.davidshih.MangaReader
+        TARGETED_DEVICE_FAMILY: "1"
+        SWIFT_VERSION: "5.0"
+        MARKETING_VERSION: "0.1.0"
+        CURRENT_PROJECT_VERSION: "1"
+        CODE_SIGN_STYLE: Automatic
+        DEVELOPMENT_TEAM: B3Z4L27DS7
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+    info:
+      path: MangaReader/Info.plist
+      properties:
+        CFBundleDisplayName: 追更簿
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+        UIBackgroundModes:
+          - processing
+        BGTaskSchedulerPermittedIdentifiers:
+          - com.davidshih.MangaReader.sync
+        ITSAppUsesNonExemptEncryption: false

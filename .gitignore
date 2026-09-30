@@ -5,3 +5,8 @@ locks/
 config/
 runner.log
 webapp.log
+ios/build/
+ios/build-sim/
+ios/ReaderCore/.build/
+xcuserdata/
+.DS_Store

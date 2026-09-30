@@ -8,7 +8,7 @@
 
 ## Done this thread (2026-09-29)
 - `b703390` (feat) T1821 juan 1–2 translation + reading pages. They were translated and term-reviewed, but the job was cancelled with doctrinal review at section 1–2 of 20 and the parallel-source review never run.
-- (feat) per-juan progress page: `works.json` juan totals, `scripts/runner.py` (`INACTIVE_JOB_STATES`, `INACTIVE_JUAN_STEPS`, `build_status_page`), `docs/style.css` (`.progress-page` section), regenerated `docs/status.html` / `docs/status.json`, `tests/test_status_page.py`, README line. Built with the codex-pipeline: plan, Codex review, locked checks, Codex implementation (gpt-5.6-sol medium) and planner verification; everything is in `plans/20260929-progress-page/`.
+- `e41908d` (feat) per-juan progress page: `works.json` juan totals, `scripts/runner.py` (`INACTIVE_JOB_STATES`, `INACTIVE_JUAN_STEPS`, `build_status_page`), `docs/style.css` (`.progress-page` section), regenerated `docs/status.html` / `docs/status.json`, `tests/test_status_page.py`, README line. Built with the codex-pipeline: plan, Codex review, locked checks, Codex implementation (gpt-5.6-sol medium) and planner verification; everything is in `plans/20260929-progress-page/`.
 
 ## Decisions
 - 已翻 = `docs/<work>/translations/<work>-NNN-baihua.html` exists (readable page), not "Markdown has text". Drafts exist mid-job, and parsing ~40 MB of Markdown on every `save_job()` is too slow.
@@ -35,5 +35,5 @@ bash plans/20260929-progress-page/acceptance.sh
 ```
 
 ## Not verified
-- The live GitHub Pages copy of `status.html` after deploy (checked locally with `python3 -m http.server` at 1280px and 375px, light and dark, filters, a done-cell click, todo cells inert).
+- Live Pages was checked only by fetching it (Deploy Pages run 36656909505 succeeded; 4 sections with the expected totals and done counts; `style.css?v=20260930` → 200). The visual checks (1280px/375px, light/dark, filters, a done-cell click, todo cells inert) were done against a local `python3 -m http.server`.
 - The 進行中 cell and the stamp have only been rendered through a DOM injection and the fixture tests; no real job was running.

@@ -1,0 +1,1121 @@
+{
+  "work": "T1821",
+  "terms": [
+    {
+      "id": "rupa-dhatu",
+      "xuanzang": "色界",
+      "display": "色境（色界）",
+      "plain": "色境",
+      "english": [],
+      "sanskrit": [],
+      "pali": [],
+      "source_terms": [
+        "色界"
+      ],
+      "translation_patterns": [
+        "色境（色界）",
+        "色界"
+      ],
+      "status": "review",
+      "rule": "在十八界語境中，色界指眼所取的色境，避免泛譯為一般色法。"
+    },
+    {
+      "id": "visible-invisible",
+      "xuanzang": "有見／無見",
+      "display": "可示現（有見）／不可示現（無見）",
+      "plain": "可示現／不可示現",
+      "english": [],
+      "sanskrit": [],
+      "pali": [],
+      "source_terms": [
+        "有見",
+        "無見"
+      ],
+      "translation_patterns": [
+        "可示現（有見）",
+        "不可示現（無見）",
+        "有見",
+        "無見"
+      ],
+      "status": "review",
+      "rule": "本段以示現解釋見，使用可示現／不可示現作白話對應並保留玄奘術語。"
+    },
+    {
+      "id": "recordable",
+      "xuanzang": "有記",
+      "display": "可記別（有記）",
+      "plain": "可記別",
+      "english": [],
+      "sanskrit": [],
+      "pali": [],
+      "source_terms": [
+        "有記"
+      ],
+      "translation_patterns": [
+        "可記別（有記）",
+        "可記別"
+      ],
+      "status": "review",
+      "rule": "統一譯為「可記別（有記）」；與無記相對時保留有記術語。"
+    },
+    {
+      "id": "unrecordable",
+      "xuanzang": "無記",
+      "display": "不可記別（無記）",
+      "plain": "不可記別",
+      "english": [],
+      "sanskrit": [],
+      "pali": [],
+      "source_terms": [
+        "無記"
+      ],
+      "translation_patterns": [
+        "不可記別（無記）",
+        "不能記別"
+      ],
+      "status": "review",
+      "rule": "一般判性譯為「不可記別（無記）」；涉及異熟果時譯為「不能記別異熟果」。"
+    },
+    {
+      "id": "nourished-faculties",
+      "xuanzang": "長養五根",
+      "display": "由滋養增長的五根（長養五根）",
+      "plain": "由滋養增長的五根",
+      "english": [],
+      "sanskrit": [],
+      "pali": [],
+      "source_terms": [
+        "長養五根"
+      ],
+      "translation_patterns": [
+        "由滋養增長的五根（長養五根）"
+      ],
+      "status": "review",
+      "rule": "固定採白話釋義置前、術語置括號後的雙軌格式。"
+    },
+    {
+      "id": "cessation-by-discrimination",
+      "xuanzang": "擇滅",
+      "display": "由智慧揀擇而得的寂滅（擇滅）",
+      "plain": "由智慧揀擇而得的寂滅",
+      "english": [],
+      "sanskrit": [],
+      "pali": [],
+      "source_terms": [
+        "擇滅"
+      ],
+      "translation_patterns": [
+        "由智慧揀擇而得的寂滅（擇滅）"
+      ],
+      "status": "review",
+      "rule": "固定譯為「由智慧揀擇而得的寂滅（擇滅）」。"
+    },
+    {
+      "id": "six-foot-treatises",
+      "xuanzang": "六足",
+      "display": "六足",
+      "plain": "六部論書",
+      "english": [],
+      "sanskrit": [],
+      "pali": [],
+      "source_terms": [
+        "六足"
+      ],
+      "translation_patterns": [
+        "六部論書（六足）",
+        "六足"
+      ],
+      "status": "review",
+      "rule": "「六足」指說一切有部所傳的六部阿毘達磨論書，宜譯作「六部論書」，不宜加入「根本」造成誤解。"
+    },
+    {
+      "id": "eight-skandhas",
+      "xuanzang": "八蘊",
+      "display": "八蘊",
+      "plain": "《發智論》的八個篇章",
+      "english": [],
+      "sanskrit": [],
+      "pali": [],
+      "source_terms": [
+        "八蘊"
+      ],
+      "translation_patterns": [
+        "《發智論》的八個篇章（八蘊）",
+        "八個篇章（八蘊）",
+        "八蘊"
+      ],
+      "status": "review",
+      "rule": "此處「八蘊」指《發智論》的八個篇章，不宜譯為「八類論藏」。"
+    },
+    {
+      "id": "present-dharma-nonattainment",
+      "xuanzang": "現法非得",
+      "display": "現法非得",
+      "plain": "現在法的非得",
+      "english": [],
+      "sanskrit": [],
+      "pali": [],
+      "source_terms": [
+        "現法非得"
+      ],
+      "translation_patterns": [
+        "現在法的非得（現法非得）",
+        "現法非得"
+      ],
+      "status": "review",
+      "rule": "「非得」是與「得」相對的術語，不宜譯成「不能得」的動作句。"
+    },
+    {
+      "id": "permanent-not-cause-of-result",
+      "xuanzang": "常非果因",
+      "display": "常非果因",
+      "plain": "常法不是果的原因",
+      "english": [],
+      "sanskrit": [],
+      "pali": [],
+      "source_terms": [
+        "常非果因"
+      ],
+      "translation_patterns": [
+        "常法不是果的原因（常非果因）",
+        "常非果因"
+      ],
+      "status": "review",
+      "rule": "保留「常非果因」作術語，白話解作「常法不是果的原因」。"
+    },
+    {
+      "id": "section-nidana",
+      "xuanzang": "序分",
+      "display": "序言部分（序分）",
+      "plain": "序言部分",
+      "english": [],
+      "sanskrit": [],
+      "pali": [],
+      "source_terms": [
+        "序分"
+      ],
+      "translation_patterns": [
+        "序言部分（序分）",
+        "序分"
+      ],
+      "status": "review",
+      "rule": "首次出現使用白話詞加玄奘詞，後文保留序分。"
+    },
+    {
+      "id": "section-principal",
+      "xuanzang": "正宗",
+      "display": "正文部分（正宗）",
+      "plain": "正文部分",
+      "english": [],
+      "sanskrit": [],
+      "pali": [],
+      "source_terms": [
+        "正宗"
+      ],
+      "translation_patterns": [
+        "正文部分（正宗）",
+        "正宗"
+      ],
+      "status": "review",
+      "rule": "首次出現使用白話詞加玄奘詞，後文保留正宗。"
+    },
+    {
+      "id": "section-circulation",
+      "xuanzang": "流通",
+      "display": "流通部分（流通）",
+      "plain": "流通部分",
+      "english": [],
+      "sanskrit": [],
+      "pali": [],
+      "source_terms": [
+        "流通",
+        "流通分"
+      ],
+      "translation_patterns": [
+        "流通部分（流通）",
+        "流通分"
+      ],
+      "status": "review",
+      "rule": "三分總稱可用流通部分（流通），後文依句法使用流通分。"
+    },
+    {
+      "id": "homage-preface",
+      "xuanzang": "歸敬序",
+      "display": "歸敬的序言（歸敬序）",
+      "plain": "歸敬的序言",
+      "english": [],
+      "sanskrit": [],
+      "pali": [],
+      "source_terms": [
+        "歸敬序"
+      ],
+      "translation_patterns": [
+        "歸敬的序言（歸敬序）",
+        "歸敬序"
+      ],
+      "status": "review",
+      "rule": "首次出現使用白話詞加玄奘詞，後文保留歸敬序。"
+    },
+    {
+      "id": "arising-preface",
+      "xuanzang": "發起序",
+      "display": "發起正文的序言（發起序）",
+      "plain": "發起正文的序言",
+      "english": [],
+      "sanskrit": [],
+      "pali": [],
+      "source_terms": [
+        "發起序"
+      ],
+      "translation_patterns": [
+        "發起正文的序言（發起序）",
+        "發起序"
+      ],
+      "status": "review",
+      "rule": "首次出現使用白話詞加玄奘詞，後文保留發起序。"
+    },
+    {
+      "id": "existent-dharma",
+      "xuanzang": "有體",
+      "display": "具有實體（有體）",
+      "plain": "具有實體",
+      "english": [],
+      "sanskrit": [],
+      "pali": [],
+      "source_terms": [
+        "有體"
+      ],
+      "translation_patterns": [
+        "具有實體（有體）",
+        "有體"
+      ],
+      "status": "review",
+      "rule": "有體譯為具有實體，不使用自體以免與我或自性混淆。"
+    },
+    {
+      "id": "nihilistic-grasping",
+      "xuanzang": "損減執",
+      "display": "減損、否定諸法的執著（損減執）",
+      "plain": "減損、否定諸法的執著",
+      "english": [],
+      "sanskrit": [],
+      "pali": [],
+      "source_terms": [
+        "損減執"
+      ],
+      "translation_patterns": [
+        "減損、否定諸法的執著（損減執）",
+        "損減執"
+      ],
+      "status": "review",
+      "rule": "首次出現使用白話詞加玄奘詞，後文保留損減執。"
+    },
+    {
+      "id": "augmentation-grasping",
+      "xuanzang": "增益執",
+      "display": "妄加實體的執著（增益執）",
+      "plain": "妄加實體的執著",
+      "english": [],
+      "sanskrit": [],
+      "pali": [],
+      "source_terms": [
+        "增益執"
+      ],
+      "translation_patterns": [
+        "妄加實體的執著（增益執）",
+        "增益執"
+      ],
+      "status": "review",
+      "rule": "首次出現使用白話詞加玄奘詞，後文保留增益執。"
+    },
+    {
+      "id": "demonic-obstacle",
+      "xuanzang": "魔事",
+      "display": "魔事（魔障）",
+      "plain": "魔障",
+      "english": [],
+      "sanskrit": [],
+      "pali": [],
+      "source_terms": [
+        "魔事"
+      ],
+      "translation_patterns": [
+        "魔事（魔障）",
+        "魔事"
+      ],
+      "status": "review",
+      "rule": "保留魔事並以魔障作白話說明。"
+    },
+    {
+      "id": "you-lou",
+      "xuanzang": "有漏",
+      "display": "受煩惱染污（有漏）",
+      "plain": "受煩惱染污",
+      "english": [
+        "with outflows"
+      ],
+      "sanskrit": [
+        "sāsrava"
+      ],
+      "pali": [
+        "sāsava"
+      ],
+      "source_terms": [
+        "有漏"
+      ],
+      "translation_patterns": [
+        "受煩惱染污（有漏）"
+      ],
+      "status": "review",
+      "rule": "Use plain-language wording followed by the Xuanzang term in parentheses."
+    },
+    {
+      "id": "wu-lou",
+      "xuanzang": "無漏",
+      "display": "不受煩惱染污（無漏）",
+      "plain": "不受煩惱染污",
+      "english": [
+        "without outflows"
+      ],
+      "sanskrit": [
+        "anāsrava"
+      ],
+      "pali": [
+        "anāsava"
+      ],
+      "source_terms": [
+        "無漏"
+      ],
+      "translation_patterns": [
+        "不受煩惱染污（無漏）"
+      ],
+      "status": "review",
+      "rule": "Use plain-language wording followed by the Xuanzang term in parentheses."
+    },
+    {
+      "id": "dao-di",
+      "xuanzang": "道諦",
+      "display": "修道所證的真理（道諦）",
+      "plain": "修道所證的真理",
+      "english": [
+        "truth of the path"
+      ],
+      "sanskrit": [
+        "mārga-satya"
+      ],
+      "pali": [
+        "magga-sacca"
+      ],
+      "source_terms": [
+        "道諦"
+      ],
+      "translation_patterns": [
+        "修道所證的真理（道諦）"
+      ],
+      "status": "review",
+      "rule": "Use plain-language wording followed by the Xuanzang term in parentheses."
+    },
+    {
+      "id": "wu-wei",
+      "xuanzang": "無為",
+      "display": "非因緣造作的法（無為）",
+      "plain": "非因緣造作的法",
+      "english": [
+        "unconditioned"
+      ],
+      "sanskrit": [
+        "asaṃskṛta"
+      ],
+      "pali": [
+        "asaṅkhata"
+      ],
+      "source_terms": [
+        "無為"
+      ],
+      "translation_patterns": [
+        "非因緣造作的法（無為）"
+      ],
+      "status": "review",
+      "rule": "Use plain-language wording followed by the Xuanzang term in parentheses."
+    },
+    {
+      "id": "fei-qing-wu-jing",
+      "xuanzang": "非情五境",
+      "display": "五種無情境（非情五境）",
+      "plain": "五種無情境",
+      "english": [
+        "five inanimate sense objects"
+      ],
+      "sanskrit": [],
+      "pali": [],
+      "source_terms": [
+        "非情五境"
+      ],
+      "translation_patterns": [
+        "五種無情境（非情五境）"
+      ],
+      "status": "review",
+      "rule": "Use plain-language wording followed by the Xuanzang term in parentheses."
+    },
+    {
+      "id": "wu-xue",
+      "xuanzang": "無學",
+      "display": "已完成修學者（無學）",
+      "plain": "已完成修學者",
+      "english": [
+        "one who has completed training"
+      ],
+      "sanskrit": [
+        "aśaikṣa"
+      ],
+      "pali": [
+        "asekkha"
+      ],
+      "source_terms": [
+        "無學"
+      ],
+      "translation_patterns": [
+        "已完成修學者（無學）"
+      ],
+      "status": "review",
+      "rule": "Do not narrow the term to arhat unless the source explicitly does so."
+    },
+    {
+      "id": "fei-ze-mie",
+      "xuanzang": "非擇滅",
+      "display": "不是由簡擇力所證得的滅（非擇滅）",
+      "plain": "不是由簡擇力所證得的滅",
+      "english": [
+        "non-discriminative cessation"
+      ],
+      "sanskrit": [
+        "apratisaṃkhyānirodha"
+      ],
+      "pali": [
+        " appaṭisaṅkhānirodha"
+      ],
+      "source_terms": [
+        "非擇滅"
+      ],
+      "translation_patterns": [
+        "不是由簡擇力所證得的滅（非擇滅）"
+      ],
+      "status": "review",
+      "rule": "Use plain-language wording followed by the Xuanzang term in parentheses."
+    },
+    {
+      "id": "bi-liang",
+      "xuanzang": "比量",
+      "display": "推理（比量）",
+      "plain": "推理",
+      "english": [
+        "inference"
+      ],
+      "sanskrit": [
+        "anumāna"
+      ],
+      "pali": [
+        "anumāṇa"
+      ],
+      "source_terms": [
+        "比量"
+      ],
+      "translation_patterns": [
+        "推理（比量）"
+      ],
+      "status": "review",
+      "rule": "Use plain-language wording followed by the Xuanzang term in parentheses."
+    },
+    {
+      "id": "cessation-not-by-discrimination",
+      "xuanzang": "非擇滅",
+      "display": "非由智慧揀擇而得的寂滅（非擇滅）",
+      "plain": "非由智慧揀擇而得的寂滅",
+      "english": [],
+      "sanskrit": [],
+      "pali": [],
+      "source_terms": [
+        "非擇滅"
+      ],
+      "translation_patterns": [
+        "非由智慧揀擇而得的寂滅（非擇滅）"
+      ],
+      "status": "review",
+      "rule": "固定譯為「非由智慧揀擇而得的寂滅（非擇滅）」。"
+    },
+    {
+      "id": "ming-obscuration",
+      "xuanzang": "冥",
+      "display": "遮蔽真理的黑暗（冥）",
+      "plain": "遮蔽真理的黑暗",
+      "english": [],
+      "sanskrit": [],
+      "pali": [],
+      "source_terms": [
+        "冥"
+      ],
+      "translation_patterns": [
+        "遮蔽真理的黑暗（冥）",
+        "黑暗（冥）",
+        "冥"
+      ],
+      "status": "review",
+      "rule": "在解釋無知覆理、障見的語境中，首次出現使用白話詞加玄奘詞，後文可保留「冥」。"
+    },
+    {
+      "id": "defiled-ignorance",
+      "xuanzang": "染污無知",
+      "display": "受煩惱染污的無知（染污無知）",
+      "plain": "受煩惱染污的無知",
+      "english": [],
+      "sanskrit": [],
+      "pali": [],
+      "source_terms": [
+        "染污無知"
+      ],
+      "translation_patterns": [
+        "受煩惱染污的無知（染污無知）",
+        "染污無知"
+      ],
+      "status": "review",
+      "rule": "首次出現使用白話詞加玄奘詞，後文保留染污無知。"
+    },
+    {
+      "id": "undefiled-ignorance",
+      "xuanzang": "不染無知",
+      "display": "不染污的無知（不染無知）",
+      "plain": "不染污的無知",
+      "english": [],
+      "sanskrit": [],
+      "pali": [],
+      "source_terms": [
+        "不染無知"
+      ],
+      "translation_patterns": [
+        "不染污的無知（不染無知）",
+        "不染無知"
+      ],
+      "status": "review",
+      "rule": "首次出現使用白話詞加玄奘詞，後文保留不染無知。"
+    },
+    {
+      "id": "youyuan-wuyuan",
+      "xuanzang": "有緣、無緣",
+      "display": "有緣、無緣",
+      "plain": "有對境、無對境",
+      "english": [
+        "with an object",
+        "without an object"
+      ],
+      "sanskrit": [],
+      "pali": [],
+      "source_terms": [
+        "有緣",
+        "無緣"
+      ],
+      "translation_patterns": [
+        "有對境與無對境（有緣、無緣）"
+      ],
+      "status": "review",
+      "rule": "首次出現用「有對境與無對境（有緣、無緣）」；後續保留玄奘術語。"
+    },
+    {
+      "id": "zhishou-buzhishou",
+      "xuanzang": "執受、不執受",
+      "display": "執受、不執受",
+      "plain": "被攝持、不被攝持",
+      "english": [
+        "held by mind and mental factors",
+        "not held by mind and mental factors"
+      ],
+      "sanskrit": [],
+      "pali": [],
+      "source_terms": [
+        "執受",
+        "不執受"
+      ],
+      "translation_patterns": [
+        "被攝持與不被攝持（執受、不執受）",
+        "被攝持",
+        "執受"
+      ],
+      "status": "review",
+      "rule": "首次出現用白話詞加玄奘詞，後續可直接使用「執受」「不執受」。"
+    },
+    {
+      "id": "nengyuan-suoyuan",
+      "xuanzang": "能緣、所緣",
+      "display": "能緣、所緣",
+      "plain": "能取境的法、被取的對境",
+      "english": [
+        "cognitive subject",
+        "cognitive object"
+      ],
+      "sanskrit": [],
+      "pali": [],
+      "source_terms": [
+        "能緣",
+        "所緣"
+      ],
+      "translation_patterns": [
+        "能取境的法（能緣）",
+        "被取的對境（所緣）"
+      ],
+      "status": "review",
+      "rule": "分別指能取境的心、心所法，以及心、心所法所取的對境。"
+    },
+    {
+      "id": "fugen-sijing",
+      "xuanzang": "扶根四境",
+      "display": "扶根四境",
+      "plain": "扶助五根的四種境",
+      "english": [
+        "four objects supporting the sense faculties"
+      ],
+      "sanskrit": [],
+      "pali": [],
+      "source_terms": [
+        "扶根四境"
+      ],
+      "translation_patterns": [
+        "扶助五根的四種境（扶根四境）"
+      ],
+      "status": "review",
+      "rule": "首次出現用白話詞加玄奘詞。"
+    },
+    {
+      "id": "suoyichu-yichu",
+      "xuanzang": "所依處、依處",
+      "display": "所依處、依處",
+      "plain": "直接依止處、輔助依止處",
+      "english": [
+        "direct support",
+        "supporting basis"
+      ],
+      "sanskrit": [],
+      "pali": [],
+      "source_terms": [
+        "所依處",
+        "依處"
+      ],
+      "translation_patterns": [
+        "直接依止處（所依處）",
+        "輔助依止處（依處）"
+      ],
+      "status": "review",
+      "rule": "保留「所依處」與「依處」的層次差異。"
+    },
+    {
+      "id": "biaoye",
+      "xuanzang": "表業",
+      "display": "表業",
+      "plain": "具有表現作用的業",
+      "english": [
+        "expressive action"
+      ],
+      "sanskrit": [],
+      "pali": [],
+      "source_terms": [
+        "表業"
+      ],
+      "translation_patterns": [
+        "具有表現作用的業（表業）"
+      ],
+      "status": "review",
+      "rule": "首次出現用白話詞加玄奘詞。"
+    },
+    {
+      "id": "dingdao-dazhong",
+      "xuanzang": "定、道大種",
+      "display": "定、道大種",
+      "plain": "禪定與修道相關的四大種",
+      "english": [
+        "great elements associated with concentration and the path"
+      ],
+      "sanskrit": [],
+      "pali": [],
+      "source_terms": [
+        "定、道大種"
+      ],
+      "translation_patterns": [
+        "禪定與修道相關的四大種（定、道大種）"
+      ],
+      "status": "review",
+      "rule": "首次出現用白話詞加玄奘詞。"
+    },
+    {
+      "id": "feiqing-sexiangweichu",
+      "xuanzang": "非情色、香、味、觸",
+      "display": "非情色、香、味、觸",
+      "plain": "非有情的色、香、味、觸",
+      "english": [
+        "non-sentient form, smell, taste, and touch"
+      ],
+      "sanskrit": [],
+      "pali": [],
+      "source_terms": [
+        "非情色、香、味、觸"
+      ],
+      "translation_patterns": [
+        "非有情的色、香、味、觸（非情色、香、味、觸）"
+      ],
+      "status": "review",
+      "rule": "「非情」統一譯為「非有情」，避免與一般語境的「無情」混淆。"
+    },
+    {
+      "id": "juechu",
+      "xuanzang": "覺觸",
+      "display": "覺觸",
+      "plain": "可感知的接觸",
+      "english": [
+        "perceivable contact"
+      ],
+      "sanskrit": [],
+      "pali": [],
+      "source_terms": [
+        "覺觸"
+      ],
+      "translation_patterns": [
+        "可感知的接觸（覺觸）"
+      ],
+      "status": "review",
+      "rule": "首次出現用白話詞加玄奘詞。"
+    },
+    {
+      "id": "abhidharma",
+      "xuanzang": "阿毘達磨",
+      "display": "對法（阿毘達磨）",
+      "plain": "對法",
+      "english": [
+        "Abhidharma"
+      ],
+      "sanskrit": [
+        "abhidharma"
+      ],
+      "pali": [
+        "abhidhamma"
+      ],
+      "source_terms": [
+        "對法",
+        "阿毘達磨"
+      ],
+      "translation_patterns": [
+        "對法（阿毘達磨）",
+        "對法",
+        "阿毘達磨"
+      ],
+      "status": "review",
+      "rule": "首次出現使用白話詞「對法」後括注玄奘術語「阿毘達磨」，後文依語境簡稱。"
+    },
+    {
+      "id": "pure-wisdom",
+      "xuanzang": "淨慧",
+      "display": "清淨智慧（淨慧）",
+      "plain": "清淨智慧",
+      "english": [],
+      "sanskrit": [],
+      "pali": [],
+      "source_terms": [
+        "淨慧"
+      ],
+      "translation_patterns": [
+        "清淨智慧（淨慧）",
+        "清淨智慧",
+        "淨慧"
+      ],
+      "status": "review",
+      "rule": "使用白話詞「清淨智慧」並保留玄奘術語「淨慧」，說明其為不受煩惱染污的智慧。"
+    },
+    {
+      "id": "accompanying-factors",
+      "xuanzang": "隨行",
+      "display": "伴隨法（隨行）",
+      "plain": "伴隨法",
+      "english": [],
+      "sanskrit": [],
+      "pali": [],
+      "source_terms": [
+        "隨行"
+      ],
+      "translation_patterns": [
+        "伴隨法（隨行）",
+        "伴隨法",
+        "隨行"
+      ],
+      "status": "review",
+      "rule": "將隨順智慧而行的相應法、俱有法及得譯為「伴隨法」，並保留玄奘術語「隨行」。"
+    },
+    {
+      "id": "direct-observation",
+      "xuanzang": "現觀",
+      "display": "直接觀察（現觀）",
+      "plain": "直接觀察",
+      "english": [],
+      "sanskrit": [],
+      "pali": [],
+      "source_terms": [
+        "現觀"
+      ],
+      "translation_patterns": [
+        "直接觀察（現觀）",
+        "直接觀察",
+        "現觀"
+      ],
+      "status": "review",
+      "rule": "本段將現觀譯作「直接觀察」，首次出現時保留玄奘術語「現觀」。"
+    },
+    {
+      "id": "yishu",
+      "xuanzang": "異熟",
+      "display": "果報（異熟）",
+      "plain": "果報",
+      "english": [
+        "karmic result"
+      ],
+      "sanskrit": [
+        "vipāka"
+      ],
+      "pali": [
+        "vipāka"
+      ],
+      "source_terms": [
+        "異熟"
+      ],
+      "translation_patterns": [
+        "果報（異熟）",
+        "異熟"
+      ],
+      "status": "review",
+      "rule": "首次出現用「果報（異熟）」；後續可直接使用「異熟」。"
+    },
+    {
+      "id": "dengliu",
+      "xuanzang": "等流",
+      "display": "同類相續（等流）",
+      "plain": "同類相續",
+      "english": [
+        "homogeneous continuity"
+      ],
+      "sanskrit": [],
+      "pali": [],
+      "source_terms": [
+        "等流"
+      ],
+      "translation_patterns": [
+        "同類相續（等流）",
+        "等流"
+      ],
+      "status": "review",
+      "rule": "首次出現用白話詞加玄奘詞，後續可直接使用「等流」。"
+    },
+    {
+      "id": "changyang",
+      "xuanzang": "長養",
+      "display": "增長滋養（長養）",
+      "plain": "增長滋養",
+      "english": [
+        "nourished"
+      ],
+      "sanskrit": [],
+      "pali": [],
+      "source_terms": [
+        "長養"
+      ],
+      "translation_patterns": [
+        "增長滋養（長養）",
+        "長養"
+      ],
+      "status": "review",
+      "rule": "首次出現用白話詞加玄奘詞，後續可直接使用「長養」。"
+    },
+    {
+      "id": "dui-xiang",
+      "xuanzang": "對向",
+      "display": "趨向（對向）",
+      "plain": "趨向",
+      "english": [],
+      "sanskrit": [],
+      "pali": [],
+      "source_terms": [
+        "對向"
+      ],
+      "translation_patterns": [
+        "趨向（對向）",
+        "趨向",
+        "對向"
+      ],
+      "status": "review",
+      "rule": "首次出現使用「趨向（對向）」；後文可依語境簡稱為「趨向」或「對向」。"
+    },
+    {
+      "id": "dui-guan",
+      "xuanzang": "對觀",
+      "display": "對境觀察（對觀）",
+      "plain": "對境觀察",
+      "english": [],
+      "sanskrit": [],
+      "pali": [],
+      "source_terms": [
+        "對觀"
+      ],
+      "translation_patterns": [
+        "對境觀察（對觀）",
+        "對境觀察",
+        "對觀"
+      ],
+      "status": "review",
+      "rule": "首次出現使用「對境觀察（對觀）」；後文可依語境簡稱為「對境觀察」或「對觀」。"
+    },
+    {
+      "id": "heterogeneous-nature",
+      "xuanzang": "異生性",
+      "display": "凡夫性（異生性）",
+      "plain": "凡夫性",
+      "english": [],
+      "sanskrit": [],
+      "pali": [],
+      "source_terms": [
+        "異生性"
+      ],
+      "translation_patterns": [
+        "凡夫性（異生性）"
+      ],
+      "status": "review",
+      "rule": "以白話詞「凡夫性」置前，括注玄奘術語「異生性」。"
+    },
+    {
+      "id": "tongfen-bitongfen",
+      "xuanzang": "同分／彼同分",
+      "display": "能發揮根作用（同分）／不能發揮根作用（彼同分）",
+      "plain": "能發揮根作用／不能發揮根作用",
+      "english": [],
+      "sanskrit": [],
+      "pali": [],
+      "source_terms": [
+        "同分",
+        "彼同分"
+      ],
+      "translation_patterns": [
+        "能發揮根作用（同分）",
+        "不能發揮根作用（彼同分）"
+      ],
+      "status": "review",
+      "rule": "以功能性白話解釋置前，後接玄奘術語；用於說明根是否能發識。"
+    },
+    {
+      "id": "grasping-reception",
+      "xuanzang": "執取受",
+      "display": "執取的受（執取受）",
+      "plain": "執取的受",
+      "english": [],
+      "sanskrit": [],
+      "pali": [],
+      "source_terms": [
+        "執取受"
+      ],
+      "translation_patterns": [
+        "執取的受（執取受）",
+        "執取受"
+      ],
+      "status": "review",
+      "rule": "與自性受區分；指一切心、心所法執取前境時所說的受。"
+    },
+    {
+      "id": "unmanifest",
+      "xuanzang": "無表",
+      "display": "不具表現作用（無表）",
+      "plain": "不具表現作用",
+      "english": [
+        "unexpressed"
+      ],
+      "sanskrit": [],
+      "pali": [],
+      "source_terms": [
+        "無表"
+      ],
+      "translation_patterns": [
+        "不具表現作用（無表）",
+        "不具表現作用"
+      ],
+      "status": "review",
+      "rule": "與表業相對；依上下文可指無表色或無表業，首次出現用白話詞加玄奘詞。"
+    },
+    {
+      "id": "verbal-expression",
+      "xuanzang": "語表",
+      "display": "語言表達作用（語表）",
+      "plain": "語言表達作用",
+      "english": [
+        "verbal expression"
+      ],
+      "sanskrit": [],
+      "pali": [],
+      "source_terms": [
+        "語表"
+      ],
+      "translation_patterns": [
+        "語言表達作用（語表）",
+        "語言表達作用"
+      ],
+      "status": "review",
+      "rule": "指語言所具有的表達作用，首次出現用白話詞加玄奘詞。"
+    },
+    {
+      "id": "you-fu-wu-ji",
+      "xuanzang": "有覆無記",
+      "display": "受煩惱覆蓋而不可記別（有覆無記）",
+      "plain": "受煩惱覆蓋而不可記別",
+      "english": [],
+      "sanskrit": [],
+      "pali": [],
+      "source_terms": [
+        "有覆無記"
+      ],
+      "translation_patterns": [
+        "受煩惱覆蓋而不可記別（有覆無記）"
+      ],
+      "status": "review",
+      "rule": "Use plain-language wording followed by the Xuanzang term in parentheses."
+    },
+    {
+      "id": "wu-fu-wu-ji",
+      "xuanzang": "無覆無記",
+      "display": "不受煩惱覆蓋而不可記別（無覆無記）",
+      "plain": "不受煩惱覆蓋而不可記別",
+      "english": [],
+      "sanskrit": [],
+      "pali": [],
+      "source_terms": [
+        "無覆無記"
+      ],
+      "translation_patterns": [
+        "不受煩惱覆蓋而不可記別（無覆無記）"
+      ],
+      "status": "review",
+      "rule": "Use plain-language wording followed by the Xuanzang term in parentheses."
+    },
+    {
+      "id": "you-wei",
+      "xuanzang": "有為",
+      "display": "由因緣條件造作的法（有為）",
+      "plain": "由因緣條件造作的法",
+      "english": [
+        "conditioned"
+      ],
+      "sanskrit": [
+        "saṃskṛta"
+      ],
+      "pali": [
+        "saṅkhata"
+      ],
+      "source_terms": [
+        "有為"
+      ],
+      "translation_patterns": [
+        "由因緣條件造作的法（有為）"
+      ],
+      "status": "review",
+      "rule": "Use plain-language wording followed by the Xuanzang term in parentheses."
+    }
+  ]
+}

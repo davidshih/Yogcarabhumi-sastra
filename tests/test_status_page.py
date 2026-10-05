@@ -72,6 +72,27 @@ class StatusPageTests(unittest.TestCase):
         self.assertNotIn('href="T0001/translations/T0001-004-baihua.html"', html)
         self.assertIn('class="progress-stamp"', html)
 
+    def test_publish_status_writes_app_library(self):
+        self.write_works([
+            {"id": "T0001", "title": "甲論", "subtitle": "某譯", "juans": 3},
+            {"id": "T0002", "title": "乙論", "subtitle": ""},
+        ])
+        self.write_page("T0001", 3)
+        self.write_page("T0001", 1)
+        self.write_page("T0001", 9)  # beyond the work's juan count: not listed
+        self.write_job("active", "T0001", [2], "running", {"2": {"step": "segment"}})
+
+        runner.publish_status()
+
+        library = json.loads((self.docs / "app" / "library.json").read_text(encoding="utf-8"))
+        self.assertEqual(library, {"version": 1, "works": [
+            {"id": "T0001", "title": "甲論", "subtitle": "某譯", "juans": 3, "translated": [
+                {"juan": 1, "page": "T0001/translations/T0001-001-baihua.html"},
+                {"juan": 3, "page": "T0001/translations/T0001-003-baihua.html"},
+            ]},
+            {"id": "T0002", "title": "乙論", "subtitle": "", "juans": 0, "translated": []},
+        ]})
+
     def test_work_without_juans_uses_highest_seen_juan(self):
         self.write_works([{"id": "T0002", "title": "乙論", "subtitle": ""}])
         self.write_page("T0002", 3)

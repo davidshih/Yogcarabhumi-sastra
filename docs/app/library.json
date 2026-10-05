@@ -1,0 +1,361 @@
+{
+ "version": 1,
+ "works": [
+  {
+   "id": "T1579",
+   "title": "瑜伽師地論",
+   "subtitle": "彌勒菩薩說 / 玄奘譯",
+   "juans": 100,
+   "translated": [
+    {
+     "juan": 1,
+     "page": "T1579/translations/T1579-001-baihua.html"
+    },
+    {
+     "juan": 2,
+     "page": "T1579/translations/T1579-002-baihua.html"
+    },
+    {
+     "juan": 3,
+     "page": "T1579/translations/T1579-003-baihua.html"
+    },
+    {
+     "juan": 4,
+     "page": "T1579/translations/T1579-004-baihua.html"
+    },
+    {
+     "juan": 5,
+     "page": "T1579/translations/T1579-005-baihua.html"
+    },
+    {
+     "juan": 6,
+     "page": "T1579/translations/T1579-006-baihua.html"
+    },
+    {
+     "juan": 7,
+     "page": "T1579/translations/T1579-007-baihua.html"
+    },
+    {
+     "juan": 8,
+     "page": "T1579/translations/T1579-008-baihua.html"
+    },
+    {
+     "juan": 9,
+     "page": "T1579/translations/T1579-009-baihua.html"
+    },
+    {
+     "juan": 10,
+     "page": "T1579/translations/T1579-010-baihua.html"
+    },
+    {
+     "juan": 11,
+     "page": "T1579/translations/T1579-011-baihua.html"
+    },
+    {
+     "juan": 12,
+     "page": "T1579/translations/T1579-012-baihua.html"
+    },
+    {
+     "juan": 33,
+     "page": "T1579/translations/T1579-033-baihua.html"
+    },
+    {
+     "juan": 34,
+     "page": "T1579/translations/T1579-034-baihua.html"
+    },
+    {
+     "juan": 51,
+     "page": "T1579/translations/T1579-051-baihua.html"
+    },
+    {
+     "juan": 52,
+     "page": "T1579/translations/T1579-052-baihua.html"
+    },
+    {
+     "juan": 53,
+     "page": "T1579/translations/T1579-053-baihua.html"
+    },
+    {
+     "juan": 54,
+     "page": "T1579/translations/T1579-054-baihua.html"
+    },
+    {
+     "juan": 55,
+     "page": "T1579/translations/T1579-055-baihua.html"
+    },
+    {
+     "juan": 56,
+     "page": "T1579/translations/T1579-056-baihua.html"
+    },
+    {
+     "juan": 57,
+     "page": "T1579/translations/T1579-057-baihua.html"
+    },
+    {
+     "juan": 58,
+     "page": "T1579/translations/T1579-058-baihua.html"
+    },
+    {
+     "juan": 59,
+     "page": "T1579/translations/T1579-059-baihua.html"
+    },
+    {
+     "juan": 60,
+     "page": "T1579/translations/T1579-060-baihua.html"
+    },
+    {
+     "juan": 61,
+     "page": "T1579/translations/T1579-061-baihua.html"
+    },
+    {
+     "juan": 62,
+     "page": "T1579/translations/T1579-062-baihua.html"
+    },
+    {
+     "juan": 63,
+     "page": "T1579/translations/T1579-063-baihua.html"
+    },
+    {
+     "juan": 64,
+     "page": "T1579/translations/T1579-064-baihua.html"
+    },
+    {
+     "juan": 65,
+     "page": "T1579/translations/T1579-065-baihua.html"
+    },
+    {
+     "juan": 66,
+     "page": "T1579/translations/T1579-066-baihua.html"
+    },
+    {
+     "juan": 67,
+     "page": "T1579/translations/T1579-067-baihua.html"
+    },
+    {
+     "juan": 68,
+     "page": "T1579/translations/T1579-068-baihua.html"
+    },
+    {
+     "juan": 69,
+     "page": "T1579/translations/T1579-069-baihua.html"
+    },
+    {
+     "juan": 70,
+     "page": "T1579/translations/T1579-070-baihua.html"
+    },
+    {
+     "juan": 71,
+     "page": "T1579/translations/T1579-071-baihua.html"
+    },
+    {
+     "juan": 72,
+     "page": "T1579/translations/T1579-072-baihua.html"
+    },
+    {
+     "juan": 73,
+     "page": "T1579/translations/T1579-073-baihua.html"
+    },
+    {
+     "juan": 74,
+     "page": "T1579/translations/T1579-074-baihua.html"
+    },
+    {
+     "juan": 75,
+     "page": "T1579/translations/T1579-075-baihua.html"
+    },
+    {
+     "juan": 76,
+     "page": "T1579/translations/T1579-076-baihua.html"
+    },
+    {
+     "juan": 77,
+     "page": "T1579/translations/T1579-077-baihua.html"
+    },
+    {
+     "juan": 78,
+     "page": "T1579/translations/T1579-078-baihua.html"
+    },
+    {
+     "juan": 79,
+     "page": "T1579/translations/T1579-079-baihua.html"
+    },
+    {
+     "juan": 80,
+     "page": "T1579/translations/T1579-080-baihua.html"
+    }
+   ]
+  },
+  {
+   "id": "T1585",
+   "title": "成唯識論",
+   "subtitle": "護法等菩薩造 / 玄奘譯",
+   "juans": 10,
+   "translated": [
+    {
+     "juan": 1,
+     "page": "T1585/translations/T1585-001-baihua.html"
+    },
+    {
+     "juan": 2,
+     "page": "T1585/translations/T1585-002-baihua.html"
+    },
+    {
+     "juan": 3,
+     "page": "T1585/translations/T1585-003-baihua.html"
+    },
+    {
+     "juan": 4,
+     "page": "T1585/translations/T1585-004-baihua.html"
+    },
+    {
+     "juan": 5,
+     "page": "T1585/translations/T1585-005-baihua.html"
+    }
+   ]
+  },
+  {
+   "id": "T1558",
+   "title": "阿毘達磨俱舍論",
+   "subtitle": "世親菩薩造 / 玄奘譯",
+   "juans": 30,
+   "translated": [
+    {
+     "juan": 1,
+     "page": "T1558/translations/T1558-001-baihua.html"
+    },
+    {
+     "juan": 2,
+     "page": "T1558/translations/T1558-002-baihua.html"
+    },
+    {
+     "juan": 3,
+     "page": "T1558/translations/T1558-003-baihua.html"
+    },
+    {
+     "juan": 4,
+     "page": "T1558/translations/T1558-004-baihua.html"
+    },
+    {
+     "juan": 5,
+     "page": "T1558/translations/T1558-005-baihua.html"
+    },
+    {
+     "juan": 6,
+     "page": "T1558/translations/T1558-006-baihua.html"
+    },
+    {
+     "juan": 7,
+     "page": "T1558/translations/T1558-007-baihua.html"
+    },
+    {
+     "juan": 8,
+     "page": "T1558/translations/T1558-008-baihua.html"
+    },
+    {
+     "juan": 9,
+     "page": "T1558/translations/T1558-009-baihua.html"
+    },
+    {
+     "juan": 10,
+     "page": "T1558/translations/T1558-010-baihua.html"
+    },
+    {
+     "juan": 11,
+     "page": "T1558/translations/T1558-011-baihua.html"
+    },
+    {
+     "juan": 12,
+     "page": "T1558/translations/T1558-012-baihua.html"
+    },
+    {
+     "juan": 13,
+     "page": "T1558/translations/T1558-013-baihua.html"
+    },
+    {
+     "juan": 14,
+     "page": "T1558/translations/T1558-014-baihua.html"
+    },
+    {
+     "juan": 15,
+     "page": "T1558/translations/T1558-015-baihua.html"
+    },
+    {
+     "juan": 16,
+     "page": "T1558/translations/T1558-016-baihua.html"
+    },
+    {
+     "juan": 17,
+     "page": "T1558/translations/T1558-017-baihua.html"
+    },
+    {
+     "juan": 18,
+     "page": "T1558/translations/T1558-018-baihua.html"
+    },
+    {
+     "juan": 19,
+     "page": "T1558/translations/T1558-019-baihua.html"
+    },
+    {
+     "juan": 20,
+     "page": "T1558/translations/T1558-020-baihua.html"
+    },
+    {
+     "juan": 21,
+     "page": "T1558/translations/T1558-021-baihua.html"
+    },
+    {
+     "juan": 22,
+     "page": "T1558/translations/T1558-022-baihua.html"
+    },
+    {
+     "juan": 23,
+     "page": "T1558/translations/T1558-023-baihua.html"
+    },
+    {
+     "juan": 24,
+     "page": "T1558/translations/T1558-024-baihua.html"
+    },
+    {
+     "juan": 25,
+     "page": "T1558/translations/T1558-025-baihua.html"
+    },
+    {
+     "juan": 26,
+     "page": "T1558/translations/T1558-026-baihua.html"
+    },
+    {
+     "juan": 27,
+     "page": "T1558/translations/T1558-027-baihua.html"
+    },
+    {
+     "juan": 28,
+     "page": "T1558/translations/T1558-028-baihua.html"
+    },
+    {
+     "juan": 29,
+     "page": "T1558/translations/T1558-029-baihua.html"
+    },
+    {
+     "juan": 30,
+     "page": "T1558/translations/T1558-030-baihua.html"
+    }
+   ]
+  },
+  {
+   "id": "T1821",
+   "title": "俱舍論記",
+   "subtitle": "唐 普光述",
+   "juans": 30,
+   "translated": [
+    {
+     "juan": 1,
+     "page": "T1821/translations/T1821-001-baihua.html"
+    },
+    {
+     "juan": 2,
+     "page": "T1821/translations/T1821-002-baihua.html"
+    }
+   ]
+  }
+ ]
+}

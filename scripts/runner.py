@@ -247,6 +247,7 @@ def build_status_page(jobs: list[dict]) -> None:
             active[(job.get("work", ""), juan)] = str(step or "queued")
 
     work_rows = []
+    app_works = []
     page_total = page_done = page_active = page_todo = 0
     for work in works:
         work_id = str(work["id"])
@@ -288,6 +289,21 @@ def build_status_page(jobs: list[dict]) -> None:
         page_active += active_count
         page_todo += todo_count
         work_rows.append((work, work_id, total, done_count, active_count, todo_count, cells))
+        app_works.append({
+            "id": work_id,
+            "title": str(work.get("title", "")),
+            "subtitle": str(work.get("subtitle", "")),
+            "juans": total,
+            "translated": [
+                {"juan": juan, "page": f"{work_id}/translations/{work_id}-{juan:03d}-baihua.html"}
+                for juan in sorted(done_on_disk) if juan <= total
+            ],
+        })
+
+    # Manifest for the 追更簿 iPhone app's 佛典 tab: totals and readable juans per work.
+    (docs / "app").mkdir(exist_ok=True)
+    atomic_write(docs / "app" / "library.json",
+                 json.dumps({"version": 1, "works": app_works}, ensure_ascii=False, indent=1) + "\n")
 
     rail_items = []
     sections = []

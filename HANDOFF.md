@@ -2,7 +2,7 @@
 
 ## Current state
 - Site: `docs/` is deployed to GitHub Pages on every push to `main` (https://davidshih.github.io/Yogcarabhumi-sastra/).
-- Deploy workflow `.github/workflows/deploy-pages.yml` pins each action to a commit SHA with the release in a comment. Repo setting `sha_pinning_required` is on, and Dependabot updates the pins weekly (`.github/dependabot.yml`).
+- Deploy workflow `.github/workflows/deploy-pages.yml` pins each action to a commit SHA with the release in a comment. Repo setting `sha_pinning_required` is on, and Dependabot updates the pins weekly as one grouped PR (`.github/dependabot.yml`, grouped in `e76bdfc`). Group PR #7 (`5e1f1f9`, 2026-10-06) moved them to checkout v7.0.1, configure-pages v6.0.0, upload-pages-artifact v5.0.0 and deploy-pages v5.0.1; Deploy Pages passed and the live index page was byte-identical before and after (2,212 bytes).
 - `docs/` is the Pages site, so `.docs-exceptions` exempts it from the global `repo-docs` layout (2026-09-30). Project docs other than the site go in `plans/` or the root files.
 - Works (`works.json`, now with `juans` totals): T1579 瑜伽師地論 44/100 juans translated (1–12, 33, 34, 51–80), T1558 阿毘達磨俱舍論 30/30, T1585 成唯識論 5/10, T1821 俱舍論記 2/30. 81/170 overall; no active jobs (the only job in `jobs/` is the cancelled T1821 job).
 - `docs/status.html` is a real progress page: one cell per juan per work, 已翻 / 進行中 / 未開始, styled after the MangaReader iPhone app (追更簿 palette, Mincho masthead, screentone, pill tab chips with counts, red stamp for active juans). Done cells link to the 白話對照 page; todo cells are grey and inert. Tab filtering is CSS-only (radio inputs + `:checked ~`).

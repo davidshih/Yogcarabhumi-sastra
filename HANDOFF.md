@@ -27,6 +27,7 @@
 - The rail stays the site's own; only the content column uses the 追更簿 look. The page links `style.css?v=20260930` (other pages still use `?v=20260711`).
 
 ## Gotchas
+- `.gitignore` ignores raw codex-pipeline reviewer logs (`plans/*/*.log`, `plans/*/*.log.out`, `plans/*/diff.reviewed-tree`) since 2026-10-06. The curated `*.md` reviews stay tracked.
 - Actions must be pinned to a full commit SHA (`sha_pinning_required`), also inside composite actions. Write a new action as `owner/action@<40-hex> # vX.Y.Z`, and check its `action.yml` for nested `uses:` by tag.
 - `docs/status.json` here is the runner's job status, published on Pages and read by `status.html`. Do not overwrite it with the global handoff `status.json` template; this repo is an exception to that rule.
 - The online page is only as fresh as the runner's last push. A job that ends cancelled / failed / held after its last pushed juan leaves stale 進行中 cells on Pages until the next runner commit. `docs/status.json` already behaves the same way. To refresh by hand, run the command below, then commit and push.

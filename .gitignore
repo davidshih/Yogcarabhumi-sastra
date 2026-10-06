@@ -5,3 +5,8 @@ locks/
 config/
 runner.log
 webapp.log
+
+# Raw reviewer transcripts from codex-pipeline runs (the *.md reviews are the record)
+plans/*/*.log
+plans/*/*.log.out
+plans/*/diff.reviewed-tree

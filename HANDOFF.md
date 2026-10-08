@@ -35,7 +35,7 @@
 - `works.json` metadata has drifted: T1558 still says `pipeline_ready: false` with 30/30 juans done; T1579 `scope: 聲聞地`, but translations cover 1–12 and 51–80 too. Not changed.
 
 ## Todo
-- iPhone app: the user wants a 佛典 tab in the existing 追更簿 app in `~/projects/manga-tracker` (branch `claude/sutra-tab` from `feat/ios-reader` + `origin/main`). It reads `docs/app/library.json` from this site and the lecture index at `https://7favorite.com/lectures/data/index.json`, and opens pages in an in-app Safari view. The work happens in that repo, not here.
+- iPhone app: done. The 佛典 tab of the 追更簿 app (`~/projects/manga-tracker`, PR #5 then PR #6 `5a794a7` on main) reads `docs/app/library.json`; the user checked it on the iPhone on 2026-10-06. Keep the manifest shape (version 1) stable or update `Sutra.swift` there in the same change.
 - T1821 juan 1–2: finish the doctrinal and parallel-source reviews. How to re-run only the reviews is unverified; enqueueing again goes through the reprocess-approval flow (`awaiting_approval`).
 
 ## Commands

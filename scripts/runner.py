@@ -1024,7 +1024,7 @@ def splice(md_path: Path, index: int, translation: str, note: str | None) -> Non
         s, e = sec["note_span"]
         text = text[:s] + note.strip() + text[e:]
     s, e = sec["tr_span"]
-    text = text[:s] + translation.strip() + text[e:]
+    text = text[:s] + bth.carry_paragraph_ids(text[s:e], translation) + text[e:]  # keep paragraph ids
     atomic_write(md_path, text)
 
 

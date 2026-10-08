@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>yogacara-paragraph-ids — Status Update</title>
+<style>
+:root{--bg:#f6f7f9;--panel:#fff;--ink:#1a1d21;--muted:#5c6470;--line:#e3e6ea;--accent:#0b6bcb;--accent-soft:#e8f1fb;--crit:#c62828;--high:#d84315;--med:#b8860b;--low:#607d8b;--ok:#2e7d32;--code:#f0f2f5}
+@media(prefers-color-scheme:dark){:root{--bg:#14171b;--panel:#1d2126;--ink:#e6e9ed;--muted:#9aa4b0;--line:#2c323a;--accent:#5aa2e8;--accent-soft:#1c2a3a;--crit:#ef6a5f;--high:#f0885c;--med:#e0b84f;--low:#93a7b3;--ok:#7bc47f;--code:#12151a}}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang TC",sans-serif;overflow-x:hidden}.layout{display:grid;grid-template-columns:220px minmax(0,1fr);max-width:1200px;margin:auto}nav{position:sticky;top:0;height:100vh;padding:24px 14px;border-right:1px solid var(--line)}nav a{display:block;padding:6px 8px;color:var(--muted);text-decoration:none}main{min-width:0;padding:32px 38px 72px}@media(max-width:800px){.layout{grid-template-columns:1fr}nav{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line)}main{padding:24px 16px}}h1{margin:0 0 6px}h2{margin-top:2em;border-bottom:2px solid var(--line)}code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--code);padding:.12em .4em;border-radius:5px;word-break:break-word}.meta{color:var(--muted)}.statgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px}.stat,.card,.next,details,.bluf{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px;margin:12px 0}.bluf{border-left:4px solid var(--accent)}.stat .n{font-size:1.7rem;font-weight:800}.progress{height:12px;background:var(--code);border-radius:10px;overflow:hidden;margin:8px 0}.progress span{display:block;height:100%;background:var(--accent)}.timeline{border-left:2px solid var(--line);padding-left:22px}.timeline li{margin:14px 0}.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px}table{width:100%;border-collapse:collapse}th,td{padding:9px 12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}.badge{display:inline-block;border-radius:99px;padding:.1em .55em;font-size:.75rem;font-weight:700}.crit{color:var(--crit)}.high{color:var(--high)}.med{color:var(--med)}.low{color:var(--low)}.ok{color:var(--ok)}
+</style>
+</head>
+<body>
+<div class="layout">
+<nav>
+<strong>Status Update</strong>
+<a href="#overview">1. 進度總覽</a>
+<a href="#timeline">2. 工作時間軸</a>
+<a href="#status">3. 當前狀態</a>
+<a href="#unverified">未驗證</a>
+<a href="#findings">4. 待處理發現</a>
+<a href="#next">5. 下一步計畫</a>
+<a href="#details">6. 技術細節附錄</a>
+</nav>
+<main>
+<h1>yogacara-paragraph-ids — Status Update</h1>
+<p class="meta">日期時間: <b>2026-10-08 03:26 EDT</b> · 專案: <b>yogacara-paragraph-ids</b> · 分支: <code>feat/paragraph-ids</code> · Commit: <code>faca6ea</code> · 作者: claude-code/claude-opus-5-5</p>
+<div class="bluf" id="bluf"><b>🟢 綠</b> 論典白話頁 81 卷、11,556 個譯文段落全部有穩定 <code>id</code>，本地測試、檢查與瀏覽器實測都過，PR <a href="https://github.com/davidshih/Yogcarabhumi-sastra/pull/8">davidshih/Yogcarabhumi-sastra#8</a> 等 merge 與 Pages 部署；需要你決定：無（依 2026-10-08 指示自行 merge）。</div>
+
+<h2 id="overview">1. 進度總覽</h2>
+<div class="statgrid">
+<div class="stat"><div class="n">81/81</div><div>白話頁有段落 id</div></div>
+<div class="stat"><div class="n">11,556</div><div>譯文段落 id（全頁唯一）</div></div>
+<div class="stat"><div class="n">25 → 44</div><div>unittest（全 OK）</div></div>
+<div class="stat"><div class="n">4/4</div><div>瀏覽器 <code>#fragment</code> 實測</div></div>
+</div>
+<p>實作 + backfill + 本地驗證</p><div class="progress"><span style="width:100%"></span></div><p>100%</p>
+<p>上線（merge → Pages 部署 → 線上頁確認）</p><div class="progress"><span style="width:0%"></span></div><p>0%</p>
+
+<h2 id="timeline">2. 工作時間軸</h2>
+<ol class="timeline">
+<li><span class="badge ok">已完成</span> Baseline：<code>python3 -m unittest discover -s tests</code> 25 OK；<code>check_html_links.py</code> OK；現有 md 重建 HTML 與 <code>docs/</code> byte-identical（0/81 差異）。</li>
+<li><span class="badge ok">已完成</span> <code>9aec2a2</code> generator 加 marker 解析、id 指派、runner <code>splice()</code> 沿用 id、<code>check_paragraph_ids.py</code>、19 個測試、README 與 workflow 頁。</li>
+<li><span class="badge ok">已完成</span> <code>faca6ea</code> backfill 81 個 md、重建 81 頁。</li>
+<li><span class="badge ok">已完成</span> 開 PR <a href="https://github.com/davidshih/Yogcarabhumi-sastra/pull/8">davidshih/Yogcarabhumi-sastra#8</a>（無 required check、無 CI）。</li>
+<li><span class="badge high">當前</span> 收尾 commit（本報告）→ push → squash merge。</li>
+<li><span class="badge low">待做</span> 等 Deploy Pages 跑完，確認線上 T1579-001 每個譯文 <code>&lt;p&gt;</code> 有 id；main 上補 <code>(chore) update handoff</code>；寫 side-session note 並通知 manga-tracker session。</li>
+</ol>
+
+<h2 id="status">3. 當前狀態</h2>
+<div class="tablewrap"><table>
+<tr><th>項目</th><th>狀態</th><th>驗證</th></tr>
+<tr><td>每個 <code>.translation-text &gt; p</code> 有 id</td><td><span class="badge ok">完成</span></td><td><code>check_paragraph_ids.py</code>：backfill 前 11,556 個問題（exit 1）→ <code>81 pages, 11556 translation paragraphs: every id present and unique.</code></td></tr>
+<tr><td>id 格式 <code>^[A-Za-z0-9_-]{1,64}$</code>、不撞 section id／UI id</td><td><span class="badge ok">完成</span></td><td>同上 check（含保留 UI id 與全頁重複檢查）＋單元測試</td></tr>
+<tr><td>穩定性：改本段、改別段、拆段、併段、重建</td><td><span class="badge ok">完成</span></td><td><code>tests/test_paragraph_ids.py</code> 19 tests；全套 44 OK；第二次重建 md 0 變動</td></tr>
+<tr><td>runner LLM 改寫沿用 id</td><td><span class="badge ok">完成</span></td><td><code>test_runner_splice_keeps_ids</code> 等 6 個 carry 測試</td></tr>
+<tr><td>不動 layout／原文／校註</td><td><span class="badge ok">完成</span></td><td>拿掉新 <code>id</code> 後 81/81 頁與 main byte-identical；md 只多 marker 行、只少 110 行 Translation 區塊尾端空行；<code>parse_entries</code> 文字欄位 81/81 相同；<code>search.json</code> 0 變動</td></tr>
+<tr><td><code>#fragment</code> 捲到段落</td><td><span class="badge ok">完成</span></td><td>本地 http server，1024×768：T1579-001、T1558-015、T1585-002、T1821-001 目標段落 <code>top = 0</code>，console 0 error</td></tr>
+<tr><td>上線</td><td><span class="badge high">待做</span></td><td>merge 後跑線上檢查</td></tr>
+</table></div>
+<h3 id="unverified">未驗證</h3>
+<ul>
+<li>線上 Pages 頁面（merge 前不可能）— <code>curl -s https://davidshih.github.io/Yogcarabhumi-sastra/T1579/translations/T1579-001-baihua.html | grep -c '&lt;p id="T30n1579_'</code></li>
+<li>真的 runner job 改寫一個已有 id 的卷（只有單元測試覆蓋）— 下次 T1821 卷 1–2 重跑審查後 <code>python3 scripts/check_paragraph_ids.py</code> 並 <code>git diff translations/T1821-00*-baihua.md</code> 看 marker 是否保留</li>
+<li>iPhone 上 WKWebView 以段落 id 還原（屬 manga-tracker 項目 3，不在本 repo）— 該 session 的 spike 流程</li>
+</ul>
+
+<h2 id="findings">4. 待處理發現</h2>
+<div class="card"><span class="badge med">MED</span><p>整卷 reprocess（<code>scripts/runner.py</code> 的 version 封存 → 重建 skeleton）會從零重譯，該卷 id 全部換新；封存版頁面保留舊 id。app 端應在 id 找不到時退回 id 前綴的 section id（<code>id.rsplit('-', 1)[0]</code>）。</p></div>
+<div class="card"><span class="badge low">LOW</span><p>T1579-004/005、T1585-002/003 是半成品卷，未譯 section 原本就渲染空的 <code>&lt;p&gt;&lt;/p&gt;</code>；這些 placeholder 也拿到 id（共 67 個），之後 runner 補譯時 id 會落到該 section 第一段。</p></div>
+<div class="card"><span class="badge low">LOW</span><p>沒走 codex-pipeline：使用者指示整批 session 無人值守、不准問決策；改以 TDD 測試 + 逐檔 diff 證明 + 瀏覽器實測把關。</p></div>
+
+<h2 id="next">5. 下一步計畫</h2>
+<div class="next"><b>P0 · 5 分鐘</b><p>push 本 commit，<code>gh pr merge 8 --squash --delete-branch</code>，看 <code>gh run list --workflow deploy-pages.yml -L 1</code> 成功。</p></div>
+<div class="next"><b>P0 · 5 分鐘</b><p>線上確認 T1579-001 每個譯文 <code>&lt;p&gt;</code> 有 id（上面未驗證第一條指令）。</p></div>
+<div class="next"><b>P1 · 10 分鐘</b><p>main 上 <code>(chore) update handoff</code>；寫 <code>treatise-paragraph-ids.md</code> note；通知 manga-tracker「Sutra reading progress」session。</p></div>
+
+<h2 id="details">6. 技術細節附錄</h2>
+<details><summary>設計與理由（id 格式、存放）</summary>
+<p>格式 <code>&lt;段落誕生時所屬 section 的 Range 起點&gt;-&lt;6 hex&gt;</code>，例 <code>T30n1579_p0281b03-997ff5</code>。hex = sha1(section 起點 + 當時譯文) 前 6 碼，只在第一次指派時算，撞到同頁已用 id 就加 salt 重算（實測 21 個 block 內有完全相同的重複段落）。</p>
+<p>存放在 <code>translations/*.md</code> 的 <code>Translation:</code> 區塊，每段第一行一個 HTML comment marker（GitHub 預覽看不到）。理由：人手拆段時 marker 自然跟著前半段；sidecar 則每次 build 都要模糊對齊。runner 的 LLM 輸出沒有 marker，所以 <code>splice()</code> 用 difflib 對齊新舊段落沿用 id；<code>parse_entries()</code> 會剝掉 marker，prompt 與搜尋索引不受影響。<code>render()</code> 遇到沒 id 的段落直接 raise，保證發佈頁不會漏。</p>
+</details>
+<details><summary>Changed files</summary>
+<p><code>scripts/build_translation_html.py</code> — <code>marked_paragraphs</code>、<code>format_block</code>、<code>new_paragraph_id</code>、<code>assign_paragraph_ids</code>、<code>carry_paragraph_ids</code>、<code>render_text(ids)</code>、<code>build_page</code> 寫回 md</p>
+<p><code>scripts/runner.py:1027</code> — <code>splice()</code> 改呼叫 <code>bth.carry_paragraph_ids</code></p>
+<p><code>scripts/check_paragraph_ids.py</code> — 新檢查腳本</p>
+<p><code>tests/test_paragraph_ids.py</code> — 19 個新測試</p>
+<p><code>README.md</code>、<code>docs/T1579/docs/translation-workflow.html</code> — marker 合約與檢查指令</p>
+<p><code>translations/T*-baihua.md</code>（81）、<code>docs/*/translations/*-baihua.html</code>（81）— backfill</p>
+</details>
+<details><summary>Suggested commit message</summary><p><code>(chore) status update for paragraph ids</code></p></details>
+</main>
+</div>
+</body>
+</html>

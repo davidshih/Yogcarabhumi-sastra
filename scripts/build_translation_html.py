@@ -4,8 +4,11 @@
 from __future__ import annotations
 
 import argparse
+import difflib
+import hashlib
 import html
 import json
+import os
 import re
 from dataclasses import dataclass
 from functools import lru_cache
@@ -20,6 +23,14 @@ VERSION_N_RE = re.compile(r"\.v(\d+)\.md$")
 DEFAULT_OUTPUT_DIR = ROOT / "docs" / "T1579" / "translations"
 REPO_BLOB = "https://github.com/davidshih/Yogcarabhumi-sastra/blob/main"  # Pages only serves docs/; repo files link out
 TRANSLATION_NAME_RE = re.compile(r"(?P<work>[A-Za-z][A-Za-z0-9._-]*)-(?P<juan>\d{3})-baihua")
+TRANSLATION_BLOCK_RE = re.compile(r"Translation:\n<<<\n(.*?)\n>>>", re.DOTALL)
+PARAGRAPH_SPLIT_RE = re.compile(r"\n\s*\n")
+# Paragraph id marker: one line `<!-- #<id> -->` inside a Translation paragraph (hidden on GitHub).
+PARA_MARKER_RE = re.compile(r"<!--\s*#([A-Za-z0-9_-]{1,64})\s*-->")
+PARA_MARKER_LINE_RE = re.compile(r"^[^\S\n]*<!--\s*#[A-Za-z0-9_-]{1,64}\s*-->[^\S\n]*(?:\n|$)", re.MULTILINE)
+# Fixed element ids of the reader page; a paragraph id must never take one of them.
+PAGE_UI_IDS = frozenset({"readProgress", "siteRail", "tocSide", "parallelText", "readerEnd", "prevSection",
+                         "nextSection", "continueTray", "continueMessage", "nextVolume", "stayHere"})
 
 
 @dataclass
@@ -29,6 +40,107 @@ class Entry:
     source: str
     translation: str
     note: str
+    paragraph_ids: tuple[str | None, ...] = ()
+
+
+def marked_paragraphs(block: str) -> list[tuple[str | None, list[str]]]:
+    """Split a Translation block the way render_text does, as (id, content lines) per paragraph.
+
+    The first marker in a paragraph names it (a merge keeps the first id). A paragraph that holds only
+    a marker passes its id to the next paragraph without one. An empty block is one empty paragraph,
+    because render_text renders it as `<p></p>`.
+    """
+    paragraphs: list[tuple[str | None, list[str]]] = []
+    carry = None
+    for raw in PARAGRAPH_SPLIT_RE.split(block.strip()):
+        lines = raw.split("\n")
+        ids = [m.group(1) for line in lines if (m := PARA_MARKER_RE.fullmatch(line.strip()))]
+        content = [line for line in lines if not PARA_MARKER_RE.fullmatch(line.strip())]
+        if not any(line.strip() for line in content):
+            carry = carry or (ids[0] if ids else None)
+            continue
+        paragraphs.append((ids[0] if ids else carry, content))
+        carry = None
+    return paragraphs or [(carry, [])]
+
+
+def format_block(paragraphs: list[tuple[str | None, list[str]]]) -> str:
+    return "\n\n".join("\n".join(([f"<!-- #{pid} -->"] if pid else []) + content)
+                       for pid, content in paragraphs)
+
+
+def new_paragraph_id(section_start: str, content: list[str], taken: set[str]) -> str:
+    """`<section start>-<6 hex>`: hash of the paragraph text, salted until it is free on the page."""
+    seed = section_start + "\n" + "\n".join(line.strip() for line in content).strip()
+    salt = 0
+    while True:
+        digest = hashlib.sha1(f"{seed}\n{salt}".encode() if salt else seed.encode()).hexdigest()
+        pid = f"{section_start}-{digest[:6]}"
+        if len(pid) > 64:
+            raise ValueError(f"Paragraph id longer than 64 characters: {pid}")
+        if pid not in taken:
+            return pid
+        salt += 1
+
+
+def assign_paragraph_ids(text: str) -> str:
+    """Give every Translation paragraph an id marker. Existing ids stay; only missing ones are added.
+
+    An id is assigned once and then lives in the markdown, so edits and rebuilds never move it.
+    """
+    heads = list(re.finditer(r"^##\s+", text, flags=re.MULTILINE))
+    blocks = []  # (span of the block contents, section start, paragraphs)
+    for i, head in enumerate(heads):
+        end = heads[i + 1].start() if i + 1 < len(heads) else len(text)
+        chunk = text[head.start():end]
+        range_match = re.search(r"^Range:\s*(.+)$", chunk, flags=re.MULTILINE)
+        block = TRANSLATION_BLOCK_RE.search(chunk)
+        if not (range_match and block):
+            continue  # parse_entries reports malformed entries
+        span = (head.start() + block.start(1), head.start() + block.end(1))
+        blocks.append((span, parse_range(range_match.group(1).strip())[0], marked_paragraphs(block.group(1))))
+    taken = set(PAGE_UI_IDS) | {start for _span, start, _paras in blocks}
+    for _span, _start, paragraphs in blocks:  # keep the first use of each valid id; later copies get a new one
+        for k, (pid, content) in enumerate(paragraphs):
+            if pid in taken:
+                paragraphs[k] = (None, content)
+            elif pid:
+                taken.add(pid)
+    out, pos = [], 0
+    for (s, e), start, paragraphs in blocks:
+        for k, (pid, content) in enumerate(paragraphs):
+            if pid is None:
+                pid = new_paragraph_id(start, content, taken)
+                taken.add(pid)
+                paragraphs[k] = (pid, content)
+        out.append(text[pos:s] + format_block(paragraphs))
+        pos = e
+    return "".join(out) + text[pos:]
+
+
+def carry_paragraph_ids(old_block: str, new_text: str) -> str:
+    """Put the old block's ids on a rewritten translation (LLM output has no markers).
+
+    Paragraphs are aligned with difflib: an unchanged paragraph keeps its id, and a replaced run pairs
+    up in order, so an edited or split paragraph keeps its id on the first part. Inserted paragraphs
+    stay unmarked and get a new id at the next build_page.
+    """
+    old = marked_paragraphs(old_block)
+    if not any(pid for pid, _content in old):
+        return new_text.strip()
+    new = marked_paragraphs(new_text)
+    matcher = difflib.SequenceMatcher(None, ["\n".join(c).strip() for _pid, c in old],
+                                      ["\n".join(c).strip() for _pid, c in new], autojunk=False)
+    used = {pid for pid, _content in new if pid}
+    for tag, i1, i2, j1, j2 in matcher.get_opcodes():
+        if tag not in ("equal", "replace"):
+            continue
+        for k in range(min(i2 - i1, j2 - j1)):
+            old_id, (pid, content) = old[i1 + k][0], new[j1 + k]
+            if pid is None and old_id and old_id not in used:
+                new[j1 + k] = (old_id, content)
+                used.add(old_id)
+    return format_block(new)
 
 
 def parse_entries(text: str) -> list[Entry]:
@@ -40,7 +152,7 @@ def parse_entries(text: str) -> list[Entry]:
         body = "\n".join(lines[1:])
         range_match = re.search(r"^Range:\s*(.+)$", body, flags=re.MULTILINE)
         source_match = re.search(r"Source:\n<<<\n(.*?)\n>>>", body, flags=re.DOTALL)
-        translation_match = re.search(r"Translation:\n<<<\n(.*?)\n>>>", body, flags=re.DOTALL)
+        translation_match = TRANSLATION_BLOCK_RE.search(body)
         note_match = re.search(r"Note:\n<<<\n(.*?)\n>>>", body, flags=re.DOTALL)
         if not (range_match and source_match and translation_match):
             raise ValueError(f"Invalid translation entry: {title}")
@@ -49,18 +161,23 @@ def parse_entries(text: str) -> list[Entry]:
                 title=title,
                 range_label=range_match.group(1).strip(),
                 source=source_match.group(1).strip(),
-                translation=translation_match.group(1).strip(),
+                translation=PARA_MARKER_LINE_RE.sub("", translation_match.group(1)).strip(),
                 note=note_match.group(1).strip() if note_match else "",
+                paragraph_ids=tuple(pid for pid, _content in marked_paragraphs(translation_match.group(1))),
             )
         )
     return entries
 
 
-def render_text(text: str) -> str:
+def render_text(text: str, ids: tuple[str | None, ...] | None = None) -> str:
+    paras = PARAGRAPH_SPLIT_RE.split(text.strip())
+    if ids is not None and (len(ids) != len(paras) or not all(ids)):
+        raise ValueError(f"Translation paragraphs without ids (run build_page): {text[:60]!r}")
     paragraphs = []
-    for para in re.split(r"\n\s*\n", text.strip()):
+    for i, para in enumerate(paras):
         lines = [html.escape(line.strip()) for line in para.splitlines() if line.strip()]
-        paragraphs.append("<p>" + "<br>\n".join(lines) + "</p>")
+        attr = f' id="{html.escape(ids[i])}"' if ids is not None else ""
+        paragraphs.append(f"<p{attr}>" + "<br>\n".join(lines) + "</p>")
     return "\n".join(paragraphs)
 
 
@@ -189,7 +306,7 @@ def render(entries: list[Entry], source: Path, work: str, juan: int, title: str)
       <h2>{html.escape(entry.title)}</h2>
       <div class="translation-text">
         <span class="line-range">白話譯文</span>
-{wrap_terms(render_text(entry.translation), work)}
+{wrap_terms(render_text(entry.translation, entry.paragraph_ids), work)}
       </div>
       <div class="source-text" aria-label="文言原文">
         <span class="line-range">文言原文 / {html.escape(entry.range_label)}</span>
@@ -388,9 +505,18 @@ def parse_range(range_label: str) -> tuple[str, str]:
 
 
 def build_page(source: Path, output: Path | None = None) -> Path:
-    """Render one translation md (and any archived versions of it) to HTML."""
+    """Render one translation md (and any archived versions of it) to HTML.
+
+    New translation paragraphs get their id here, written back to the md once.
+    """
     for path in [source, *archived_versions(source)]:
         text = path.read_text(encoding="utf-8")
+        marked = assign_paragraph_ids(text)
+        if marked != text:
+            tmp = path.with_suffix(path.suffix + ".tmp")
+            tmp.write_text(marked, encoding="utf-8")
+            os.replace(tmp, path)
+            text = marked
         entries = parse_entries(text)
         if not entries:
             raise ValueError(f"No entries found in {path}")

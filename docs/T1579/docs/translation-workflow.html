@@ -116,6 +116,10 @@
             <td><code>scripts/check_html_links.py</code></td>
             <td>檢查 <code>html/</code> 下所有相對 href/src 連結是否指向存在的檔案。</td>
           </tr>
+          <tr>
+            <td><code>scripts/check_paragraph_ids.py</code></td>
+            <td>檢查各卷白話頁每個譯文段落都有合法且全頁唯一的 <code>id</code>。</td>
+          </tr>
         </tbody>
       </table>
     </section>
@@ -230,6 +234,7 @@ Note:
         </tbody>
       </table>
       <p>重要警告要寫進 <code>rule</code>。例如「勝解」不可只譯為一般理解，「伏斷」不可譯成究竟斷惑，「麁相／靜相」是上下地比較詞，不是固定實體性質。</p>
+      <p><code>Translation</code> 每段首行的 <code>&lt;!-- #T30n1579_p...-xxxxxx --&gt;</code> 是段落 id，由 <code>build_translation_html.py</code> 自動補上，閱讀 app 以它還原閱讀位置。改譯文時保留這一行；拆段時留在前半段，新段不必手寫 id。</p>
     </section>
 
     <section>
@@ -238,7 +243,8 @@ Note:
 python3 scripts/build_translation_html.py --translation translations/T1579-XXX-baihua.md
 python3 scripts/check_translation_terms.py --translation translations/T1579-XXX-baihua.md
 python3 scripts/check_translation_coverage.py --translation translations/T1579-XXX-baihua.md --data data/T1579-XXX.json --start T30n1579_p... --end T30n1579_p...
-python3 scripts/check_html_links.py</code></pre>
+python3 scripts/check_html_links.py
+python3 scripts/check_paragraph_ids.py</code></pre>
       <p><code>check_html_links.py</code> 會走訪 <code>html/</code> 下所有頁面，確認 <code>index.html</code>、<code>sections/</code>、<code>translations/</code>、<code>docs/</code> 沒有缺檔連結。</p>
     </section>
 

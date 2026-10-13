@@ -177,7 +177,7 @@ test_translation_coverage.CoverageCliTests.test_requires_explicit_ledger_or_rang
 ACCEPT_EOF
 )
 MAIN_TEST_MODULES="tests.test_check_translation_coverage tests.test_llm_codex_config tests.test_paragraph_ids tests.test_runner_parallel tests.test_status_page"
-AUDIT_TESTS="test_clean_juan_passes_and_changes_nothing test_shared_boundary_line_is_a_warning test_flagged_section_is_rewritten_and_everything_else_is_kept test_unresolved_finding_fails_and_touches_nothing test_glossary_issues_the_fixer_cannot_repair_fail_and_touch_nothing test_missing_source_lines_fail_before_any_model_call test_empty_translation_fails_before_any_model_call test_resume_of_a_finished_job_does_nothing test_two_juans_run_in_one_job_and_one_failure_gives_exit_1 test_refuses_to_run_while_a_runner_holds_the_lock test_other_works_are_refused"
+AUDIT_TESTS="test_clean_juan_passes_and_changes_nothing test_shared_boundary_line_is_a_warning test_flagged_section_is_rewritten_and_everything_else_is_kept test_fixer_that_merges_paragraphs_fails_and_keeps_every_id test_unresolved_finding_fails_and_touches_nothing test_glossary_issues_the_fixer_cannot_repair_fail_and_touch_nothing test_a_juan_the_owner_wants_audited_fails_closed test_missing_source_lines_fail_before_any_model_call test_empty_translation_fails_before_any_model_call test_auto_model_calls_the_pinned_codex_backend test_resume_of_a_finished_job_does_nothing test_two_juans_run_in_one_job_and_one_failure_gives_exit_1 test_two_rewritten_juans_keep_both_seals_and_resume_is_free test_resume_reuses_reviews_until_an_input_changes test_kill_after_the_swap_rolls_forward_on_resume test_seal_failure_restores_the_translation test_translation_edited_during_the_audit_is_never_overwritten test_refuses_to_run_while_a_runner_holds_the_lock test_other_works_are_refused test_resume_rejects_what_is_not_a_job_id test_resume_rejects_a_job_file_that_was_tampered_with test_legacy_ledger_passes_the_coverage_cli_and_a_gap_does_not"
 
 # ---------- helpers ----------
 
@@ -217,41 +217,104 @@ branch_files_landed() {  # the branch's two modules, eight prompts and three tes
   return $bad
 }
 
-ran_ok() {  # ran_ok <count> <unittest ids...>: exactly <count> tests ran, and all passed
-  local want=$1 out; shift
-  out=$(python3 -B -m unittest "$@" 2>&1) || { tail -n 20 <<<"$out"; return 1; }
-  grep -qE "^Ran $want tests? in " <<<"$out" || { tail -n 5 <<<"$out"; return 1; }
+run_suite() {  # one run of the whole suite; every test check below reads its outcomes
+  python3 -B - "$SCRATCH/suite.json" > "$SCRATCH/suite.log" 2>&1 <<'PY'
+import json
+import sys
+import unittest
+
+
+class Recorder(unittest.TextTestResult):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.outcomes = {}
+
+    def addSuccess(self, test):
+        super().addSuccess(test)
+        self.outcomes.setdefault(test.id(), "ok")
+
+    def addFailure(self, test, err):
+        super().addFailure(test, err)
+        self.outcomes[test.id()] = "fail"
+
+    def addError(self, test, err):
+        super().addError(test, err)
+        self.outcomes[test.id()] = "error"
+
+    def addSkip(self, test, reason):
+        super().addSkip(test, reason)
+        self.outcomes[test.id()] = "skip"
+
+    def addExpectedFailure(self, test, err):
+        super().addExpectedFailure(test, err)
+        self.outcomes[test.id()] = "expected failure"
+
+    def addUnexpectedSuccess(self, test):
+        super().addUnexpectedSuccess(test)
+        self.outcomes[test.id()] = "unexpected success"
+
+    def addSubTest(self, test, subtest, err):
+        super().addSubTest(test, subtest, err)
+        if err is not None:
+            self.outcomes[test.id()] = "fail"
+
+
+result = unittest.TextTestRunner(resultclass=Recorder, verbosity=0, stream=sys.stderr).run(
+    unittest.defaultTestLoader.discover("tests"))
+with open(sys.argv[1], "w", encoding="utf-8") as handle:
+    json.dump({"outcomes": result.outcomes, "ran": result.testsRun}, handle)
+PY
 }
 
-main_tests() {  # shellcheck disable=SC2086
-  ran_ok 44 $MAIN_TEST_MODULES
+suite() {  # suite <<'PY' ... PY: a snippet that reads `outcomes`, the result of every test of the one suite run
+  [[ -s $SCRATCH/suite.json ]] || { echo "the suite did not run"; tail -n 8 "$SCRATCH/suite.log"; return 1; }
+  SUITE_JSON=$SCRATCH/suite.json BRANCH_TESTS=$BRANCH_TESTS AUDIT_TESTS=$AUDIT_TESTS MAIN_TEST_MODULES=$MAIN_TEST_MODULES \
+    python3 -B -c 'import json, os, sys
+data = json.load(open(os.environ["SUITE_JSON"], encoding="utf-8"))
+outcomes, ran = data["outcomes"], data["ran"]
+exec(sys.stdin.read())'
 }
 
-branch_tests() {
-  local ids=() id
-  while IFS= read -r id; do [[ -n $id ]] && ids+=("tests.$id"); done <<<"$BRANCH_TESTS"
-  [[ ${#ids[@]} -eq 112 ]] || { echo "the pinned list has ${#ids[@]} ids"; return 1; }
-  ran_ok 112 "${ids[@]}"
+main_tests() {  # main's five test files: 44 tests, every one ran and passed
+  suite <<'PY'
+modules = {name.split(".")[1] for name in os.environ["MAIN_TEST_MODULES"].split()}
+mine = {key: value for key, value in outcomes.items() if key.split(".")[0] in modules}
+assert len(mine) == 44, len(mine)
+bad = {key: value for key, value in mine.items() if value != "ok"}
+assert not bad, sorted(bad.items())[:5]
+PY
 }
 
-audit_tests() {
-  local ids=() name
-  for name in $AUDIT_TESTS; do ids+=("tests.test_legacy_audit_acceptance.LegacyAuditAcceptance.$name"); done
-  ran_ok 11 "${ids[@]}"
+branch_tests() {  # the branch's 112 tests by their pinned ids: a missing, skipped or failing one fails the check
+  suite <<'PY'
+ids = [line for line in os.environ["BRANCH_TESTS"].splitlines() if line]
+assert len(ids) == 112, len(ids)
+bad = {key: outcomes.get(key, "missing") for key in ids if outcomes.get(key) != "ok"}
+assert not bad, sorted(bad.items())[:5]
+PY
+}
+
+audit_tests() {  # the planner's 22 tests of the legacy audit
+  suite <<'PY'
+ids = ["test_legacy_audit_acceptance.LegacyAuditAcceptance." + name for name in os.environ["AUDIT_TESTS"].split()]
+assert len(ids) == 22, len(ids)
+bad = {key: outcomes.get(key, "missing") for key in ids if outcomes.get(key) != "ok"}
+assert not bad, sorted(bad.items())[:5]
+PY
+}
+
+suite_is_green() {  # every test of the suite that CI runs passed: no failure, no skip, no expected failure
+  suite <<'PY'
+assert ran >= 178 and len(outcomes) >= 178, (ran, len(outcomes))
+bad = {key: value for key, value in outcomes.items() if value != "ok"}
+assert not bad, (len(bad), sorted(bad.items())[:5])
+PY
 }
 
 checkout_still_clean() {  # no test wrote into the checkout: content as on main, and no audit data left behind
   frozen_equal_main || return 1
   [[ ! -e audits && ! -e artifacts ]] || { echo "audits/ or artifacts/ exists in the checkout"; return 1; }
   [[ -z $(git status --porcelain -- docs translations data) ]] || { git status --porcelain -- docs translations data | head -5; return 1; }
-}
-
-suite_size() {  # the suite that CI runs holds main's 44, the branch's 112 and the 11 acceptance tests
-  python3 -B - <<'PY'
-import unittest
-count = unittest.TestLoader().discover("tests").countTestCases()
-assert count >= 167, count
-PY
 }
 
 py() {  # py <<'PY' ... PY: a snippet that runs from the repo root with scripts/ on the path
@@ -319,7 +382,7 @@ import llm
 assert llm.MODELS == ("claude", "codex", "glm"), llm.MODELS
 assert llm.FAKE_MODELS == ("echo", "echo-limit-once"), llm.FAKE_MODELS
 assert llm.AUDIT_MODELS == ("gpt-5.6-terra", "gpt-5.6-sol"), llm.AUDIT_MODELS
-assert llm.AUDIT_FAKE_MODELS == ("echo-finding", "echo-finding-stubborn"), llm.AUDIT_FAKE_MODELS
+assert llm.AUDIT_FAKE_MODELS == ("echo-finding", "echo-finding-stubborn", "echo-finding-merge"), llm.AUDIT_FAKE_MODELS
 PY
 }
 
@@ -406,22 +469,39 @@ assert ask("echo-finding", "review_doctrine", "主張宿作因的人", unit="T15
 assert ask("echo-finding", "fix", "主張宿作因的人")["clauses"][0]["vernacular"] == "主張宿作因的人【已修】"
 assert ask("echo-finding-stubborn", "fix", "主張宿作因的人")["clauses"][0]["vernacular"] == "主張宿作因的人"
 assert ask("echo-finding-stubborn", "review_doctrine", "主張宿作因的人")["verdict"] == "changes_required"
+assert ask("echo-finding-merge", "review_doctrine", "主張宿作因的人")["verdict"] == "changes_required"
+merged = ask("echo-finding-merge", "fix", "第一段\n第一段第二行\n\n第二段")["clauses"][0]["vernacular"]
+assert merged == "第一段\n第一段第二行\n第二段【已修】", merged
 assert ask("echo", "review_doctrine", "主張宿作因的人")["verdict"] == "pass"
 PY
 }
 
-builder_cli_guard() {  # the CLI no longer writes an unsealed page into docs/
-  local out code
-  out=$(python3 -B scripts/build_translation_html.py --translation translations/T1579-033-baihua.md 2>&1); code=$?
-  [[ $code -eq 2 ]] || { echo "exit $code"; return 1; }
-  grep -q -- "--attestation" <<<"$out" || { echo "$out" | tail -n 3; return 1; }
-  git diff --quiet "$BASE" -- docs/T1579/translations/T1579-033-baihua.html translations/T1579-033-baihua.md
-}
-
-builder_diagnostic_legacy() {  # a diagnostic build in the legacy style equals the published page
-  python3 -B scripts/build_translation_html.py --translation translations/T1579-033-baihua.md \
-    --diagnostic-output "$SCRATCH/T1579-033-baihua.html" --term-style legacy >/dev/null 2>&1 || return 1
-  cmp -s "$SCRATCH/T1579-033-baihua.html" docs/T1579/translations/T1579-033-baihua.html
+builder_cli_in_a_copy() {  # the builder CLI is run in a temporary copy, so this script never writes the checkout
+  python3 -B - <<'PY'
+import sys
+import tempfile
+from pathlib import Path
+sys.path.insert(0, "tests")
+import test_legacy_audit_acceptance as fixture
+with tempfile.TemporaryDirectory() as tmp:
+    tree = Path(tmp) / "repo"
+    fixture.build_template(tree)
+    page = tree / "docs" / "T1579" / "translations" / "T1579-007-baihua.html"
+    before = fixture.digest(tree, "docs", "translations")
+    builder = ("scripts/build_translation_html.py", "--translation", "translations/T1579-007-baihua.md")
+    done = fixture.run_python(tree, *builder)
+    assert done.returncode == 2 and "--attestation" in done.stderr, (done.returncode, done.stderr[-300:])
+    assert fixture.digest(tree, "docs", "translations") == before, "an unsealed build wrote into docs/"
+    out = Path(tmp) / "diagnostic.html"
+    done = fixture.run_python(tree, *builder, "--diagnostic-output", str(out), "--term-style", "legacy")
+    assert done.returncode == 0, done.stderr[-300:]
+    assert out.read_bytes() == page.read_bytes(), "the legacy diagnostic differs from the published page"
+    done = fixture.run_python(tree, *builder, "--diagnostic-output", str(page))
+    assert done.returncode == 2, "a diagnostic output inside docs/ was accepted"
+    done = fixture.run_python(tree, "scripts/build_translation_html.py", "--all")
+    assert done.returncode == 2 and "--legacy-rebuild" in done.stderr, done.stderr[-300:]
+    assert fixture.digest(tree, "docs", "translations") == before
+PY
 }
 
 builder_api() {
@@ -486,10 +566,22 @@ with tempfile.TemporaryDirectory() as tmp:
 PY
 }
 
-audited_cli() {
-  local out
+audited_cli() {  # the audit command has no push option: it never commits and never pushes
+  local out flag
   out=$(python3 -B scripts/audited.py audit --help 2>&1) || { echo "$out" | tail -n 3; return 1; }
-  for flag in --juans --work --model --no-push --resume; do grep -q -- "$flag" <<<"$out" || { echo "no $flag"; return 1; }; done
+  for flag in --juans --work --model --resume; do grep -q -- "$flag" <<<"$out" || { echo "no $flag"; return 1; }; done
+  if grep -q -- "--no-push" <<<"$out"; then echo "the audit command offers --no-push"; return 1; fi
+}
+
+audit_jobs_stay_out_of_the_workers() {  # a stopped audit job is never claimed by a translation worker
+  py <<'PY'
+import audited
+for model in ("auto", "dual", "echo"):
+    for state in ("queued", "running", "waiting_limit"):
+        job = {"kind": "legacy_audit", "model": model, "state": state, "pid": None}
+        assert not audited.claimable(job, model), (model, state)
+assert audited.claimable({"model": "auto", "state": "queued", "pid": None}, "auto")
+PY
 }
 
 ci_workflow() {
@@ -549,14 +641,15 @@ readme_documents_the_pipeline() {
 只審查已發布的舊譯文，不重譯：
 
 ```sh
-python3 scripts/audited.py audit --juans 67-72 --no-push
-python3 scripts/audited.py audit --resume <job id> --no-push
+python3 scripts/audited.py audit --juans 67-72
+python3 scripts/audited.py audit --resume <job id>
 ```
 
 - 每一段跑術語與義理兩道審查，再跑術語機械檢查。沒有問題的段落一個字都不動，段落 id 也不動。
 - 被點名的段落交給 fixer 重寫，只有重寫過的段落會再審一次。
-- 還有問題就整卷不過：譯稿與網頁維持原狀，候選稿與報告留在 `audits/<job id>/`。
+- 還有問題、或重寫會弄丟段落 id，就整卷不過：譯稿與網頁維持原狀，候選稿與報告留在 `audits/<job id>/`。
 - 相鄰段落共用一行邊界只記成警告，不擋關。
+- 這個指令不 commit 也不 push。請在獨立的 worktree 執行，結果用一般的 pull request 交付。
 - `--model echo` 可以離線試跑整個流程，不花模型額度。
 - 用封存證明重建舊式頁面時加上 `--term-style legacy`：`python3 scripts/build_translation_html.py --translation translations/T1579-067-baihua.md --attestation <封存證明> --term-style legacy`。
 ACCEPT_EOF
@@ -567,6 +660,7 @@ ACCEPT_EOF
   return $bad
 }
 
+run_suite
 # ---------- M1: the merge and the three shared libraries ----------
 check "M1: the merge of codex/batch1-69 is recorded"                    merge_recorded
 check "M1: no unmerged path and no conflict marker"                     nothing_unmerged
@@ -582,20 +676,20 @@ check "M1: llm: a claude limit on stdout is a limit"                    llm_clau
 check "M1: llm: a Codex answer is never read as a limit"                llm_codex_answer_is_not_a_limit
 check "M1: llm: both callers of call_with_limit_retry work"             llm_retry_api
 check "M1: llm: self-check"                                             llm_self_check
-check "M1: builder: no unsealed write into docs/ from the CLI"          builder_cli_guard
-check "M1: builder: legacy diagnostic equals the published page"        builder_diagnostic_legacy
+check "M1: builder CLI: sealed writes only, legacy diagnostic, --all"   builder_cli_in_a_copy
 check "M1: builder: strict ranges, both term styles, ids in both"       builder_api
 # ---------- M2: the audited pipeline, isolated ----------
 check "M2: the branch's 112 tests are all present and pass"             branch_tests
 check "M2: the audited pipeline has its own job folder and prompts"     audited_is_isolated
 check "M2: a rewrite keeps the paragraph ids"                           audited_keeps_paragraph_ids
 check "M2: the fake backends of the legacy audit"                       fake_finding_models
+check "M2: an audit job is never claimed by a translation worker"       audit_jobs_stay_out_of_the_workers
 # ---------- M3: CI and README ----------
 check "M3: .github/workflows/ci.yml is the reviewed file"               ci_workflow
 check "M3: README documents the audited pipeline and keeps both sides"  readme_documents_the_pipeline
 # ---------- M4: the legacy audit, end to end ----------
 check "M4: the audit command and its options exist"                     audited_cli
-check "M4: the 11 acceptance tests of the legacy audit pass"            audit_tests
-check "M4: the suite that CI runs holds every test"                     suite_size
+check "M4: the 22 acceptance tests of the legacy audit pass"            audit_tests
+check "M4: the whole suite passes, with no skip"                        suite_is_green
 check "M4: no test left a file in the checkout"                         checkout_still_clean
 exit $fail

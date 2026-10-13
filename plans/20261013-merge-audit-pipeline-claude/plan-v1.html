@@ -1,0 +1,565 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Plan v1 — merge the audit pipeline (Yogcarabhumi-sastra)</title>
+<style>
+:root{--bg:#f6f7f9;--panel:#fff;--ink:#1a1d21;--muted:#5c6470;--line:#e3e6ea;--accent:#0b6bcb;--code:#eef1f4;--warn:#b25e00;--th:#f0f3f6}
+:root[data-theme=dark]{--bg:#14171b;--panel:#1c2026;--ink:#e6e9ee;--muted:#9aa4b2;--line:#2c323b;--accent:#6cb2ff;--code:#252b33;--warn:#f0a94a;--th:#232931}
+@media (prefers-color-scheme: dark){:root:not([data-theme=light]){--bg:#14171b;--panel:#1c2026;--ink:#e6e9ee;--muted:#9aa4b2;--line:#2c323b;--accent:#6cb2ff;--code:#252b33;--warn:#f0a94a;--th:#232931}}
+*{box-sizing:border-box}
+body{margin:0 auto;max-width:1060px;padding:24px 16px 64px;background:var(--bg);color:var(--ink);font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang TC",sans-serif;overflow-x:hidden}
+h1{font-size:1.6em;line-height:1.3}h2{margin-top:2em;border-bottom:2px solid var(--line)}h3{margin-top:1.4em}
+a{color:var(--accent)}
+code,pre{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--code);border-radius:5px}
+code{padding:.1em .35em;overflow-wrap:anywhere}pre{padding:10px 12px;overflow-x:auto;font-size:.86em;line-height:1.5}
+.meta{color:var(--muted)}
+.bluf{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:10px;padding:14px}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;margin:10px 0;background:var(--panel)}
+table{width:100%;border-collapse:collapse}th,td{padding:7px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;font-size:.94em}
+th{background:var(--th)}
+.warn{color:var(--warn);font-weight:600}
+li{margin:.25em 0}
+.flow{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px;margin:12px 0}
+.flow div{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:.9em}
+.flow b{display:block;color:var(--accent)}
+</style>
+</head>
+<body>
+<!-- page-shell v2: collapsible numbered TOC (open by default) + Light/Dark theme switch (no stored choice: follow the OS). Canonical copy: repo-docs skill, templates/page-shell.html. Paste it unchanged right after <body>, or run scripts/page_shell.py FILE.html to insert or refresh it. -->
+<style>
+:root{--ps-w:272px;--ps-rail:52px;--ps-bar:52px;--ps-bg:#fff;--ps-ink:#1a1d21;--ps-muted:#5c6470;--ps-line:#e3e6ea;--ps-accent:#0b6bcb;--ps-hover:#eef3f9;color-scheme:light}
+:root[data-theme=dark]{--ps-bg:#1d2126;--ps-ink:#e6e9ed;--ps-muted:#9aa4b0;--ps-line:#2c323a;--ps-accent:#7ab6f0;--ps-hover:#262c34;color-scheme:dark}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--ps-bg:#1d2126;--ps-ink:#e6e9ed;--ps-muted:#9aa4b0;--ps-line:#2c323a;--ps-accent:#7ab6f0;--ps-hover:#262c34;color-scheme:dark}}
+.ps-side{display:none}.ps-js .ps-fallback{display:none}
+.ps-js{padding-left:var(--ps-w)}.ps-js[data-toc=closed]{padding-left:var(--ps-rail)}
+.ps-js .ps-side{display:flex;flex-direction:column;position:fixed;z-index:1000;top:0;bottom:0;left:0;width:var(--ps-w);background:var(--ps-bg);color:var(--ps-ink);border-right:1px solid var(--ps-line);font:14px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang TC",sans-serif;text-align:left}
+.ps-head{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:10px;border-bottom:1px solid var(--ps-line)}
+.ps-side button{display:inline-flex;align-items:center;gap:5px;min-height:32px;margin:0;padding:4px 9px;font:inherit;color:inherit;background:transparent;border:1px solid var(--ps-line);border-radius:7px;cursor:pointer}
+.ps-side button:focus-visible,.ps-toc a:focus-visible{outline:2px solid var(--ps-accent);outline-offset:1px}
+.ps-theme{display:flex;gap:3px}.ps-theme button{padding:4px 7px;font-size:13px}
+.ps-theme button[aria-pressed=true]{background:var(--ps-accent);border-color:var(--ps-accent);color:var(--ps-bg);font-weight:600}
+.ps-toc{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:8px 6px 24px}
+.ps-toc ol{list-style:none;margin:0;padding:0}.ps-toc ol ol{margin:0 0 4px 16px}
+.ps-toc a{display:flex;gap:7px;padding:4px 8px;border-radius:6px;color:var(--ps-ink);text-decoration:none}
+.ps-toc ol ol a{color:var(--ps-muted);font-size:13px}
+.ps-num{flex:none;color:var(--ps-accent);font-variant-numeric:tabular-nums}
+.ps-js[data-toc=closed] .ps-side{width:var(--ps-rail)}
+.ps-js[data-toc=closed] .ps-head,.ps-js[data-toc=closed] .ps-theme{flex-direction:column}
+.ps-js[data-toc=closed] .ps-head{border-bottom:0}
+.ps-js[data-toc=closed] .ps-label,.ps-js[data-toc=closed] .ps-toc{display:none}
+@media(hover:hover){.ps-side button:not([aria-pressed=true]):hover,.ps-toc a:hover{background:var(--ps-hover)}}
+@media(max-width:800px){
+.ps-js,.ps-js[data-toc]{padding-left:0;padding-top:var(--ps-bar);scroll-padding-top:calc(var(--ps-bar) + 8px)}
+.ps-js .ps-side,.ps-js[data-toc] .ps-side{right:0;bottom:auto;width:auto;border-right:0;border-bottom:1px solid var(--ps-line)}
+.ps-js .ps-head,.ps-js[data-toc] .ps-head{flex-direction:row;flex-wrap:nowrap;justify-content:space-between;height:var(--ps-bar);padding:0 12px;border-bottom:0}
+.ps-js[data-toc] .ps-theme{flex-direction:row}.ps-js[data-toc] .ps-label{display:inline}
+.ps-toc{max-height:calc(100vh - var(--ps-bar));max-height:calc(100dvh - var(--ps-bar));border-top:1px solid var(--ps-line)}
+}
+@media(max-width:420px){.ps-js[data-toc] .ps-theme .ps-label{display:none}}
+@media print{.ps-side{display:none!important}.ps-js{padding:0!important}}
+</style>
+<aside class="ps-side" id="ps-side" aria-label="頁面工具">
+<div class="ps-head">
+<button type="button" id="ps-toggle" aria-controls="ps-toc" aria-expanded="true" aria-label="目錄" title="收合 / 展開目錄"><span aria-hidden="true">☰</span><span class="ps-label">目錄</span></button>
+<div class="ps-theme" role="group" aria-label="主題">
+<button type="button" data-theme-choice="light" aria-pressed="false" aria-label="Light" title="Light"><span aria-hidden="true">☀</span><span class="ps-label">Light</span></button>
+<button type="button" data-theme-choice="dark" aria-pressed="false" aria-label="Dark" title="Dark"><span aria-hidden="true">☾</span><span class="ps-label">Dark</span></button>
+</div>
+</div>
+<nav class="ps-toc" id="ps-toc" aria-label="目錄"></nav>
+</aside>
+<script>
+(function(){
+var d=document,root=d.documentElement,side=d.getElementById('ps-side'),toggle=d.getElementById('ps-toggle'),toc=d.getElementById('ps-toc');
+if(!side||!toggle||!toc)return;
+var mobile=window.matchMedia('(max-width:800px)'),os=window.matchMedia('(prefers-color-scheme:dark)'),choices=side.querySelectorAll('[data-theme-choice]');
+function get(k){try{return window.localStorage.getItem(k)}catch(e){return null}}
+function put(k,v){try{window.localStorage.setItem(k,v)}catch(e){}}
+function pressed(t){for(var i=0;i<choices.length;i++)choices[i].setAttribute('aria-pressed',String(choices[i].getAttribute('data-theme-choice')===t))}
+function shown(){var t=root.getAttribute('data-theme');return t==='light'||t==='dark'?t:(os.matches?'dark':'light')}
+function theme(t){if(t==='light'||t==='dark')root.setAttribute('data-theme',t);else root.removeAttribute('data-theme');pressed(shown())}
+function open(o,save){root.setAttribute('data-toc',o?'open':'closed');toggle.setAttribute('aria-expanded',String(o));if(save&&!mobile.matches)put('page-shell-toc',o?'open':'closed')}
+function start(){open(!mobile.matches&&get('page-shell-toc')!=='closed')}
+theme(get('page-shell-theme'));
+if(os.addEventListener)os.addEventListener('change',function(){pressed(shown())});
+root.classList.add('ps-js');
+start();
+if(mobile.addEventListener)mobile.addEventListener('change',start);
+toggle.addEventListener('click',function(){open(toggle.getAttribute('aria-expanded')!=='true',true)});
+side.addEventListener('click',function(e){var b=e.target.closest('[data-theme-choice]');if(b){var t=b.getAttribute('data-theme-choice');theme(t);put('page-shell-theme',t)}});
+toc.addEventListener('click',function(e){var a=e.target.closest('a');if(!a)return;for(var t=d.getElementById(decodeURIComponent(a.hash.slice(1)));t;t=t.parentElement)if(t.tagName==='DETAILS')t.open=true;if(mobile.matches)open(false)});
+function build(){
+var heads=d.querySelectorAll('h2,h3'),list=d.createElement('ol'),item=null,sub=null,n=0,m=0;
+for(var i=0;i<heads.length;i++){
+var h=heads[i],text=h.textContent.replace(/\s+/g,' ').trim(),label=text.replace(/^(?:\d+(?:\.\d+)*[.)、:]?\s+|[①-⑳]\s*)/,'')||text;
+if(!label||side.contains(h))continue;
+if(!h.id){var base=label.toLowerCase().replace(/[^\p{L}\p{N}]+/gu,'-').replace(/^-+|-+$/g,'')||'section',id=base,k=2;while(d.getElementById(id))id=base+'-'+k++;h.id=id}
+var li=d.createElement('li'),a=d.createElement('a'),num=d.createElement('span');
+num.className='ps-num';a.href='#'+encodeURIComponent(h.id);a.appendChild(num);a.appendChild(d.createTextNode(label));li.appendChild(a);
+if(h.tagName==='H3'&&item){m++;num.textContent=n+'.'+m;if(!sub){sub=d.createElement('ol');item.appendChild(sub)}sub.appendChild(li)}
+else{n++;m=0;num.textContent=String(n);item=li;sub=null;list.appendChild(li)}
+}
+toc.appendChild(list);
+}
+if(d.readyState==='loading')d.addEventListener('DOMContentLoaded',build);else build();
+})();
+</script>
+<!-- /page-shell -->
+
+<main>
+<h1>Plan v1：把 codex/batch1-69 合進 main，並加上舊譯文的審查流程</h1>
+<p class="meta">類型: plan · 日期時間: 2026-10-13 17:20 EDT · 專案: Yogcarabhumi-sastra（本機資料夾 yogacara）· 分支: claude/merge-audit-pipeline · Base commit: dd46ba8（origin/main）· Run folder: plans/20261013-merge-audit-pipeline-claude/ · 作者: claude-code（調查前半在 Opus 5.5，設計與撰寫在 Fable 5.1）</p>
+
+<div class="bluf" id="bluf">
+<p><b>目標。</b>把 <code>origin/codex/batch1-69</code>（7 月的「可稽核翻譯管線」，9 個 commit，與 <code>main</code> 分岔 100 個 commit）合進 <code>main</code>：26 個衝突與 14 個「乾淨合併但其實不相容」的路徑，每一個都有明文裁決。正式排程器 <code>scripts/runner.py</code>、網站、譯稿一個 byte 都不變；分支的管線完整保留成獨立模組 <code>scripts/audited.py</code>；三個共用函式庫做真正的合併；再加上 owner 要的「只審不重譯」指令 <code>audited.py audit</code>。</p>
+<p><b>Tier：hard。Security-sensitive：yes。Human approval：None。</b>這個 run 不發布任何內容變更。跑完之後對卷 67–72 實際執行審查是另一個 PR（owner 已於 2026-10-13 核准範圍與做法）。</p>
+</div>
+
+<h2 id="goal">Goal and non-goals</h2>
+<h3>Goals</h3>
+<ul>
+<li><b>G1　分支的東西都進 <code>main</code>。</b>monorepo M2 只對 <code>main</code> 的一個 commit 拍快照，所以分支上的程式、prompt、測試必須在 <code>main</code> 上，而且測試要會過。</li>
+<li><b>G2　每個衝突都有裁決。</b>包含 git 沒報、但合起來會壞的路徑（見 Approach 的 Conflict ledger）。</li>
+<li><b>G3　線上不退步。</b><code>docs/</code>、<code>translations/</code>、<code>data/</code>、<code>scripts/runner.py</code>、<code>scripts/webapp.py</code>、舊 prompt 與 <code>main</code> 的 44 個測試，bytes 與 <code>dd46ba8</code> 相同。合併這個 PR 之後 GitHub Pages 重新部署的內容與現在相同。</li>
+<li><b>G4　舊譯文可以只審不重譯。</b>新指令對已發布的卷跑「術語、義理」兩道附證據的審查與術語機械檢查；沒被點名的段落與所有段落 id 不動，被點名的段落交給 fixer 重寫後只重審那些段落；整卷不過時譯稿與網頁維持原狀。</li>
+<li><b>G5　PR 合得進去。</b><code>main</code> 的 ruleset <code>require-ci</code> 要求名為 <code>ci</code> 的檢查，但 repo 沒有任何 CI workflow；這個 run 補上。</li>
+</ul>
+<h3>Non-goals</h3>
+<ul>
+<li>N1　不把兩支 runner 合成一支，也不把正式翻譯工作改成分支的 JSON 契約協定。那會改變每一個新翻譯工作的行為，需要另一個決定與另一個 run。</li>
+<li>N2　不重新產生任何已發布的頁面，不套用分支的新 tooltip 顯示到既有頁面。</li>
+<li>N3　不把 <code>audited.py</code> 推廣到 T1579 以外的論典（T1821 的術語表通不過分支較嚴格的 tooltip 驗證，見 Premises P9）。</li>
+<li>N4　不在這個 run 裡對卷 67–72 執行審查。那要真的模型額度與數小時，由 orchestrator 在合併後另開 branch 與 PR 執行（見 Verification 的 After the run）。</li>
+<li>N5　不改 <code>scripts/webapp.py</code>，不讓網頁介面操作 audited 工作。</li>
+<li>N6　不處理 <code>codex/auditable-translation-pipeline</code> 的內容：它是 <code>batch1-69</code> 的較舊版本（只差 <code>scripts/runner.py</code> 與 <code>tests/test_pipeline_audit.py</code>，batch1-69 多 230 行、少 4 行）。Orchestrator 在最後的 commit 用 <code>git merge -s ours</code> 把它記為已被取代。</li>
+</ul>
+
+<h2 id="current">Current behavior</h2>
+<p>三個點：merge base <code>372a274</code>（2026-07-05）、<code>main</code> = <code>dd46ba8</code>（2026-10-08）、分支 = <code>a5f0779</code>（2026-07-15）。</p>
+<div class="tablewrap"><table>
+<tr><th>檔案</th><th>base</th><th>main</th><th>分支</th><th>兩邊各做了什麼</th></tr>
+<tr><td><code>scripts/runner.py</code></td><td>689 行</td><td>1,894</td><td>2,109</td><td><b>main</b>：三家模型（claude、codex、glm）逐階段主備援（<code>DEFAULT_STAGES</code> L68、<code>MIX_ROUTING</code> L79、<code>DUAL_ROUTING</code> L89）、<code>QUEUES</code> L97、模型並行閘（<code>model_gate</code> L482）、每個 job 平行多卷（<code>run_job_registered</code> L1687）、取消／重試／強制續跑／核准重跑與版本封存（L564–L846）、批次起草（<code>translate_sections_batched</code> L1248）、進度頁與 app manifest（<code>build_status_page</code> L226）、<code>splice</code> 帶段落 id（L1019）、直接 commit 並 push <code>main</code>（<code>git_commit_push</code> L1418）。模型輸出是文字標記（<code>&lt;&lt;&lt;TRANSLATION</code>、<code>OK</code>、<code>&lt;TSV&gt;</code>）。<br><b>分支</b>：模型輸出改成綁定 <code>unit_id</code>、<code>source_hash</code>、<code>clause_id</code> 的 JSON 契約（<code>translation_schema</code> L142、<code>review_schema</code> L220、<code>validate_*</code> L502、L584）、每次模型呼叫寫進 audit store（<code>llm_call</code> L826）、語意驗證失敗重試一次（L954、L1110）、審查要附逐字引文（<code>review_pass</code> L1351）、fix 後全部重審（<code>run_review_chain</code> L1527）、coverage ledger（L1555）、品質關卡（L1705）、封存證明（L1734）、只准在 <code>codex/*</code> 分支發布（<code>git_commit_push</code> L1812）。模型全部釘在 gpt-5.6（<code>STAGE_SPECS</code> L70），卷次序列執行，沒有段落 id、沒有多論典。</td></tr>
+<tr><td><code>scripts/llm.py</code></td><td>298</td><td>339</td><td>545</td><td><b>main</b>：codex 的 model 與 effort 可設定、<code>availability_probe</code>、limit 字樣多了 session／weekly。<br><b>分支</b>：只剩 Codex 後端且 effort 必填；<code>LLMResult</code> 多了呼叫 metadata；<code>classify_output</code> 只看診斷輸出（模型答案裡出現 quota 之類的字不再被當成 limit）、過濾 prompt 回顯；<code>parse_resume_at</code> 重寫；<code>limit_wait_decision</code>；<code>call_with_limit_retry</code> 多 <code>effort</code> 與 <code>on_attempt</code>、少 <code>run_fn</code>。</td></tr>
+<tr><td><code>scripts/build_translation_html.py</code></td><td>293</td><td>548</td><td>512</td><td><b>main</b>：段落 id（<code>assign_paragraph_ids</code>、<code>carry_paragraph_ids</code>、<code>render_text(text, ids)</code>）、多論典（<code>infer_work_juan</code>、<code>render(entries, source, work, juan, title)</code>）、版本選單、<code>build_page</code>。<br><b>分支</b>：新的 tooltip（<code>TermTip</code>、每卷首次出現顯示成「玄奘詞〔白話〕」、原文欄也包）、嚴格的 <code>parse_range</code>、<code>build_translation</code> 要封存證明才准寫進 <code>docs/</code>、CLI 加 <code>--attestation</code>、<code>--diagnostic-output</code>、<code>--all --legacy-rebuild</code>。</td></tr>
+<tr><td><code>scripts/check_translation_coverage.py</code></td><td>107</td><td>110</td><td>327</td><td><b>main</b>：行號 regex 推廣到任何論典，<code>data_line_ids</code> 回傳完整行號。<br><b>分支</b>：行號恰好涵蓋一次、<code>Source:</code> 區塊要與資料相符、<code>check_coverage_ledger</code>、CLI 必須指定 <code>--ledger</code> 或 <code>--ranges-only</code>；全部寫死 T30n1579。</td></tr>
+<tr><td><code>prompts/*.txt</code></td><td>6 個</td><td>同 base ＋ <code>translate_batch.txt</code></td><td>全部改寫成 9–14 行的契約版，另加 <code>common_policy.txt</code>、<code>fix.txt</code></td><td>git 不報衝突（main 沒動這六個檔），但合併結果會是分支的版本，而 <code>runner.prompt_text</code>（main L929）用 <code>$juan</code>、<code>$source</code> 這些變數去填，會直接丟 <code>KeyError</code>。</td></tr>
+<tr><td>測試</td><td>無</td><td>5 個檔、44 個測試</td><td>5 個檔 ＋ <code>tests/__init__.py</code>、112 個測試</td><td>分支的測試幾乎全綁在階段層函式上（契約、審查、ledger、封存、audit store、publisher、llm、builder、coverage）。</td></tr>
+<tr><td>內容</td><td>T1579 13 卷</td><td>81 頁（T1579 44 卷、T1558 30、T1585 5、T1821 2）</td><td>T1579 7 卷</td><td>分支刪掉卷 67–72（md、html、segments tsv 共 18 個檔，commit <code>3ce841c</code>，訊息只有「withdraw unaudited translations」），並用新 tooltip 重出 7 卷。分支上沒有任何 audit 資料進 git。</td></tr>
+</table></div>
+<p>其他事實：<code>main</code> 的 ruleset 是 <code>protect-default-branch</code>（deletion、non_fast_forward）與 <code>require-ci</code>（required check <code>ci</code>，bypass RepositoryRole）；repo 只有 <code>.github/workflows/deploy-pages.yml</code>（push 到 <code>main</code> 就把 <code>docs/</code> 部署到 Pages），所以 <code>ci</code> 永遠不會出現；<code>sha_pinning_required</code> 開著。Repo 允許 merge commit。<code>jobs/</code>、<code>locks/</code> 在 <code>.gitignore</code>。目前沒有 runner 在跑（唯一的 job 是 cancelled）。</p>
+
+<h2 id="approach">Approach</h2>
+<p><b>兩條管線並存，共用函式庫做真合併。</b>分支不是 <code>main</code> 的另一個版本，而是從 689 行的共同祖先另外長出來的第二套管線，而且它的 base 比 <code>main</code> 舊（看不到 <code>main</code> 在 7 月上旬加的 80 個 commit）。所以：</p>
+<ol>
+<li><code>scripts/runner.py</code> 維持 <code>main</code> 的 bytes。22 處衝突全部取 <code>main</code>。</li>
+<li>分支的 <code>scripts/runner.py</code> 改名成 <code>scripts/audited.py</code>，加上 Contracts K4 列出的修改。它有自己的 job 資料夾與 prompt 資料夾，永遠不會認領正式排程器的工作。分支的 112 個測試改 import 這個模組。</li>
+<li><code>llm.py</code>、<code>build_translation_html.py</code>、<code>check_translation_coverage.py</code> 兩支 runner 都要 import，做聯集（K1–K3）。</li>
+<li>在 <code>audited.py</code> 上加舊譯文審查（K5）。</li>
+</ol>
+<h3>Conflict ledger</h3>
+<div class="tablewrap"><table>
+<tr><th>#</th><th>路徑</th><th>git 狀態</th><th>裁決</th></tr>
+<tr><td>R1</td><td><code>scripts/runner.py</code></td><td>衝突，22 處</td><td><code>main</code> 的 bytes。分支版本成為 <code>scripts/audited.py</code>（K4）。</td></tr>
+<tr><td>R2</td><td><code>scripts/llm.py</code></td><td>衝突，6 處</td><td>聯集，K1。</td></tr>
+<tr><td>R3</td><td><code>scripts/build_translation_html.py</code></td><td>衝突，6 處</td><td>聯集，K3。</td></tr>
+<tr><td>R4</td><td><code>scripts/check_translation_coverage.py</code></td><td>衝突，3 處</td><td>聯集，K2。</td></tr>
+<tr><td>R5</td><td><code>README.md</code></td><td>衝突，1 處</td><td>兩段都留（先 <code>main</code> 的段落 id 段，再分支的 builder 段），分支那段的「Runner 的 <code>--requested-parallel</code>」改成「<code>scripts/audited.py</code> 的 <code>--requested-parallel</code>」；檔尾加上 K8 的字面段落。其餘取 git 的合併結果。</td></tr>
+<tr><td>R6</td><td><code>docs/T1579/index.html</code>、<code>docs/T1579/search.json</code>、卷 1、2、3、11、12、33、34 的 HTML（9 個檔）</td><td>衝突</td><td><code>main</code> 的 bytes。它們是產生物；這個 PR 不重建網站（N2）。</td></tr>
+<tr><td>R7</td><td>卷 67–72 的 <code>docs/…html</code> 與 <code>translations/…md</code>（12 個檔）</td><td>衝突（分支刪、main 改）</td><td><code>main</code> 的 bytes：譯文留著，當成未審核的舊譯文。Owner 2026-10-13 的決定是合併後再審它們。</td></tr>
+<tr><td>R8</td><td><code>translations/segments/T1579-067.tsv</code> 到 <code>072.tsv</code>（6 個檔）</td><td><b>不報衝突，會被刪掉</b></td><td>還原成 <code>main</code> 的 bytes。md 還在，切分表就要在。</td></tr>
+<tr><td>R9</td><td><code>prompts/merge.txt</code>、<code>review_doctrine.txt</code>、<code>review_parallel.txt</code>、<code>review_terms.txt</code>、<code>segment.txt</code>、<code>translate.txt</code>（6 個檔）</td><td><b>不報衝突，會變成分支版</b></td><td>還原成 <code>main</code> 的 bytes。分支的 8 個 prompt（含 <code>common_policy.txt</code>、<code>fix.txt</code>）原封不動放到 <code>prompts/audited/</code>；<code>prompts/common_policy.txt</code>、<code>prompts/fix.txt</code> 不留在上層。</td></tr>
+<tr><td>R10</td><td><code>scripts/audit.py</code>、<code>scripts/publisher.py</code></td><td>新增</td><td>分支的 bytes，不改。</td></tr>
+<tr><td>R11</td><td>分支的 5 個測試檔與 <code>tests/__init__.py</code></td><td>新增</td><td><code>test_translation_coverage.py</code>、<code>test_audit_hardening.py</code>、<code>__init__.py</code> 不改。另外三個只做 K9 列出的修改。</td></tr>
+<tr><td>R12</td><td><code>main</code> 的其餘檔案</td><td>無變化</td><td>不動。完整清單在 <code>files/frozen-paths.txt</code>，acceptance 逐一與 <code>dd46ba8</code> 比對。</td></tr>
+</table></div>
+<h3>Rejected alternatives</h3>
+<ul>
+<li><b>現在就合成一支 runner。</b>要在 <code>main</code> 的排程器上重寫分支的協定，或反過來把平行、多廠商、網頁操作、段落 id 移植到分支的 runner。兩者都會改變正式翻譯工作的行為，JSON 契約協定在 claude 與 glm 上沒跑過，audit store 的 append 也不是為多執行緒寫的。規模約是這個 plan 的三倍，而且 monorepo M3 本來就要重新處理 writer。</li>
+<li><b>以分支的 runner 為準。</b>會丟掉 <code>main</code> 的 80 個 commit 的功能，網頁介面（<code>webapp.py</code> 用到 19 個 runner 的名字）直接壞掉。</li>
+<li><b>放棄分支。</b>Owner 已選擇合併。</li>
+<li><b>不用 git merge，改用複製檔案。</b>那樣 <code>codex/batch1-69</code> 在 GitHub 上永遠顯示為未合併，decision record 0001 的分支清單也關不掉。用真的 merge commit，PR 以 merge method 合進 <code>main</code>（不 squash）。</li>
+<li><b>讓舊譯文審查沿用分支的整套關卡。</b>量過了（Premises P6）：卷 67–72 全部過不了分支的機械檢查，其中「相鄰段落共用一行」是 <code>main</code> 的切分方式本身造成的，不重新切分就不可能過。所以舊譯文的審查要有自己明文的規則（K5）。</li>
+</ul>
+
+<h2 id="contracts">Contracts</h2>
+
+<h3>K1　<code>scripts/llm.py</code>（聯集）</h3>
+<pre><code>MODELS = (&quot;claude&quot;, &quot;codex&quot;, &quot;glm&quot;)                          # production queues; scripts/runner.py derives QUEUES from it
+AUDIT_MODELS = (&quot;gpt-5.6-terra&quot;, &quot;gpt-5.6-sol&quot;)              # explicit Codex model ids that scripts/audited.py uses
+FAKE_MODELS = (&quot;echo&quot;, &quot;echo-limit-once&quot;)                    # unchanged: runner.QUEUES also derives from it
+AUDIT_FAKE_MODELS = (&quot;echo-finding&quot;, &quot;echo-finding-stubborn&quot;)  # offline backends of the legacy audit only
+
+run_llm(model, prompt, timeout=TIMEOUT, codex_model=None, codex_reasoning_effort=None, effort=None) -&gt; LLMResult
+classify_output(exit_code, model_output, diagnostics, naive_tz=None, echoed_prompt=None) -&gt; LLMResult   # branch
+classify_combined_output(exit_code, stdout, stderr, naive_tz=None) -&gt; LLMResult                       # main&#x27;s old body
+call_with_limit_retry(model, prompt, on_wait=None, log=print, run_fn=None, effort=None, on_attempt=None) -&gt; str</code></pre>
+<ul>
+<li>常數：<code>main</code> 的全部保留（<code>ZAI_*</code>、<code>CLAUDE_MODEL</code>、<code>CODEX_MODEL</code>、<code>CODEX_REASONING_EFFORTS</code>、<code>CODEX_REASONING_EFFORT</code>、<code>AVAILABILITY_TIMEOUT</code>），加上分支的（<code>DEFAULT_TZ_NAME</code>、<code>DEFAULT_TZ</code>、<code>RESET_HUMAN_DATETIME_RE</code>、<code>ERROR_LINE_RE</code>、<code>PROMPT_ECHO_PREFIX_RE</code>、<code>MIN_FRAMED_PROMPT_CHARS</code>、<code>MONTHS</code>）。<code>LIMIT_PATTERNS</code> 用 <code>main</code> 的（它是分支那條的超集）。</li>
+<li><code>LLMResult</code>：分支的 dataclass（<code>main</code> 的是它的前綴子集）。</li>
+<li><code>_env</code>：<code>main</code> 的（含 glm）。<code>availability_probe</code>：<code>main</code> 的。</li>
+<li><code>parse_resume_at</code>、<code>_line_candidates</code>、<code>_latest_candidate</code>、<code>authoritative_diagnostics</code>、<code>_is_prompt_echo</code>、<code>limit_wait_decision</code>、<code>_timestamp</code>、<code>_with_call_metadata</code>：分支的。</li>
+<li><code>classify_output</code>：分支的（只有診斷輸出能代表 limit）。<code>classify_combined_output</code>：<code>main</code> 原本 <code>classify_output</code> 的行為（在 stdout 與 stderr 合起來的文字裡找 limit），並同時填 <code>provider_resume_at</code>。</li>
+<li><code>run_llm</code> 依後端分流，每一條回傳前都經過 <code>_with_call_metadata</code>：
+  <ul>
+  <li><code>FAKE_MODELS</code> 與 <code>AUDIT_FAKE_MODELS</code>：<code>_run_fake</code>。</li>
+  <li><code>claude</code>、<code>glm</code>：指令與 <code>main</code> 相同，用 <code>classify_combined_output</code>。理由：claude CLI 的答案與 limit 訊息都在 stdout，分不開。</li>
+  <li><code>codex</code>：指令與 <code>main</code> 相同（<code>codex_model</code>、<code>codex_reasoning_effort</code>，effort 不在 <code>CODEX_REASONING_EFFORTS</code> 就丟 <code>LLMError("invalid Codex reasoning effort: …")</code>）。分類改用 <code>classify_output(returncode, &lt;-o 檔的內容&gt;, stdout + "\n" + stderr, naive_tz, echoed_prompt=prompt)</code>。這是行為改變，也是這次合併帶進 <code>main</code> 的修正：答案裡出現「quota」「429」不再讓整個 job 去睡。</li>
+  <li><code>AUDIT_MODELS</code>：分支的指令，<code>effort</code> 必填，否則 <code>LLMError("&lt;model&gt;: reasoning effort must be explicit")</code>。</li>
+  <li>其他名字：<code>LLMError("unknown model: …")</code>。</li>
+  </ul></li>
+<li><code>call_with_limit_retry</code>：分支的迴圈與 log 文字。呼叫後端的那一行是：有 <code>run_fn</code> 就 <code>run_fn(model, prompt)</code>（正式 runner 的用法，<code>main</code> L1158），否則 <code>run_llm(model, prompt, effort=effort)</code>。</li>
+<li><code>_run_fake</code> 的判斷順序：<code>echo-limit-once</code> 第一次回 limit（用 <code>classify_combined_output</code>）；結構化 prompt（分支的 JSON 分支，加上 K6 的兩個新 fake）；<code>&lt;TSV&gt;</code>（main）；<code>&lt;&lt;&lt;SOURCE_SECTION</code>（main）；舊的文字標記。</li>
+<li><code>__main__</code> 自我檢查：兩邊的案例都留。<code>main</code> 的案例改呼叫 <code>classify_combined_output</code>；最後一行仍印 <code>llm.py self-check OK</code>。</li>
+</ul>
+
+<h3>K2　<code>scripts/check_translation_coverage.py</code>（聯集）</h3>
+<pre><code>check_ranges(entries, line_ids, expected_start, expected_end, source_lines=None, *, exact_once=True) -&gt; list[str]
+range_overlaps(entries, line_ids, expected_start, expected_end) -&gt; list[str]     # full line ids covered more than once
+check_coverage_ledger(ledger, source_lines, expected_start, expected_end, translation_text, *, exact_once=None) -&gt; list[str]
+full_line_id(line_id, prefix=None) -&gt; str ; ordered_line_ids(line_ids, prefix=None) -&gt; list[str]</code></pre>
+<ul>
+<li><code>LINE_RE</code>、<code>RANGE_RE</code>、<code>line_key</code>、<code>data_line_ids</code>（回傳完整行號）：<code>main</code> 的。<code>parse_ranges</code>：<code>main</code> 的 regex，加上分支的 <code>RangeEntry.source</code>。</li>
+<li><code>full_line_id</code>：完整行號原樣回傳；只有標號（例 <code>0001a01</code>）時，有 <code>prefix</code> 就組成 <code>&lt;prefix&gt;_p&lt;標號&gt;</code>，沒有就 <code>ValueError</code>。<code>check_ranges</code> 與 <code>check_coverage_ledger</code> 從 <code>expected_start</code> 取 prefix。這讓分支的測試（傳標號集合）不用改，也讓任何論典都能用。<code>summarize_line_ids</code> 顯示 <code>_p</code> 之後的標號。</li>
+<li><code>check_ranges</code>：
+  <ul>
+  <li><code>source_lines is None</code>：行為與 <code>main</code> 今天完全相同（<code>main</code> L62–L86 的那些檢查，不多不少）。正式 runner 的 <code>run_checks</code> 走這條。Oracle：81 份譯稿今天都回傳 <code>[]</code>。</li>
+  <li><code>source_lines</code> 有給：分支的檢查（<code>Source:</code> 區塊與資料相符、沒有漏行）。<code>exact_once=True</code>（預設）時重複涵蓋也算問題，訊息格式與分支相同：<code>translation ranges overlapping lines: 0695a23</code>。<code>exact_once=False</code> 時漏行仍然是問題，重複涵蓋不回報。</li>
+  </ul></li>
+<li><code>range_overlaps</code>：回傳被兩個以上段落涵蓋的完整行號，依行序。</li>
+<li><code>translation_content</code>：取出 <code>Translation:</code> 區塊後，用與 <code>bth.parse_entries</code> 相同的方式去掉段落 id 標記行（<code>PARA_MARKER_LINE_RE</code>）再 strip。否則跨段的 <code>translation_quote</code> 會因為中間夾著標記行而對不上。</li>
+<li><code>check_coverage_ledger</code>：分支的檢查。<code>exact_once=None</code> 時看 ledger 自己宣告的 <code>"coverage"</code>：值是 <code>"at_least_once"</code> 就不回報重複涵蓋，其他情況（含沒有這個 key）照分支的 exact-once。</li>
+<li>CLI：分支的（必須給 <code>--ledger</code> 或 <code>--ranges-only</code>）。</li>
+</ul>
+
+<h3>K3　<code>scripts/build_translation_html.py</code>（聯集）</h3>
+<pre><code>render(entries, source, work, juan, title, *, term_style=&quot;legacy&quot;) -&gt; str          # &quot;legacy&quot; | &quot;policy&quot;
+render_translation_bytes(source, *, term_style=&quot;policy&quot;) -&gt; bytes
+build_translation(source, output=None, *, attestation=None, allow_unsealed=False, term_style=&quot;policy&quot;) -&gt; Path
+build_all(source_dir=ROOT / &quot;translations&quot;, output_dir=DEFAULT_OUTPUT_DIR, *, allow_unsealed=False) -&gt; list[Path]
+build_page(source, output=None) -&gt; Path                                            # main&#x27;s function, unchanged
+translation_output_path(source, output) -&gt; Path      # output, else DEFAULT_OUTPUT_DIR.parents[1] / work / &quot;translations&quot; / f&quot;{source.stem}.html&quot;
+legacy_term_tips(work), legacy_wrap_terms(rendered_html, work)                      # main&#x27;s term_tips / wrap_terms, renamed
+term_tips(glossary_path=GLOSSARY_PATH), wrap_terms(rendered_html, *, tips=None, occurrence_prefix=&quot;term&quot;, first_terms=None)
+build_term_tips(glossary), validate_term_tips(tips), TermTip                        # branch, unchanged
+parse_range(range_label) -&gt; (start, end)                                           # strict and multi-work</code></pre>
+<ul>
+<li><code>main</code> 的函式（<code>Entry</code>、段落 id 那一組、<code>parse_entries</code>、<code>render_text</code>、<code>works_by_id</code>、<code>infer_work_juan</code>、<code>infer_title(text, work, juan)</code>、版本選單、<code>juan_neighbors</code>、<code>build_page</code>）不變。</li>
+<li><code>render(…, term_style="legacy")</code> 的輸出與 <code>main</code> 今天逐 byte 相同（oracle：81 頁）。它呼叫改名後的 <code>legacy_term_tips</code>、<code>legacy_wrap_terms</code>。</li>
+<li><code>render(…, term_style="policy")</code>：分支的 tooltip 規則（譯文欄與原文欄都包、<code>data-term-id</code>、<code>data-term-occurrence</code>、每卷首次出現顯示「玄奘詞〔白話〕」），glossary 取 <code>translations/glossary/&lt;work&gt;-terms.json</code>，occurrence 前綴用 <code>&lt;work&gt;-&lt;juan:03d&gt;-&lt;source_start&gt;</code>。段落 id：一個 entry 的每一段都有 id 時輸出 <code>&lt;p id="…"&gt;</code>，否則該 entry 不帶 id（分支的測試用沒有 id 的 md）。其他標記與 legacy 相同。</li>
+<li><code>translation_output_path</code>：沒給 <code>output</code> 時是 <code>DEFAULT_OUTPUT_DIR.parents[1] / work / "translations" / f"{source.stem}.html"</code>。正式環境的值與 <code>main</code> 今天相同；測試把 <code>DEFAULT_OUTPUT_DIR</code> patch 到暫存資料夾時，所有預設輸出都跟著過去。<b>任何測試都不可以寫進真的 <code>docs/</code></b>。</li>
+<li><code>parse_range</code>：格式必須是 <code>&lt;prefix&gt;_p&lt;4 位數&gt;&lt;a|b|c&gt;&lt;2 位數&gt;</code>，後面可接 <code>-</code> 加上同 prefix 的完整行號、<code>p&lt;標號&gt;</code> 或 <code>&lt;標號&gt;</code>；prefix 是 <code>[A-Z]+\d+n\d+[A-Za-z]?</code>。其他一律 <code>ValueError</code>。現有 1,418 個 Range 標籤全部符合（P3）。</li>
+<li><code>build_translation</code>、<code>build_all</code>、<code>render_translation_bytes</code>、<code>_sealed_item_for_path</code>：分支的邏輯；<code>term_style</code> 預設 <code>"policy"</code>。<code>build_all</code> 仍只處理 <code>T1579-*-baihua.md</code>。</li>
+<li>CLI：分支的（寫進 <code>docs/</code> 必須 <code>--attestation</code>；<code>--diagnostic-output</code> 必須在 <code>docs/</code> 之外；<code>--all</code> 必須配 <code>--legacy-rebuild</code>），加一個 <code>--term-style {legacy,policy}</code>，預設 <code>policy</code>。舊譯文審查封存的頁面是 legacy 樣式，用封存證明重建時要加 <code>--term-style legacy</code>；樣式不符時 hash 對不上，指令失敗、不寫檔。</li>
+<li>正式 runner 仍直接呼叫 <code>bth.build_page</code>（不經 CLI、不需封存證明），行為不變。</li>
+</ul>
+
+<h3>K4　<code>scripts/audited.py</code> ＝ 分支的 <code>scripts/runner.py</code> 加上這些修改</h3>
+<ol>
+<li><b>隔離。</b><code>JOBS_DIR = ROOT / "jobs" / "audited"</code>；<code>STATUS_JSON = LOCKS_DIR / "audited-status.json"</code>；<code>PROMPTS_DIR = ROOT / "prompts" / "audited"</code>；<code>POLICY_PATH = PROMPTS_DIR / "common_policy.txt"</code>。建立資料夾用 <code>mkdir(parents=True, exist_ok=True)</code>。<code>cmd_run</code> 仍搶 <code>locks/runner.pid</code>，與正式 runner 互斥。模組說明文字寫清楚這是獨立管線。</li>
+<li><b>Fake 模型。</b><code>stage_model</code>：<code>job["model"]</code> 在 <code>llm.AUDIT_FAKE_MODELS</code> 就回傳它自己；在 <code>llm.FAKE_MODELS</code> 或是 <code>dual-echo</code> 回 <code>"echo"</code>（分支原行為）；否則 <code>STAGE_SPECS[stage].model</code>。</li>
+<li><b>段落 id。</b><code>splice</code> 與 <code>main</code> L1019 相同：用 <code>bth.carry_paragraph_ids(舊區塊, 新譯文)</code> 寫入。</li>
+<li><b>契約與 md 用同一個字串。</b>新增 <code>normalize_translation(text)</code>：<code>"\n\n".join("\n".join(content) for _pid, content in bth.marked_paragraphs(text))</code>。每個通過驗證的 clause，在存進 <code>clause_contracts</code> 與 <code>splice</code> 之前先把 <code>vernacular</code> 換成正規化後的字串。這樣 <code>parse_entries</code> 讀回來的譯文必定等於契約裡的 <code>vernacular</code>，段落 id 寫回 md 之後也不會被判成「stale contract」。</li>
+<li><b>完整管線的段落 id。</b><code>run_juan</code> 在 review chain 之後、<code>write_coverage_ledger</code> 之前，把 <code>bth.assign_paragraph_ids</code> 的結果寫回 md（有變才寫）。之後的 ledger、品質關卡、封存都綁同一份 bytes。</li>
+<li><b><code>build_html</code>。</b><code>work, juan = bth.infer_work_juan(md_path)</code>，輸出路徑 <code>bth.translation_output_path(md_path, None)</code>，內容 <code>bth.render(entries, md_path, work, juan, bth.infer_title(text, work, juan), term_style="policy")</code>。</li>
+<li><b>Coverage 的參數往下傳。</b><code>write_coverage_ledger</code>、<code>run_content_checks</code>、<code>run_checks</code> 多一個 keyword <code>exact_once=True</code>；<code>False</code> 時 ledger 多寫 <code>"coverage": "at_least_once"</code>（<code>True</code> 時不寫這個 key，分支的 ledger 格式不變）。</li>
+<li><b>舊譯文契約。</b><code>canonical_structured_contract</code> 接受 <code>stage == "legacy"</code> 的契約：<code>{"stage": "legacy", "source_hash": h, "clause": {"clause_id": c, "vernacular": 譯文}}</code>；<code>source_hash</code>、<code>clause_id</code> 不符或 <code>vernacular != translation</code> 時與其他契約一樣丟 <code>ValueError</code>；通過時回傳 <code>{"stage": "legacy", "source_hash", "translation_sha256", "clause_id", "annotations": {}}</code>。<code>TRANSLATION_STAGES</code> 不變（模型不能輸出 legacy）。</li>
+<li><b><code>review_pass</code> 多三個 keyword。</b><code>only_units=None</code>（只審這些 unit，也只清這些 unit 在該 pass 的 attestation）；<code>reuse_attestations=False</code>（為真時，某 unit 在該 pass 已有 verdict pass、而且 <code>source_sha256</code>、<code>translation_sha256</code>、<code>structured_contract_sha256</code>、<code>model</code>、<code>effort</code> 都與現在相符的 attestation，就不重審、不清掉）；<code>apply_proposed_terms=True</code>（為假時不呼叫 <code>append_new_terms</code>，把提議收進 <code>prog["proposed_terms"]</code>）。預設值下的行為與分支相同。</li>
+<li><b>舊譯文審查</b>（K5）：新函式與 <code>audit</code> 子指令。</li>
+<li>其餘（契約與 schema、<code>llm_call</code>、語意重試、<code>translate_sections</code>、<code>merge_sections</code>、<code>fix_findings</code>、<code>run_review_chain</code>、品質關卡、封存、publisher 的 <code>codex/*</code> 規則、<code>GLOSSARY_PATH</code> 只支援 T1579、<code>enqueue</code> 與 <code>run</code>）不改。</li>
+</ol>
+
+<h3>K5　舊譯文審查：<code>audited.py audit</code></h3>
+<pre><code>python3 scripts/audited.py audit --juans 67-72 [--work T1579] [--model auto|echo|echo-finding|echo-finding-stubborn] [--no-push]
+python3 scripts/audited.py audit --resume &lt;job id&gt; [--no-push]</code></pre>
+<p><b>指令層。</b></p>
+<ul>
+<li><code>--juans</code> 與 <code>--resume</code> 二選一必填。<code>--work</code> 預設 T1579，其他值：<code>SystemExit("the audited pipeline supports T1579 only: &lt;work&gt;")</code>，不建立任何檔案。</li>
+<li>開始前以非阻塞方式搶 <code>locks/runner.pid</code> 的 flock，整個指令期間持有；搶不到：<code>SystemExit("another runner is already active")</code>，不建立任何檔案。</li>
+<li>Job：<code>{"id": "&lt;YYYYmmdd-HHMMSS&gt;-audit-&lt;4 hex&gt;", "kind": "legacy_audit", "work", "juans", "model", "state", "push", "progress": {}, …}</code>，存在 <code>jobs/audited/&lt;id&gt;.json</code>。<code>--resume</code> 找不到這個檔或 <code>kind</code> 不對就 <code>SystemExit</code>。</li>
+<li>前景執行，卷次由小到大、一次一卷。每卷結束印一行；全部通過 exit 0，任何一卷不過 exit 1。</li>
+<li>不寫 <code>jobs/*.json</code>（上層）、不寫 <code>docs/status.json</code>、不改 glossary。</li>
+</ul>
+<p><b>每一卷：<code>audit_existing_juan(job, juan) -&gt; dict</code>（回傳報告；審查不過不丟例外）。</b></p>
+<ol>
+<li><b>已完成。</b>該卷狀態是 <code>done</code> 而且 <code>require_quality_gate</code> 驗證通過：什麼都不做（不 append 事件、不重寫報告）。驗證不過：清掉該卷進度，從頭審。</li>
+<li><b>候選稿。</b>審查在 <code>audits/&lt;job id&gt;/candidate/&lt;work&gt;-&lt;NNN&gt;-baihua.md</code> 上進行，真正的 md 到第 9 步才動。候選稿存在而且 <code>prog["candidate_base_sha256"]</code> 等於現在 md 的 sha256 時沿用（中斷後續跑不會丟掉已做的 fix）；否則從 md 重新複製，並清掉該卷的契約與 attestation。</li>
+<li><b>結構（不花模型呼叫）。</b>沒有 entry、任何 entry 的譯文是空的（訊息 <code>&lt;unit_id&gt;: empty translation</code>）、或 <code>check_ranges(entries, data_line_ids, start, end, source_lines, exact_once=False)</code> 有問題：整卷 fail，blocking 是這些訊息。</li>
+<li><b>警告。</b><code>range_overlaps(...)</code> 非空：<code>{"kind": "shared_boundary_lines", "line_ids": [...]}</code>。只記錄，不擋關。</li>
+<li><b>Round 1。</b>替每個沒有有效契約的 unit 建 legacy 契約，然後依序跑 <code>review_terms</code>、<code>review_doctrine</code>（<code>round_number=1</code>、<code>reuse_attestations=True</code>、<code>apply_proposed_terms=False</code>）。<code>review_parallel</code> 只在 <code>job["review_evidence"]</code> 有該卷資料時才跑；沒有就完全跳過（不呼叫模型）。</li>
+<li><b>術語機械檢查。</b><code>term_issues(glossary, parse_term_entries(候選稿))</code> 的每一條轉成綁在該段的 finding：<code>{"clause_id", "severity": "high", "category": "glossary_term", "claim": 訊息, "evidence": {"source_quote": "", "translation_quote": "", "reference_ids": []}, "required_change": 訊息}</code>。段落用訊息第一個 <code>:</code> 之前的標題對應（與現有 repair 的做法相同）。</li>
+<li><b>沒有 finding</b>：直接到第 9 步；候選稿與 md 逐 byte 相同。<b>有 finding</b>：<code>fix_findings</code> 重寫有 finding 的段落（寫進候選稿，契約 stage 是 <code>fix</code>）。</li>
+<li><b>重審。</b>只對被重寫的 unit 再跑 <code>review_terms</code>、<code>review_doctrine</code>（<code>round_number=2</code>、<code>only_units</code>），並對整份候選稿再跑一次術語機械檢查。還有 finding 或術語問題：整卷 fail，blocking 是這些 finding 的 <code>claim</code> 與術語訊息。只做一輪 fix。</li>
+<li><b>通過。</b>依序：(a) 候選稿補段落 id；(b) <code>write_coverage_ledger(…, exact_once=False)</code> 並 <code>run_checks(…, exact_once=False)</code>，有問題就 fail；(c) <code>record_quality_gate</code>，事件多一欄 <code>"audit_kind": "legacy_review"</code>；(d) 此時 md 的 sha256 若不等於 <code>candidate_base_sha256</code>：fail，blocking <code>the translation changed during the audit</code>，不覆寫；(e) 候選稿與 md 不同時原子性地換掉 md；(f) <code>bth.build_page(md)</code>（legacy 樣式）與 <code>build_search_index.main()</code>；(g) <code>create_volume_attestation</code> 與 <code>require_quality_gate</code>；(h) job 有 push 就走 <code>git_commit_push</code>（publisher 的 <code>codex/*</code> 規則照舊）。(e) 到 (g) 之間任何例外：把 md、該卷 HTML、各 <code>search.json</code> 還原成 (e) 之前的 bytes，整卷 fail。</li>
+<li><b>報告。</b>每次嘗試結束（通過或不過，含第 3 步的失敗）寫 <code>audits/&lt;job id&gt;/&lt;work&gt;-&lt;NNN&gt;-audit-report.json</code>（K7）。</li>
+</ol>
+<p><b>Fail 的保證。</b>整卷 fail 時，<code>translations/</code>、<code>docs/</code>、glossary 的 bytes 與指令開始前相同；候選稿、事件、artifact、報告留在 <code>audits/</code>、<code>artifacts/</code>。</p>
+
+<h3>K6　兩個離線後端（只給舊譯文審查的測試與試跑用）</h3>
+<pre><code>A structured prompt is one that matches  輸入 JSON：\n(.*?)\n\n輸出 JSON Schema：  (the test _run_fake already uses).
+For such a prompt, with payload = the input JSON and clause = payload[&quot;clause&quot;] (reviews, fix):
+
+echo-finding, echo-finding-stubborn
+  stage review_doctrine, payload[&quot;unit_id&quot;] ends with &quot;-002&quot;, and &quot;【已修】&quot; is not in clause[&quot;translation&quot;]:
+      {&quot;schema_version&quot;: &quot;1.0&quot;, &quot;stage&quot;: &quot;review_doctrine&quot;, &quot;unit_id&quot;: ..., &quot;source_hash&quot;: ..., &quot;verdict&quot;: &quot;changes_required&quot;,
+       &quot;findings&quot;: [{&quot;clause_id&quot;: clause[&quot;clause_id&quot;], &quot;severity&quot;: &quot;high&quot;, &quot;category&quot;: &quot;test&quot;, &quot;claim&quot;: &quot;echo-finding&quot;,
+                     &quot;evidence&quot;: {&quot;source_quote&quot;: &lt;first 4 characters of the first non-blank line of clause[&quot;source&quot;], stripped&gt;,
+                                  &quot;translation_quote&quot;: &lt;the same of clause[&quot;translation&quot;]&gt;, &quot;reference_ids&quot;: []},
+                     &quot;required_change&quot;: &quot;append 【已修】&quot;}],
+       &quot;proposed_terms&quot;: []}
+  every other review prompt: the answer of echo (verdict pass, or not_checked for review_parallel without evidence)
+echo-finding           stage fix: the translation object of echo, with vernacular = clause[&quot;translation&quot;] + &quot;【已修】&quot;
+echo-finding-stubborn  stage fix: the translation object of echo, with vernacular = clause[&quot;translation&quot;]   (unchanged)
+every other prompt: the answer of echo</code></pre>
+
+<h3>K7　報告</h3>
+<pre><code>{&quot;schema_version&quot;: &quot;1.0&quot;, &quot;job_id&quot;: &quot;20261013-181500-audit-1a2b&quot;, &quot;work&quot;: &quot;T1579&quot;, &quot;juan&quot;: 67,
+ &quot;verdict&quot;: &quot;pass&quot; | &quot;fail&quot;,
+ &quot;sections_total&quot;: 23,
+ &quot;rewritten_units&quot;: [&quot;T1579-067-008&quot;],            // pass: units whose text in the md changed; fail: []
+ &quot;warnings&quot;: [{&quot;kind&quot;: &quot;shared_boundary_lines&quot;, &quot;line_ids&quot;: [&quot;T30n1579_p0669a29&quot;]}],
+ &quot;blocking&quot;: [&quot;...&quot;],                              // empty on pass; on fail one string per reason
+ &quot;findings&quot;: {&quot;round1&quot;: 3, &quot;remaining&quot;: 0},        // review findings plus glossary issues
+ &quot;proposed_terms&quot;: [],                             // terms a reviewer proposed; the glossary file is not changed
+ &quot;attestation&quot;: &quot;audits/&lt;job id&gt;/T1579-067-attestation-&lt;12 hex&gt;.json&quot; | null}</code></pre>
+
+<h3>K8　字面檔</h3>
+<p><code>.github/workflows/ci.yml</code>（run folder 的 <code>files/ci-yml.txt</code>，逐 byte）：</p>
+<pre><code>name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Show the Python version
+        run: python3 --version
+
+      - name: Unit tests
+        run: python3 -B -m unittest discover -s tests
+
+      - name: Backend self-check
+        run: python3 -B scripts/llm.py
+
+      - name: Links of the site
+        run: python3 -B scripts/check_html_links.py
+
+      - name: Paragraph ids of the site
+        run: python3 -B scripts/check_paragraph_ids.py</code></pre>
+<p>README 檔尾加上（<code>files/readme-audited-section.txt</code>，逐行）：</p>
+<pre><code>## 可稽核管線（`scripts/audited.py`）
+
+`scripts/runner.py` 是正式排程器，行為不變。`scripts/audited.py` 是另一條獨立的管線：每次模型呼叫都留下紀錄，審查要附原文與譯文的逐字引文，過了品質關卡才封存成卷。它目前只支援 T1579，工作狀態放在 `jobs/audited/`，不會認領正式排程器的工作。兩者共用 `locks/runner.pid`，同一時間只能跑一個。
+
+稽核紀錄在 `audits/&lt;job id&gt;/`（事件、coverage ledger、封存證明、報告），模型的輸入與輸出在 `artifacts/sha256/`。這兩個資料夾都進 git。
+
+只審查已發布的舊譯文，不重譯：
+
+```sh
+python3 scripts/audited.py audit --juans 67-72 --no-push
+python3 scripts/audited.py audit --resume &lt;job id&gt; --no-push
+```
+
+- 每一段跑術語與義理兩道審查，再跑術語機械檢查。沒有問題的段落一個字都不動，段落 id 也不動。
+- 被點名的段落交給 fixer 重寫，只有重寫過的段落會再審一次。
+- 還有問題就整卷不過：譯稿與網頁維持原狀，候選稿與報告留在 `audits/&lt;job id&gt;/`。
+- 相鄰段落共用一行邊界只記成警告，不擋關。
+- `--model echo` 可以離線試跑整個流程，不花模型額度。
+- 用封存證明重建舊式頁面時加上 `--term-style legacy`：`python3 scripts/build_translation_html.py --translation translations/T1579-067-baihua.md --attestation &lt;封存證明&gt; --term-style legacy`。</code></pre>
+
+<h3>K9　分支測試檔允許的修改</h3>
+<ul>
+<li><code>tests/test_pipeline_audit.py</code>、<code>tests/test_llm_rate_limits.py</code>：<code>import runner</code> 改成 <code>import audited as runner</code>。</li>
+<li><code>tests/test_pipeline_audit.py</code> L612：<code>ROOT / "prompts" / "translate.txt"</code> 改成 <code>ROOT / "prompts" / "audited" / "translate.txt"</code>。</li>
+<li><code>tests/test_build_translation_html.py</code> L39–L40：<code>bth.render([entry], source, 70, "test")</code> 改成 <code>bth.render([entry], source, "T1579", 70, "test", term_style="policy")</code>。</li>
+<li>聯集後的函式簽名若還逼出其他呼叫端的修改，逐一寫進 <code>implement-report.md</code>（檔案、測試名稱、改了什麼、為什麼）。<b>任何 assertion 的期望值、任何測試名稱都不可以改，不可以刪測試、加 skip。</b>Acceptance 以釘死的 112 個測試 id 逐一執行。</li>
+</ul>
+
+<h2 id="state">State and order</h2>
+<p><b>行為者：</b>正式 runner（<code>runner.py run</code>）、網頁介面（<code>webapp.py</code>）、audited runner（<code>audited.py run</code>）、舊譯文審查指令、手動編輯 md 的人、執行 git 的 orchestrator。</p>
+<p><b>共用狀態：</b><code>locks/runner.pid</code>；<code>jobs/*.json</code>（正式）與 <code>jobs/audited/*.json</code>；<code>translations/*.md</code> 與 glossary；<code>docs/</code>；<code>audits/</code>、<code>artifacts/</code>（只增不改，artifact 以內容定址）；模型額度（account 層級）。</p>
+<div class="tablewrap"><table>
+<tr><th>事件組合</th><th>預期（使用者看到的）</th></tr>
+<tr><td>審查指令啟動時正式 runner 或另一個審查指令在跑（或反過來）</td><td>後來的那個立刻以 <code>another runner is already active</code> 結束，不寫任何檔。兩者不會同時寫 md、<code>docs/</code> 或 git index。</td></tr>
+<tr><td>審查期間有人從網頁介面排新工作</td><td>Job 檔寫進 <code>jobs/</code>，但正式 runner 沒在跑，工作等著；審查不讀也不寫那些檔。</td></tr>
+<tr><td>審查到一半被中斷（Ctrl-C、當機、額度用完後被關掉）</td><td>真正的 md 與網頁沒動（第 9 步之前只寫候選稿）。<code>--resume</code> 沿用候選稿與仍然有效的 attestation，只補沒審完的部分。</td></tr>
+<tr><td>在第 9 步 (e) 換掉 md 之後、(g) 封存之前被硬殺</td><td>md 已是新內容但沒有封存。<code>--resume</code> 時該卷不是 done，從 md 重新開始：未改動段落的 attestation 仍有效，流程收斂到封存。這段期間沒有任何東西被發布（push 在 (h)）。</td></tr>
+<tr><td>審查期間有人改了同一卷的 md</td><td>第 9 步 (d) 發現 sha256 變了：該卷 fail，不覆寫使用者存的內容。再跑一次會以新的 md 為準。</td></tr>
+<tr><td>對已通過的 job 再下一次 <code>--resume</code></td><td>驗證封存後什麼都不做，exit 0。不多一筆事件。</td></tr>
+<tr><td>審查者提議新術語</td><td>只記在報告的 <code>proposed_terms</code>。Glossary 不變，所以同一份候選稿的術語檢查結果在兩輪之間不會因為審查而改變。</td></tr>
+<tr><td>模型回 usage limit</td><td>分支既有行為：記一筆 <code>llm_attempt</code>（<code>rate_limited</code>），job 狀態 <code>waiting_limit</code>，睡到重置後再試；最多 10 次。</td></tr>
+<tr><td>語意驗證失敗（JSON 不合契約）</td><td>分支既有行為：重試一次，第二次仍失敗就丟例外，該卷 fail（報告的 blocking 記錯誤訊息），md 不動。</td></tr>
+</table></div>
+<p><b>共用規則。</b>身分：<code>unit_id = &lt;work&gt;-&lt;juan:03d&gt;-&lt;段落序號:03d&gt;</code>，<code>clause_id</code> = Range 標籤，job id 如上。冪等：封存證明不可變（同一路徑不同內容會被 <code>create_attestation</code> 拒絕），artifact 以 sha256 定址。時區：<code>YOGACARA_TIMEZONE</code>，預設 America/New_York（分支既有）。</p>
+
+<h2 id="premises">Premises</h2>
+<div class="tablewrap"><table>
+<tr><th>#</th><th>前提</th><th>怎麼驗的（2026-10-13，全部在 scratch clone，不動 repo）</th></tr>
+<tr><td>P1</td><td>81 頁已發布的頁面都能從 md 逐 byte 重現</td><td>對每個 md 呼叫 <code>bth.render(parse_entries(text), md, work, juan, infer_title(...))</code> 與 <code>docs/</code> 的檔比對：81 相同、0 不同。</td></tr>
+<tr><td>P2</td><td><code>main</code> 的 <code>check_ranges</code> 對 81 份譯稿都回 <code>[]</code></td><td>逐一執行。</td></tr>
+<tr><td>P3</td><td>1,418 個 Range 標籤都符合嚴格格式，prefix 有 T29n1558、T30n1579、T31n1585、T41n1821</td><td>regex 逐一比對。</td></tr>
+<tr><td>P4</td><td>加上空的 <code>tests/__init__.py</code> 後，<code>python3 -m unittest discover -s tests</code> 仍找到 <code>main</code> 的 44 個測試</td><td>在新的 scratch worktree 執行：Ran 44 tests, OK。</td></tr>
+<tr><td>P5</td><td>分支的 112 個測試在模組改名成 <code>audited</code>、測試改成 <code>import audited as runner</code> 之後全過，而且不在樹裡留下任何檔</td><td>暫存樹（分支的 scripts、prompts、glossary、<code>works.json</code>）：Ran 112 tests, OK；樹裡沒有多出檔案。</td></tr>
+<tr><td>P6</td><td>卷 67–72 過不了分支的機械檢查</td><td>用分支的檢查跑 <code>main</code> 的檔：六卷都有術語問題（5、2、2、7、7、9 條）；五卷有相鄰段落共用一行（exact-once 判為 overlap）；<code>Source:</code> 區塊都相符；沒有漏行。全部 44 卷裡有 12 卷有共用行。</td></tr>
+<tr><td>P7</td><td>測試用的三卷：卷 7（12 段，無共用行、無術語問題；第 2 段有 6 個段落 id）、卷 72（7 段，共用行 <code>T30n1579_p0695a23</code>，9 條術語問題）、卷 76（15 段，共用行 <code>T30n1579_p0721a09</code>，無術語問題）</td><td>同上的量測。</td></tr>
+<tr><td>P8</td><td><code>python3 scripts/llm.py</code>、<code>check_html_links.py</code>、<code>check_paragraph_ids.py</code> 在 <code>main</code> 上都 exit 0（0.1、1.9、0.3 秒）</td><td>逐一執行。</td></tr>
+<tr><td>P9</td><td>T1579 的 glossary（75 條）通過分支的 <code>build_term_tips</code>；T1821 的不通過（<code>Ambiguous tooltip alias '非擇滅'</code>）</td><td>用分支的函式跑 <code>main</code> 的兩份 glossary。</td></tr>
+<tr><td>P10</td><td>四部論典的 <code>search.json</code> 都能從 md 重現</td><td>在只含 scripts、translations、<code>works.json</code>、<code>docs/T1579/index.html</code> 的暫存樹跑 <code>build_search_index.py</code>，四個檔都與 repo 相同。</td></tr>
+<tr><td>P11</td><td>驗收測試的 fixture（複製 scripts、prompts、translations、三卷的 data 與 html、索引頁、<code>translation-workflow.html</code>、<code>search.json</code>）裡，三卷的頁面與搜尋索引都可重現</td><td><code>build_template</code> 後逐一 render 比對：都相同；建一棵樹 0.11 秒。</td></tr>
+<tr><td>P12</td><td><code>bsh.fetch_json</code> 在 data 檔存在時不連網路</td><td>讀 <code>scripts/build_shengwen_di_html.py</code> L48–L51。</td></tr>
+<tr><td>P13</td><td>Repo 允許 merge commit，ruleset 沒有 linear history 規則；<code>require-ci</code> 要的 context 是 <code>ci</code></td><td><code>gh api repos/davidshih/Yogcarabhumi-sastra</code> 與兩個 ruleset 的內容。</td></tr>
+</table></div>
+
+<h2 id="steps">Steps</h2>
+<p>Base 是 <code>claude/merge-audit-pipeline</code> 的 HEAD（<code>dd46ba8</code> 加上 run folder 的 checkpoint commit）。<b>Implementer 不 commit。</b>每個 milestone 做完就跑 <code>bash plans/20261013-merge-audit-pipeline-claude/acceptance.sh</code>，該 milestone 的檢查全過才往下。</p>
+<h3>M1　合併與三個共用函式庫</h3>
+<ol>
+<li><code>git merge --no-commit --no-ff origin/codex/batch1-69</code>。它會停在 26 個衝突，這是預期的。之後全程不要 <code>git commit</code>、不要 <code>git merge --abort</code>；<code>MERGE_HEAD</code> 要留著，orchestrator 會用它產生 merge commit。</li>
+<li>先把分支版的 runner 存下來：<code>git show origin/codex/batch1-69:scripts/runner.py &gt; scripts/audited.py</code>。再照 Conflict ledger 處理：R1、R6、R7、R8、R9 的路徑用 <code>git checkout dd46ba8 -- &lt;path&gt;</code> 取回 <code>main</code> 的 bytes（R8 的六個 tsv 也是；它們在 index 裡是刪除狀態）。</li>
+<li>R9：把分支的 8 個 prompt 放到 <code>prompts/audited/</code>（<code>git show origin/codex/batch1-69:prompts/&lt;name&gt;.txt</code>），刪掉上層的 <code>prompts/common_policy.txt</code>、<code>prompts/fix.txt</code>。</li>
+<li>R2、R3、R4：照 K1、K2、K3 寫出聯集。兩邊的版本可以用 <code>git show dd46ba8:&lt;path&gt;</code> 與 <code>git show origin/codex/batch1-69:&lt;path&gt;</code> 取得。</li>
+<li>R5：README。</li>
+<li>每個衝突路徑解完就 <code>git add</code>（只是標記已解決，不是 commit）。</li>
+<li>跑 <code>python3 -m unittest tests.test_check_translation_coverage tests.test_llm_codex_config tests.test_paragraph_ids tests.test_runner_parallel tests.test_status_page</code>（44 個）與 acceptance 的 M1 檢查。</li>
+</ol>
+<h3>M2　<code>scripts/audited.py</code></h3>
+<ol>
+<li>照 K4 的第 1–9 項修改 <code>scripts/audited.py</code>；K6 的兩個 fake 後端加進 <code>scripts/llm.py</code>。</li>
+<li>照 K9 修改分支的三個測試檔。</li>
+<li>替 K4 的新行為補測試（新檔，例如 <code>tests/test_audited_adaptations.py</code>）：<code>normalize_translation</code> 讓多空行的 <code>vernacular</code> 不被判成 stale；legacy 契約的接受與拒絕；<code>review_pass</code> 的三個 keyword；<code>exact_once=False</code> 的 ledger。</li>
+<li>跑分支的 112 個測試與 acceptance 的 M2 檢查。</li>
+</ol>
+<h3>M3　CI 與 README</h3>
+<ol>
+<li>新增 <code>.github/workflows/ci.yml</code>，內容是 K8 的字面檔。</li>
+<li>README 檔尾加上 K8 的段落。</li>
+</ol>
+<h3>M4　舊譯文審查</h3>
+<ol>
+<li>照 K5、K7 在 <code>scripts/audited.py</code> 實作 <code>audit</code> 子指令與 <code>audit_existing_juan</code>。</li>
+<li>跑 <code>python3 -m unittest tests.test_legacy_audit_acceptance</code>（planner 寫的 11 個測試，不可修改）與整支 acceptance。</li>
+<li>替沒被那 11 個測試涵蓋的分支補單元測試（新檔）：第 9 步 (d) 的「審查期間 md 被改」、(e)–(g) 例外時的還原、候選稿沿用與重建的條件、<code>--resume</code> 對不存在或種類不對的 job。</li>
+<li>最後跑完整的 <code>python3 -m unittest discover -s tests</code>、<code>python3 scripts/llm.py</code>、<code>python3 scripts/check_html_links.py</code>、<code>python3 scripts/check_paragraph_ids.py</code>。</li>
+</ol>
+<p><b>不要動：</b><code>plans/</code> 下的任何檔、<code>tests/test_legacy_audit_acceptance.py</code>、<code>files/frozen-paths.txt</code> 列的路徑、<code>scripts/audit.py</code>、<code>scripts/publisher.py</code>、<code>prompts/audited/*.txt</code>、<code>HANDOFF.md</code>。不要在 repo 裡實際執行 <code>audited.py audit</code>（不帶 <code>--model echo</code> 會花真的額度；帶了也會在 repo 留下 <code>audits/</code>）。要手動試就複製到暫存資料夾，像驗收測試那樣。</p>
+
+<h2 id="verification">Verification</h2>
+<p><b>Seams。</b>新行為的測試走這幾個介面：<code>audited.py audit</code> 指令（子程序，暫存樹）；<code>llm.run_llm</code>、<code>llm.classify_output</code>、<code>llm.call_with_limit_retry</code>；<code>check_translation_coverage.check_ranges</code>、<code>range_overlaps</code>、<code>check_coverage_ledger</code>；<code>bth.render</code>、<code>bth.parse_range</code>、builder CLI；<code>audited</code> 的階段函式（分支既有測試的介面）。</p>
+<p><b>Critical modules</b>（hard tier 的 mutation check 對象）：<code>scripts/check_translation_coverage.py</code>、<code>scripts/llm.py</code> 的分類函式、<code>scripts/audited.py</code> 的 <code>audit_existing_juan</code> 與它用到的關卡函式。Repo 沒有 mutation 工具時，orchestrator 以手寫 mutant 抽查這三處並記錄結果。</p>
+<h3><code>acceptance.sh</code>（27 條，約 40 秒，無網路，不寫 tracked file）</h3>
+<p>在 base 上執行的結果：9 條通過（防護：現在就成立、之後不准壞），18 條失敗（新行為）。</p>
+<div class="tablewrap"><table>
+<tr><th>檢查</th><th>證明什麼</th><th>base</th></tr>
+<tr><td>M1: the merge of codex/batch1-69 is recorded</td><td>G1：<code>MERGE_HEAD</code> 是分支頂端，或它已是 HEAD 的祖先</td><td>FAIL</td></tr>
+<tr><td>M1: no unmerged path and no conflict marker</td><td>G2</td><td>PASS</td></tr>
+<tr><td>M1: site, translations, data and production files equal main</td><td>G3：28 個路徑與 <code>dd46ba8</code> 逐 byte 相同，三個內容資料夾沒有新檔</td><td>PASS</td></tr>
+<tr><td>M1: the branch's modules, prompts and tests landed byte for byte</td><td>R9、R10、R11：13 個檔的 sha256</td><td>FAIL</td></tr>
+<tr><td>M1: main's 44 tests pass unchanged</td><td>G3</td><td>PASS</td></tr>
+<tr><td>M1: every published page is still the rendering of its md</td><td>K3 的 legacy 樣式不變（81 頁）</td><td>PASS</td></tr>
+<tr><td>M1: check_ranges accepts all 81 translations as before</td><td>K2 的預設路徑不變</td><td>PASS</td></tr>
+<tr><td>M1: check_ranges strict modes and the multi-work ids</td><td>K2：卷 72 的字面結果、<code>exact_once=False</code>、<code>range_overlaps</code>、漏行、T29n1558 的 Range</td><td>FAIL</td></tr>
+<tr><td>M1: llm model names</td><td>K1 的四個 tuple</td><td>FAIL</td></tr>
+<tr><td>M1: production queues and prompts are unchanged</td><td>R9：<code>runner.QUEUES</code> 的字面值、舊 prompt 仍填得進去</td><td>PASS</td></tr>
+<tr><td>M1: llm: a claude limit on stdout is a limit</td><td>K1：claude 走 combined 分類</td><td>PASS</td></tr>
+<tr><td>M1: llm: a Codex answer is never read as a limit</td><td>K1：<code>codex</code> 別名改用診斷分類；真的 limit 仍被認出</td><td>FAIL</td></tr>
+<tr><td>M1: llm: both callers of call_with_limit_retry work</td><td>K1：<code>run_fn</code> 與 <code>effort</code>／<code>on_attempt</code></td><td>FAIL</td></tr>
+<tr><td>M1: llm: self-check</td><td>K1</td><td>PASS</td></tr>
+<tr><td>M1: builder: no unsealed write into docs/ from the CLI</td><td>K3：exit 2、訊息提到 <code>--attestation</code>、頁面與 md 沒被動</td><td>FAIL</td></tr>
+<tr><td>M1: builder: legacy diagnostic equals the published page</td><td>K3：<code>--diagnostic-output … --term-style legacy</code></td><td>FAIL</td></tr>
+<tr><td>M1: builder: strict ranges, both term styles, ids in both</td><td>K3</td><td>FAIL</td></tr>
+<tr><td>M2: the branch's 112 tests are all present and pass</td><td>G1：以釘死的 id 逐一執行，少一個就失敗</td><td>FAIL</td></tr>
+<tr><td>M2: the audited pipeline has its own job folder and prompts</td><td>K4.1、K4.2</td><td>FAIL</td></tr>
+<tr><td>M2: a rewrite keeps the paragraph ids</td><td>K4.3</td><td>FAIL</td></tr>
+<tr><td>M2: the fake backends of the legacy audit</td><td>K6 的字面輸出</td><td>FAIL</td></tr>
+<tr><td>M3: .github/workflows/ci.yml is the reviewed file</td><td>G5</td><td>FAIL</td></tr>
+<tr><td>M3: README documents the audited pipeline and keeps both sides</td><td>R5</td><td>FAIL</td></tr>
+<tr><td>M4: the audit command and its options exist</td><td>K5</td><td>FAIL</td></tr>
+<tr><td>M4: the 11 acceptance tests of the legacy audit pass</td><td>G4，見下表</td><td>FAIL</td></tr>
+<tr><td>M4: the suite that CI runs holds every test</td><td>至少 167 個測試</td><td>FAIL</td></tr>
+<tr><td>M4: no test left a file in the checkout</td><td>所有測試跑完後內容仍與 <code>main</code> 相同，repo 裡沒有 <code>audits/</code>、<code>artifacts/</code></td><td>PASS</td></tr>
+</table></div>
+<h3><code>tests/test_legacy_audit_acceptance.py</code>（planner 寫的，列在 <code>acceptance.manifest</code>）</h3>
+<p>每個測試把 scripts、prompts、translations 與三卷的資料複製到暫存樹，在那裡以子程序執行指令。</p>
+<div class="tablewrap"><table>
+<tr><th>測試</th><th>輸入</th><th>斷言</th></tr>
+<tr><td>clean_juan_passes_and_changes_nothing</td><td>卷 7，<code>echo</code></td><td>exit 0；<code>docs/</code> 與 <code>translations/</code> 的 hash 不變；報告 pass、12 段、沒有重寫、沒有警告；封存證明驗得過；ledger 是 <code>at_least_once</code>、12 個 clause 各有兩筆證據；模型呼叫恰好 12 次 terms 與 12 次 doctrine，沒有別的；quality_gate 事件是 pass 且 <code>legacy_review</code>；沒有寫正式的 job 檔與 <code>docs/status.json</code>。</td></tr>
+<tr><td>shared_boundary_line_is_a_warning</td><td>卷 76，<code>echo</code></td><td>pass；警告是字面值 <code>T30n1579_p0721a09</code>；內容不變。</td></tr>
+<tr><td>flagged_section_is_rewritten_and_everything_else_is_kept</td><td>卷 7，<code>echo-finding</code></td><td>pass；只有 <code>T1579-007-002</code> 被重寫；其他 11 段與檔頭逐 byte 相同；該段只有 Translation 區塊變了，結尾多一個「【已修】」，6 個段落 id 依序保留；頁面等於新 md 的 legacy rendering；<code>search.json</code> 含「【已修】」；fix 1 次，terms 與 doctrine 各 13 次（12＋只重審那一段）。</td></tr>
+<tr><td>unresolved_finding_fails_and_touches_nothing</td><td>卷 7，<code>echo-finding-stubborn</code></td><td>exit 1；內容 hash 不變；報告 fail、blocking 非空、沒有封存；候選稿留在 job 資料夾。</td></tr>
+<tr><td>glossary_issues_the_fixer_cannot_repair_fail_and_touch_nothing</td><td>卷 72，<code>echo</code></td><td>exit 1；內容不變；blocking 含 <code>lacks one of</code>；警告是字面值 <code>T30n1579_p0695a23</code>；fix 至少 1 次。</td></tr>
+<tr><td>missing_source_lines_fail_before_any_model_call</td><td>卷 7，刪掉第 3 段</td><td>exit 1；blocking 含 <code>missing lines</code>；0 次模型呼叫。</td></tr>
+<tr><td>empty_translation_fails_before_any_model_call</td><td>卷 7，第 1 段譯文清空</td><td>exit 1；0 次模型呼叫。</td></tr>
+<tr><td>resume_of_a_finished_job_does_nothing</td><td>卷 7，<code>echo</code>，再 <code>--resume</code></td><td>exit 0；模型呼叫次數不變；<code>docs/</code>、<code>translations/</code>、<code>audits/</code>、<code>artifacts/</code> 的 hash 不變。</td></tr>
+<tr><td>two_juans_run_in_one_job_and_one_failure_gives_exit_1</td><td>卷 72、76，<code>echo</code></td><td>exit 1；72 fail、76 pass，同一個 job；76 的封存驗得過。</td></tr>
+<tr><td>refuses_to_run_while_a_runner_holds_the_lock</td><td>測試先握住 <code>locks/runner.pid</code></td><td>exit 非 0；訊息含 <code>another runner is already active</code>；沒有 <code>audits/</code>。</td></tr>
+<tr><td>other_works_are_refused</td><td><code>--work T1821</code></td><td>exit 非 0；訊息含 <code>T1579</code>；沒有 <code>audits/</code>。</td></tr>
+</table></div>
+<h3>Stage 5 的 gates（orchestrator 執行）</h3>
+<ul>
+<li>Baseline 與最後各跑一次：<code>python3 -m unittest discover -s tests</code>（base：44 個）、<code>python3 scripts/llm.py</code>、<code>python3 scripts/check_html_links.py</code>、<code>python3 scripts/check_paragraph_ids.py</code>、<code>bash plans/20260929-progress-page/acceptance.sh</code>（repo 既有的 gate，base 上全過）。</li>
+<li><code>actionlint .github/workflows/*.yml</code>（有裝才跑）。</li>
+<li>Host：PR 上的 <code>ci</code> 檢查在 GitHub 上 success（這也是第一次確認測試在 runner 的 Python 版本上會過）；PR 以 merge commit 合併；合併後 <code>git diff --stat &lt;merge&gt;^1 &lt;merge&gt; -- docs translations data</code> 是空的，Pages 部署 run success。</li>
+<li>最後的 commit：orchestrator 在 stage 5 驗證通過後 <code>git commit</code>（因為 <code>MERGE_HEAD</code> 還在，這個 commit 就是 merge commit），再 <code>git merge -s ours origin/codex/auditable-translation-pipeline</code> 記錄 N6。</li>
+</ul>
+<h3>After the run（不是 implementer 的工作）</h3>
+<p>PR 合併後，orchestrator 從新的 <code>main</code> 開 <code>claude/audit-t1579-067-072</code>，在自己的 worktree 執行 <code>python3 scripts/audited.py audit --juans 72 --no-push</code>（最小的一卷，7 段），記錄 Codex 額度的消耗後向 owner 回報，再跑其餘五卷。結果（<code>audits/</code>、<code>artifacts/</code>、被重寫的 md 與頁面、每卷的報告）以另一個 PR 交付；不過的卷照實列出原因，譯文維持原狀。</p>
+
+<h2 id="tier">Difficulty tier</h2>
+<p><b>hard。</b>三個共用函式庫的跨模組合併、一個「放錯就讓沒審過的文字上公開網站」的關卡、跨重啟的狀態，以及兩套測試的相容。</p>
+
+<h2 id="security">Security-sensitive</h2>
+<p><b>yes。</b></p>
+<ul>
+<li>模型輸出是不可信的輸入：它被當 JSON 解析、寫進 md、render 成公開網站的 HTML 與 <code>search.json</code>。Render 路徑的跳脫（<code>html.escape</code>）與 tooltip 屬性的組字要看。</li>
+<li>Audit 資料（每次模型呼叫的 request、response、error）之後會 commit 進公開 repo。<code>audit.redact_secrets</code> 是唯一的遮罩；錯誤訊息可能帶環境資訊。</li>
+<li>新的 CLI（<code>--resume &lt;job id&gt;</code> 變成檔案路徑的一部分；<code>--juans</code>）與既有的 subprocess（<code>codex exec</code>、<code>git</code>）。</li>
+<li>新的 workflow：只有 <code>contents: read</code>，action 釘 SHA，<code>run:</code> 裡沒有 <code>${{ }}</code>。</li>
+</ul>
+
+<h2 id="approval">Human approval required</h2>
+<p><b>None。</b>這個 run 不碰 auth、secrets、billing、資料刪除或 migration。合併 PR 會觸發 Pages 部署，但部署的內容與現在逐 byte 相同（acceptance 與 stage 5 都驗）。之後對卷 67–72 的審查會改動公開的譯文；它的範圍與做法 owner 已在 2026-10-13 核准，並以獨立的 PR 交付。</p>
+
+<h2 id="risks">Risks and rollback</h2>
+<ul>
+<li><b>Rollback。</b>合併後要退：<code>git revert -m 1 &lt;merge commit&gt;</code>。網站內容沒變，不需要重建任何頁面。</li>
+<li><b>共用函式庫的合併弄壞正式 runner。</b>緩解：runner 本身 bytes 不變；44 個測試、81 頁重現、81 份譯稿的範圍檢查、claude limit 的檢查都是防護。<code>codex</code> 別名的分類是唯一刻意的行為改變。</li>
+<li><b>CI 上的 Python 比本機舊</b>（ubuntu-latest 是 3.12，本機 3.14）。Workflow 不裝 Python（多一個 action 就要多釘一個 SHA）。若 <code>ci</code> 因版本失敗，orchestrator 在 stage 5 處理（改寫不相容的語法，或加釘了 SHA 的 setup-python）。</li>
+<li><b>兩條管線有重複的小工具函式</b>（<code>atomic_write</code>、<code>flock</code>、<code>md_sections</code> 等，約 300 行）。這是明知的債，等決定要不要合成一支 runner 時一起處理。</li>
+<li><b>正式的 <code>llm.py</code> 裡多了兩個只給測試用的 fake 後端。</b>它們不在 <code>FAKE_MODELS</code> 裡，所以不會成為正式 runner 的 queue；<code>echo</code> 本來就是同性質的東西。</li>
+<li><b>審查對真的舊譯文可能很嚴，整卷不過。</b>這是資訊不是故障：譯文維持原狀，報告列出原因。</li>
+<li><b>額度。</b>卷 67–72 共 83 段，兩道審查約 166 次呼叫，加上 fix 與重審；與這個 pipeline 的 review 共用同一個 Codex 帳號。先跑最小的一卷量測。</li>
+<li><b>驗收測試是在沒有實作的情況下寫的。</b>若 implementer 回報某個斷言與 K5–K7 矛盾，orchestrator 依「wrong oracle」程序判斷並重新上鎖。</li>
+</ul>
+
+<h2 id="unverified">Unverified</h2>
+<ul>
+<li>測試在 Python 3.12（GitHub runner）上會不會過：PR 的 <code>ci</code> run 會回答。</li>
+<li>真的 gpt-5.6-sol 對舊譯文的審查品質、能不能穩定給出逐字引文、六卷的實際額度與時間：After the run 的第一卷會回答。</li>
+<li>真的 <code>claude</code>、<code>glm</code>、<code>codex</code> CLI 在聯集後的 <code>llm.py</code> 下的行為：只有 mock。下一次正式翻譯工作時看 <code>runner.log</code>。</li>
+<li>網頁介面（<code>webapp.py</code>）：沒有動它，也沒有實際啟動來看。</li>
+<li>正式 runner 在 <code>require-ci</code> ruleset 下直接 push <code>main</code> 是否仍被接受（既有疑問，與這次的變更無關）：<code>gh api repos/davidshih/Yogcarabhumi-sastra/rulesets</code> 顯示 bypass 是 RepositoryRole。</li>
+<li>分支當初為什麼只撤卷 67–72：commit 沒有說明。</li>
+</ul>
+
+<h2 id="open-questions">Open questions</h2>
+<p>None。</p>
+</main>
+</body>
+</html>

@@ -177,7 +177,7 @@ test_translation_coverage.CoverageCliTests.test_requires_explicit_ledger_or_rang
 ACCEPT_EOF
 )
 MAIN_TEST_MODULES="tests.test_check_translation_coverage tests.test_llm_codex_config tests.test_paragraph_ids tests.test_runner_parallel tests.test_status_page"
-AUDIT_TESTS="test_clean_juan_passes_and_changes_nothing test_shared_boundary_line_is_a_warning test_flagged_section_is_rewritten_and_everything_else_is_kept test_fixer_that_merges_paragraphs_fails_and_keeps_every_id test_unresolved_finding_fails_and_touches_nothing test_glossary_issues_the_fixer_cannot_repair_fail_and_touch_nothing test_a_juan_the_owner_wants_audited_fails_closed test_missing_source_lines_fail_before_any_model_call test_empty_translation_fails_before_any_model_call test_auto_model_calls_the_pinned_codex_backend test_resume_of_a_finished_job_does_nothing test_two_juans_run_in_one_job_and_one_failure_gives_exit_1 test_two_rewritten_juans_keep_both_seals_and_resume_is_free test_resume_reuses_reviews_until_an_input_changes test_kill_after_the_swap_rolls_forward_on_resume test_seal_failure_restores_the_translation test_translation_edited_during_the_audit_is_never_overwritten test_refuses_to_run_while_a_runner_holds_the_lock test_other_works_are_refused test_resume_rejects_what_is_not_a_job_id test_resume_rejects_a_job_file_that_was_tampered_with test_legacy_ledger_passes_the_coverage_cli_and_a_gap_does_not"
+AUDIT_TESTS="test_clean_juan_passes_and_changes_nothing test_shared_boundary_line_is_a_warning test_flagged_section_is_rewritten_and_everything_else_is_kept test_fixer_that_merges_paragraphs_fails_and_keeps_every_id test_unresolved_finding_fails_and_touches_nothing test_glossary_issues_the_fixer_cannot_repair_fail_and_touch_nothing test_a_juan_the_owner_wants_audited_fails_closed test_missing_source_lines_fail_before_any_model_call test_empty_translation_fails_before_any_model_call test_auto_model_calls_the_pinned_codex_backend test_resume_of_a_finished_job_does_nothing test_two_juans_run_in_one_job_and_one_failure_gives_exit_1 test_two_rewritten_juans_keep_both_seals_and_resume_is_free test_resume_reuses_reviews_until_an_input_changes test_kill_after_the_swap_rolls_forward_on_resume test_seal_failure_restores_the_translation test_translation_edited_during_the_audit_is_never_overwritten test_legacy_seal_binds_every_artifact_and_an_edit_after_it_fails_resume test_policy_change_after_the_swap_is_reviewed_again_before_sealing test_owner_save_between_the_two_renames_survives test_resume_puts_back_a_newer_save_after_a_kill_in_the_swap test_failed_audit_leaves_archived_versions_alone test_refuses_to_run_while_a_runner_holds_the_lock test_other_works_are_refused test_resume_rejects_what_is_not_a_job_id test_resume_rejects_a_job_file_that_was_tampered_with test_legacy_ledger_passes_the_coverage_cli_and_a_gap_does_not"
 
 # ---------- helpers ----------
 
@@ -294,10 +294,10 @@ assert not bad, sorted(bad.items())[:5]
 PY
 }
 
-audit_tests() {  # the planner's 22 tests of the legacy audit
+audit_tests() {  # the planner's 27 tests of the legacy audit
   suite <<'PY'
 ids = ["test_legacy_audit_acceptance.LegacyAuditAcceptance." + name for name in os.environ["AUDIT_TESTS"].split()]
-assert len(ids) == 22, len(ids)
+assert len(ids) == 27, len(ids)
 bad = {key: outcomes.get(key, "missing") for key in ids if outcomes.get(key) != "ok"}
 assert not bad, sorted(bad.items())[:5]
 PY
@@ -305,9 +305,31 @@ PY
 
 suite_is_green() {  # every test of the suite that CI runs passed: no failure, no skip, no expected failure
   suite <<'PY'
-assert ran >= 178 and len(outcomes) >= 178, (ran, len(outcomes))
+assert ran >= 183 and len(outcomes) >= 183, (ran, len(outcomes))
 bad = {key: value for key, value in outcomes.items() if value != "ok"}
 assert not bad, (len(bad), sorted(bad.items())[:5])
+PY
+}
+
+branch_tests_unweakened() {  # the three adapted branch test files equal the branch's, apart from the reviewed edits
+  py <<'PY'
+import ast
+import subprocess
+from pathlib import Path
+EDITS = {
+    "test_pipeline_audit.py": [("\nimport runner\n", "\nimport audited as runner\n"),
+                               ('ROOT / "prompts" / "translate.txt"', 'ROOT / "prompts" / "audited" / "translate.txt"')],
+    "test_llm_rate_limits.py": [("\nimport runner\n", "\nimport audited as runner\n")],
+    "test_build_translation_html.py": [('bth.render([entry], source, 70, "test")',
+                                        'bth.render([entry], source, "T1579", 70, "test", term_style="policy")')],
+}
+for name, edits in EDITS.items():
+    expected = subprocess.check_output(["git", "show", f"a5f077952bc77d420adf9ebfd766e52f95a80607:tests/{name}"], text=True)
+    for old, new in edits:
+        assert old in expected, (name, old)
+        expected = expected.replace(old, new)
+    actual = (Path("tests") / name).read_text(encoding="utf-8")
+    assert ast.dump(ast.parse(actual)) == ast.dump(ast.parse(expected)), f"unreviewed change in tests/{name}"
 PY
 }
 
@@ -680,6 +702,7 @@ check "M1: builder CLI: sealed writes only, legacy diagnostic, --all"   builder_
 check "M1: builder: strict ranges, both term styles, ids in both"       builder_api
 # ---------- M2: the audited pipeline, isolated ----------
 check "M2: the branch's 112 tests are all present and pass"             branch_tests
+check "M2: the branch tests carry only the reviewed adaptations"        branch_tests_unweakened
 check "M2: the audited pipeline has its own job folder and prompts"     audited_is_isolated
 check "M2: a rewrite keeps the paragraph ids"                           audited_keeps_paragraph_ids
 check "M2: the fake backends of the legacy audit"                       fake_finding_models
@@ -689,7 +712,7 @@ check "M3: .github/workflows/ci.yml is the reviewed file"               ci_workf
 check "M3: README documents the audited pipeline and keeps both sides"  readme_documents_the_pipeline
 # ---------- M4: the legacy audit, end to end ----------
 check "M4: the audit command and its options exist"                     audited_cli
-check "M4: the 22 acceptance tests of the legacy audit pass"            audit_tests
+check "M4: the 27 acceptance tests of the legacy audit pass"            audit_tests
 check "M4: the whole suite passes, with no skip"                        suite_is_green
 check "M4: no test left a file in the checkout"                         checkout_still_clean
 exit $fail

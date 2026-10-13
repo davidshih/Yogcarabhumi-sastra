@@ -74,12 +74,28 @@ llm.subprocess.run = fake_run
 KILL_AT_PAGE_BUILD = """
 def killed(*_args, **_kwargs):
     os._exit(9)
-bth.build_page = killed
+audited.build_legacy_page = killed
 """
 FAIL_AT_SEAL = """
 def failing(*_args, **_kwargs):
     raise RuntimeError("seal failed on purpose")
 audited.create_legacy_attestation = failing
+"""
+OWNER_SAVES_BETWEEN_THE_RENAMES = """
+real_replace = os.replace
+def replace_then_owner_save(src, dst, *args, **kwargs):
+    real_replace(src, dst, *args, **kwargs)
+    if Path(src).name == "T1579-007-baihua.md" and Path(dst).parent.name == "backup":
+        Path(src).write_text(Path(dst).read_text(encoding="utf-8") + "\\nOWNER-SAVE\\n", encoding="utf-8")
+os.replace = replace_then_owner_save
+"""
+KILL_AFTER_THE_FIRST_RENAME = """
+real_replace = os.replace
+def replace_then_kill(src, dst, *args, **kwargs):
+    real_replace(src, dst, *args, **kwargs)
+    if Path(src).name == "T1579-007-baihua.md" and Path(dst).parent.name == "backup":
+        os._exit(9)
+os.replace = replace_then_kill
 """
 OWNER_EDITS_AFTER_GATE = """
 real_gate = audited.record_quality_gate
@@ -226,6 +242,20 @@ class LegacyAuditAcceptance(unittest.TestCase):
         self.assertTrue((self.tree / report["attestation"]).is_file(), report["attestation"])
         done = run_python(self.tree, "-c", VERIFY_SNIPPET, report["attestation"])
         self.assertEqual("sealed", done.stdout.strip(), done.stderr)
+        files = json.loads((self.tree / report["attestation"]).read_text(encoding="utf-8"))["files"]
+        juan = report["juan"]
+        required = {
+            "source_data": f"data/{WORK}-{juan:03d}.json",
+            "translation": f"translations/{md_name(juan)}",
+            "volume_html": f"docs/{WORK}/translations/{WORK}-{juan:03d}-baihua.html",
+            "coverage_ledger": f"audits/{report['job_id']}/{WORK}-{juan:03d}-coverage.json",
+        }
+        for role, path in required.items():
+            self.assertEqual(path, files.get(role, {}).get("path"), f"the seal must bind {role}")
+        self.assertIn("audit_event_log_snapshot", files)
+        sealed_paths = {item["path"] for item in files.values()}
+        self.assertFalse(sealed_paths & {f"docs/{WORK}/search.json", f"docs/{WORK}/index.html", "docs/index.html"},
+                         "a seal must not bind a file that the audit of another juan rewrites")
 
     def assert_not_sealed(self, report: dict) -> None:
         self.assertIsNone(report["attestation"])
@@ -560,6 +590,78 @@ class LegacyAuditAcceptance(unittest.TestCase):
         self.assertEqual(("fail", "none"), (report["verdict"], report["install"]))
         self.assertTrue(any("changed during the audit" in line for line in report["blocking"]), report["blocking"])
         self.assert_not_sealed(report)
+
+    def test_legacy_seal_binds_every_artifact_and_an_edit_after_it_fails_resume(self) -> None:
+        self.assert_exit(audit(self.tree, "--juans", "7", "--model", "echo"), 0)
+        report = self.report(7)
+        self.assert_sealed(report)
+        files = json.loads((self.tree / report["attestation"]).read_text(encoding="utf-8"))["files"]
+        manifest = json.loads((self.tree / "audits" / report["job_id"] / "manifest.json").read_text(encoding="utf-8"))
+        artifacts = {item["path"] for item in manifest["artifacts"]}
+        self.assertGreaterEqual(len(artifacts), 24 + 10, "24 answers, and the policy, the glossary and the 8 prompts")
+        self.assertLessEqual(artifacts, {item["path"] for item in files.values()},
+                             "every artifact of the job is sealed: the requests, the answers and the review inputs")
+        calls = len(self.llm_stages())
+        self.md(7).write_text(self.md(7).read_text(encoding="utf-8") + "\nAFTER-SEAL\n", encoding="utf-8")
+        before = digest(self.tree, "docs", "translations")
+
+        again = audit(self.tree, "--resume", report["job_id"])
+
+        self.assert_exit(again, 1)
+        self.assertEqual(calls, len(self.llm_stages()))
+        self.assertEqual(before, digest(self.tree, "docs", "translations"))
+
+    def test_policy_change_after_the_swap_is_reviewed_again_before_sealing(self) -> None:
+        killed = drive(self.tree, KILL_AT_PAGE_BUILD, "--juans", "7", "--model", "echo-finding")
+        self.assert_exit(killed, 9)
+        reviews = sum(1 for stage in self.llm_stages() if stage.startswith("review_"))
+        policy = self.tree / "prompts" / "audited" / "common_policy.txt"
+        policy.write_text(policy.read_text(encoding="utf-8") + "\n- 測試用的新增規則。\n", encoding="utf-8")
+
+        resumed = audit(self.tree, "--resume", self.only_job().stem)
+
+        self.assert_exit(resumed, 0)
+        self.assertEqual(reviews + 24, sum(1 for stage in self.llm_stages() if stage.startswith("review_")),
+                         "the installed text was reviewed under the old policy, so all 12 sections are reviewed again")
+        self.assert_sealed(self.report(7))
+
+    def test_owner_save_between_the_two_renames_survives(self) -> None:
+        original = self.md(7).read_text(encoding="utf-8")
+
+        done = drive(self.tree, OWNER_SAVES_BETWEEN_THE_RENAMES, "--juans", "7", "--model", "echo-finding")
+
+        self.assert_exit(done, 1)
+        self.assertEqual(original + "\nOWNER-SAVE\n", self.md(7).read_text(encoding="utf-8"),
+                         "a file that appears while the translation is swapped is never overwritten")
+        report = self.report(7)
+        self.assertEqual(("fail", "none"), (report["verdict"], report["install"]))
+        self.assertTrue(any("changed during the audit" in line for line in report["blocking"]), report["blocking"])
+
+    def test_resume_puts_back_a_newer_save_after_a_kill_in_the_swap(self) -> None:
+        killed = drive(self.tree, OWNER_EDITS_AFTER_GATE + KILL_AFTER_THE_FIRST_RENAME,
+                       "--juans", "7", "--model", "echo-finding")
+        self.assert_exit(killed, 9)
+        self.assertFalse(self.md(7).exists(), "the kill came between the two renames")
+
+        resumed = audit(self.tree, "--resume", self.only_job().stem)
+
+        self.assertIn(resumed.returncode, (0, 1), resumed.stderr)
+        self.assertTrue(self.md(7).is_file(), "the translation must be back at its path")
+        self.assertIn("\nOWNER-EDIT\n", self.md(7).read_text(encoding="utf-8"),
+                      "the text the owner saved before the kill is kept")
+
+    def test_failed_audit_leaves_archived_versions_alone(self) -> None:
+        archive = self.tree / "translations" / "versions" / f"{WORK}-007-baihua.v1.md"
+        archive.parent.mkdir(parents=True, exist_ok=True)
+        archive.write_text(MARKER_RE.sub("", self.md(7).read_text(encoding="utf-8")), encoding="utf-8")
+        (self.tree / "docs" / WORK / "translations" / f"{WORK}-007-baihua.v1.html").write_bytes(b"ARCHIVED PAGE\n")
+        before = digest(self.tree, "docs", "translations")
+
+        done = drive(self.tree, FAIL_AT_SEAL, "--juans", "7", "--model", "echo-finding")
+
+        self.assert_exit(done, 1)
+        self.assertEqual(before, digest(self.tree, "docs", "translations"),
+                         "the audit writes one page; an archived version and its page are never touched")
 
     # ---------- what the command refuses ----------
 

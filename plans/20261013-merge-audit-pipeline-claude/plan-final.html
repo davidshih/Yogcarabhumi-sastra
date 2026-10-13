@@ -110,12 +110,13 @@ if(d.readyState==='loading')d.addEventListener('DOMContentLoaded',build);else bu
 
 <main>
 <h1>Plan final：把 codex/batch1-69 合進 main，並加上舊譯文的審查流程</h1>
-<p class="meta">類型: plan · 日期時間: 2026-10-13 18:05 EDT · 專案: Yogcarabhumi-sastra（本機資料夾 yogacara）· 分支: claude/merge-audit-pipeline · Base commit: dd46ba8（origin/main）· Run folder: plans/20261013-merge-audit-pipeline-claude/ · 作者: claude-code（調查前半在 Opus 5.5，plan v1 的設計與撰寫在 Fable 5.1，裁決與這一版在 Opus 5.5）</p>
+<p class="meta">類型: plan · 日期時間: 2026-10-13 18:45 EDT · 專案: Yogcarabhumi-sastra（本機資料夾 yogacara）· 分支: claude/merge-audit-pipeline · Base commit: dd46ba8（origin/main）· Run folder: plans/20261013-merge-audit-pipeline-claude/ · 作者: claude-code（調查前半在 Opus 5.5，plan v1 的設計與撰寫在 Fable 5.1，裁決與這一版在 Opus 5.5）</p>
 
 <div class="bluf" id="bluf">
 <p><b>目標。</b>把 <code>origin/codex/batch1-69</code>（7 月的「可稽核翻譯管線」，9 個 commit，與 <code>main</code> 分岔 100 個 commit）合進 <code>main</code>：26 個衝突與 14 個「乾淨合併但其實不相容」的路徑，每一個都有明文裁決。正式排程器 <code>scripts/runner.py</code>、網站、譯稿一個 byte 都不變；分支的管線完整保留成獨立模組 <code>scripts/audited.py</code>；三個共用函式庫做真正的合併；再加上 owner 要的「只審不重譯」指令 <code>audited.py audit</code>。</p>
 <p><b>Tier：hard。Security-sensitive：yes。Human approval：None。</b>這個 run 不發布任何內容變更。跑完之後對卷 67–72 實際執行審查是另一個 PR（owner 已於 2026-10-13 核准範圍與做法）。</p>
-<p><b>Round 1 的 review。</b>Codex gpt-6.1-sol 與 Grok 4.7 都判 REVISE，共 16 條，合併成 14 列，全部接受（一條只接受問題、不照建議的修法）。兩支 runner 並存的架構沒有變；變的是舊譯文審查（K5）：不再 commit 或 push、沒有平行文審查、封存只含不會被別卷改動的檔、換檔與中斷後續跑有唯一的規則、段落 id 少了就不過。驗收測試從 11 個增加到 22 個。見檔尾的 Review disposition。</p>
+<p><b>Round 1 的 review。</b>Codex gpt-6.1-sol 與 Grok 4.7 都判 REVISE，共 16 條，合併成 14 列，全部接受（一條只接受問題、不照建議的修法）。兩支 runner 並存的架構沒有變；變的是舊譯文審查（K5）：不再 commit 或 push、沒有平行文審查、封存只含不會被別卷改動的檔、換檔與中斷後續跑有唯一的規則、段落 id 少了就不過。驗收測試從 11 個增加到 22 個。</p>
+<p><b>Round 2 的 review。</b>Codex gpt-6.1-sol 對上一版 plan-final 判 REVISE，6 條，全部接受。都在 round 1 新寫的那一段：把檔案放回譯稿路徑一律改用不覆寫的方式；續跑不再有「看到譯稿 hash 相符就直接封存」的捷徑，而是每次都重走審查步驟（輸入沒變就全部重用，不花模型呼叫）；封存必須點名它保護的檔；審查只寫當前這一卷的一頁；三個改過的分支測試檔以 AST 鎖定。驗收測試增加到 27 個，<code>acceptance.sh</code> 是 28 條。Plan review 到此為止（兩輪是上限），見檔尾的 Review disposition。</p>
 </div>
 
 <h2 id="goal">Goal and non-goals</h2>
@@ -283,31 +284,39 @@ python3 scripts/audited.py audit --resume &lt;job id&gt;</code></pre>
 <li>前景執行，卷次由小到大、一次一卷，每卷結束印一行。<b>Exit 0 表示每一卷都是 sealed</b>；其餘 exit 1。</li>
 <li>不寫 <code>jobs/*.json</code>（上層）與 <code>docs/status.json</code>，不改 glossary。</li>
 </ul>
-<p><b>每卷的狀態</b>存在 job 的 <code>progress[&lt;juan&gt;]</code>，每一步之後存檔：<code>candidate_base_sha256</code>（複製候選稿時 md 的 sha256）、<code>clause_contracts</code>、<code>review_attestations</code>、<code>review_verdict</code>、<code>quality_gate</code>（其中 <code>translation_sha256</code> 是過關時候選稿的 sha256，以下稱 gate hash）、<code>rewritten_units</code>、<code>install</code>（<code>none</code>、<code>installed</code>、<code>sealed</code>）、<code>volume_attestation</code>。</p>
+<p><b>每卷的狀態</b>存在 job 的 <code>progress[&lt;juan&gt;]</code>，每一步之後存檔：<code>candidate_base_sha256</code>（複製候選稿時 md 的 sha256）、<code>clause_contracts</code>、<code>review_attestations</code>、<code>review_verdict</code>、<code>quality_gate</code>（其中 <code>translation_sha256</code> 是過關時候選稿的 sha256，以下稱 gate hash）、<code>rewritten_units</code>、<code>swap</code>（進行中的換檔：<code>{"backup": &lt;相對路徑&gt;}</code>）、<code>install</code>（<code>none</code>、<code>installed</code>、<code>sealed</code>）、<code>installed_sha256</code>、<code>volume_attestation</code>。</p>
+<p><b>放檔的規則。</b>新增 <code>place_exclusive(src, dst)</code>：<code>os.link(src, dst)</code> 之後 <code>os.unlink(src)</code>；<code>dst</code> 已存在時丟 <code>FileExistsError</code>，<b>不覆寫</b>。任何檔案要放到譯稿（md）的路徑，一律用它。<code>os.replace</code> 在換檔裡只有一種用途：把 md <b>搬離</b>它的路徑、放進 <code>audits/&lt;job id&gt;/backup/</code>。這兩條加起來的保證是：搬走的一定是當下那一份，而且絕不會蓋掉之後才出現的檔。</p>
 <p><b>每一卷：<code>audit_existing_juan(job, juan) -&gt; dict</code></b>（回傳報告；審查不過不丟例外）。</p>
 <ol>
-<li><b>已封存。</b><code>install == "sealed"</code>：<code>publisher.verify_attestation</code>。通過就什麼都不做（不 append 事件、不重寫報告）。不過：fail，blocking <code>sealed files changed after the audit: &lt;原因&gt;</code>，不呼叫模型；要重審就開新的 job。</li>
-<li><b>判斷現況。</b>設 cur 是 md 現在的 sha256（檔案不存在視為與任何值都不符）。依序判斷：
+<li><b>已封存。</b><code>install == "sealed"</code>：<code>publisher.verify_attestation</code>。通過就什麼都不做（不 append 事件、不重寫任何檔）。不過：fail，blocking <code>sealed files changed after the audit: &lt;原因&gt;</code>，不呼叫模型、不改譯稿與網頁；要重審就開新的 job。</li>
+<li><b>找回譯稿，選定候選稿。</b>
   <ul>
-  <li>md 不存在，<code>audits/&lt;job id&gt;/backup/&lt;檔名&gt;</code> 存在而且它的 sha256 等於 <code>candidate_base_sha256</code>，gate 已過：上次在換檔的兩個 rename 之間被殺。從第 9 步「寫入候選稿」繼續。</li>
-  <li>gate 已過而且 cur 等於 gate hash：md 已經是過關的候選稿。跳到第 10 步，不呼叫模型。</li>
-  <li>候選稿存在而且 cur 等於 <code>candidate_base_sha256</code>：沿用候選稿與已有的狀態，從第 3 步繼續。</li>
-  <li>其他：從 md 重新複製候選稿到 <code>audits/&lt;job id&gt;/candidate/&lt;檔名&gt;</code>，清掉該卷的契約、attestation、gate、<code>rewritten_units</code>，記下新的 <code>candidate_base_sha256</code>。</li>
-  </ul></li>
+  <li>md 不存在：<code>swap</code> 記錄的 backup 檔存在，就用 <code>place_exclusive(backup, md)</code> 把它放回去（不論它是原稿，還是 owner 在審查期間存的新稿），清掉 <code>swap</code>，然後照下一點繼續。沒有這個檔：fail，blocking <code>translation file is missing</code>。</li>
+  <li>md 存在，設 cur 是它的 sha256。候選稿存在，而且 cur 等於候選稿的 sha256 或等於 <code>candidate_base_sha256</code>：沿用候選稿與已有的狀態。其他情況（譯稿被別人改過）：從 md 重新複製候選稿到 <code>audits/&lt;job id&gt;/candidate/&lt;檔名&gt;</code>，清掉該卷的契約、attestation、gate、<code>rewritten_units</code>，<code>install = "none"</code>，記下新的 <code>candidate_base_sha256</code>。</li>
+  </ul>
+  第 3–8 步在每一次嘗試都會執行，<code>--resume</code> 也一樣。沒有「hash 相符就跳過審查」的捷徑：審查靠 K4.9 的重用條件決定要不要呼叫模型，所以輸入沒變時是 0 次呼叫，policy、prompt、glossary 或原文變了就會重審，換檔之後才被中斷的卷也不例外。</li>
 <li><b>結構（不花模型呼叫）。</b>沒有 entry、任何 entry 的譯文是空的（訊息 <code>&lt;unit_id&gt;: empty translation</code>）、或 <code>check_ranges(entries, data_line_ids, start, end, source_lines, exact_once=False)</code> 有問題：整卷 fail，blocking 是這些訊息。</li>
 <li><b>警告。</b><code>range_overlaps(...)</code> 非空：<code>{"kind": "shared_boundary_lines", "line_ids": [...]}</code>。只記錄，不擋關。</li>
 <li><b>Round 1。</b>替每個沒有有效契約的 unit 建 legacy 契約，依序跑 <code>review_terms</code>、<code>review_doctrine</code>（<code>round_number=1</code>、<code>reuse_attestations=True</code>、<code>apply_proposed_terms=False</code>）。舊譯文審查<b>沒有</b> <code>review_parallel</code>：這個指令沒有提供平行文證據的管道。</li>
 <li><b>術語機械檢查。</b><code>term_issues(glossary, parse_term_entries(候選稿))</code> 的每一條轉成綁在該段的 finding：<code>{"clause_id", "severity": "high", "category": "glossary_term", "claim": 訊息, "evidence": {"source_quote": "", "translation_quote": "", "reference_ids": []}, "required_change": 訊息}</code>。段落用訊息第一個 <code>:</code> 之前的標題對應（與現有 repair 的做法相同）。</li>
-<li><b>修與重審。</b>沒有 finding：到第 8 步，候選稿與 md 逐 byte 相同。有 finding：<code>fix_findings</code> 重寫有 finding 的段落（寫進候選稿，契約 stage 是 <code>fix</code>），然後只對被重寫的 unit 再跑兩道審查（<code>round_number=2</code>、<code>only_units</code>、<code>apply_proposed_terms=False</code>），並對整份候選稿再跑術語機械檢查。還有 finding 或術語問題：<code>review_verdict = "fail"</code>，整卷 fail，blocking 是這些 finding 的 <code>claim</code> 與術語訊息。只做一輪 fix。</li>
-<li><b>過關。</b>設 <code>review_verdict = "pass"</code>（<code>record_quality_gate</code> 要看這個欄位，分支只有 <code>run_review_chain</code> 會設它）。依序：(a) 候選稿補段落 id；(b) <b>段落 id 保全</b>：原 md 每個 unit 的每個段落 id 都必須還在候選稿的同一個 unit 裡，否則 fail，blocking <code>paragraph ids would be lost in &lt;unit_id&gt;: &lt;ids&gt;</code>（fixer 把幾段併成一段時 <code>carry_paragraph_ids</code> 只留得住第一個）；(c) <code>write_coverage_ledger(…, exact_once=False)</code> 與 <code>run_checks(…, exact_once=False)</code>，有問題就 fail；(d) <code>record_quality_gate</code>，事件多一欄 <code>"audit_kind": "legacy_review"</code>；(e) 存下 <code>rewritten_units</code>（譯文與原 md 不同的 unit）。</li>
-<li><b>換檔</b>（cur 不等於 gate hash 時才做）。<code>os.replace(md, backup)</code> 把<b>當下的</b>檔移到 <code>audits/&lt;job id&gt;/backup/&lt;檔名&gt;</code>；backup 的 sha256 不等於 <code>candidate_base_sha256</code>（有人在審查期間改了譯文）：<code>os.replace(backup, md)</code> 放回去，fail，blocking <code>the translation changed during the audit</code>。相等：把候選稿的 bytes 寫進 md（暫存檔加 <code>os.replace</code>），<code>install = "installed"</code>。</li>
-<li><b>重建。</b><code>bth.build_page(md)</code>（legacy 樣式）與 <code>build_search_index.main()</code>。</li>
+<li><b>修與重審。</b>沒有 finding：到第 8 步。有 finding：<code>fix_findings</code> 重寫有 finding 的段落（寫進候選稿，契約 stage 是 <code>fix</code>），然後只對被重寫的 unit 再跑兩道審查（<code>round_number=2</code>、<code>only_units</code>、<code>apply_proposed_terms=False</code>），並對整份候選稿再跑術語機械檢查。還有 finding 或術語問題：<code>review_verdict = "fail"</code>，整卷 fail，blocking 是這些 finding 的 <code>claim</code> 與術語訊息。只做一輪 fix。</li>
+<li><b>過關。</b>設 <code>review_verdict = "pass"</code>（<code>record_quality_gate</code> 要看這個欄位，分支只有 <code>run_review_chain</code> 會設它）。依序：(a) 候選稿補段落 id；(b) <b>段落 id 保全</b>：原稿每個 unit 的每個段落 id 都必須還在候選稿的同一個 unit 裡，否則 fail，blocking <code>paragraph ids would be lost in &lt;unit_id&gt;: &lt;ids&gt;</code>；(c) <code>write_coverage_ledger(…, exact_once=False)</code> 與 <code>run_checks(…, exact_once=False)</code>，有問題就 fail；(d) <code>record_quality_gate</code>：事件多一欄 <code>"audit_kind": "legacy_review"</code>，它的 <code>artifacts</code> 除了候選稿之外，再放<b>此刻</b>的 glossary、policy 與每個 prompt 檔（key 是 <code>glossary</code>、<code>policy</code>、<code>prompt:&lt;檔名&gt;</code>）。這些就是審查實際用到的版本，之後的封存封的是這些 artifact，不會再去讀 live 的檔；(e) 存下 <code>rewritten_units</code>（譯文與原稿不同的 unit）。</li>
+<li><b>換檔。</b>整段在 <code>flock("jobs")</code> 內執行（網頁介面核准重跑、搬走譯稿時拿的就是這把鎖）。
+  <ul>
+  <li>md 的 sha256 已經等於 gate hash：不用換（沒有任何段落被重寫，或上一次嘗試已經換好）。</li>
+  <li><code>install == "installed"</code> 而 md 與 gate hash 不同（md 裡是上一次嘗試裝進去的另一份候選稿）：先照第 12 步還原成原稿，再往下。</li>
+  <li>選一個還不存在的路徑 <code>audits/&lt;job id&gt;/backup/&lt;n&gt;-&lt;檔名&gt;</code>，寫進 <code>swap</code> 並存檔，然後 <code>os.replace(md, backup)</code>。</li>
+  <li>backup 的 sha256 不等於 <code>candidate_base_sha256</code>（審查期間有人改了譯稿）：<code>place_exclusive(backup, md)</code> 放回去；那個位置若又已經出現新檔，就兩個都留著。Fail，blocking <code>the translation changed during the audit</code>。</li>
+  <li>相等：把候選稿的 bytes 寫到 backup 資料夾裡的暫存檔，<code>place_exclusive(暫存檔, md)</code>。丟 <code>FileExistsError</code>（有人在這兩個動作之間存了新檔）：留下那個新檔、刪掉暫存檔，原稿留在 backup；fail，blocking <code>the translation changed during the audit</code>。</li>
+  <li>成功：<code>install = "installed"</code>，<code>installed_sha256</code> 等於 gate hash，清掉 <code>swap</code>，存檔。</li>
+  </ul></li>
+<li><b>重建。</b>先把該卷頁面與每個 <code>docs/*/search.json</code> 現有的 bytes 記在記憶體。<code>build_legacy_page(md)</code>（新函式）用 <code>bth.render(…, term_style="legacy")</code> 寫<b>這一頁</b>（暫存檔加 <code>os.replace</code>）；不呼叫 <code>bth.build_page</code>，因為它會順便替封存的舊版本補 id、重寫它們的頁面。然後 <code>build_search_index.main()</code>。</li>
 <li><b>封存。</b><code>create_legacy_attestation(job, juan, md, data_path)</code>，然後 <code>publisher.verify_attestation</code>；<code>install = "sealed"</code>，該卷 done。</li>
-<li><b>第 9–11 步丟例外（同一個 process 還活著）。</b>若 md 的 sha256 等於 gate hash 而且 backup 存在：用 backup 換回原本的 md，再執行一次第 10 步，頁面與索引回到原狀；<code>install = "none"</code>，fail，blocking 含例外訊息。若 process 是被殺掉的（沒有機會還原），下一次 <code>--resume</code> 依第 2 步往前完成。兩條路都不會留下「譯文是新的、頁面是舊的」而沒有人知道的狀態：前者還原，後者的 job 不是 sealed、exit 不是 0。</li>
-<li><b>報告。</b>每次嘗試結束（通過或不過，含第 3 步的失敗）寫 <code>audits/&lt;job id&gt;/&lt;work&gt;-&lt;NNN&gt;-audit-report.json</code>（K7）。</li>
+<li><b>還原。</b>用在兩個地方：第 10–11 步丟例外，以及第 9 步的第二種情況。把第 10 步記下的頁面與 <code>search.json</code> 寫回去（若有記）；<code>os.replace(md, &lt;同一個 backup 資料夾裡的新路徑&gt;)</code> 把目前的譯稿搬走，它的 sha256 等於 <code>installed_sha256</code> 就用 <code>place_exclusive</code> 把原稿的 backup 放回 md，不等於（安裝之後又有人改）就把搬走的那一份原樣放回去；<code>install = "none"</code>。因例外而還原時該卷 fail，blocking 含例外訊息。Process 若是被殺掉的就沒有還原，下一次 <code>--resume</code> 從第 2 步重走：審查能重用就不呼叫模型，接著補完重建與封存。</li>
+<li><b>報告。</b>每次嘗試結束（通過或不過，含第 2、3 步的失敗）寫 <code>audits/&lt;job id&gt;/&lt;work&gt;-&lt;NNN&gt;-audit-report.json</code>（K7）。</li>
 </ol>
-<p><b><code>create_legacy_attestation</code> 封什麼。</b>只封不會被別卷的審查或正式工作改動的檔：<code>source_data</code>（<code>data/…json</code>）、<code>translation</code>（md）、<code>volume_html</code>、<code>coverage_ledger</code>、<code>audit_event_log_snapshot</code>，以及 manifest 裡的每一個 artifact。封存前先 append 一筆 <code>{"type": "legacy_seal_inputs", "volume": juan, "artifacts": {"glossary": …, "policy": …, "prompt:&lt;檔名&gt;": …}}</code>，把當時的 glossary、policy 與 8 個 prompt 存成 artifact（以內容定址，不可變）。<b>不封</b> live 的 glossary 與 prompt 檔、<code>search.json</code>、兩個索引頁、相鄰卷的頁面：它們會被下一卷的審查或正式工作改動，封了的話審完下一卷，上一卷的封存就失效。分支的 <code>create_volume_attestation</code> 不變，完整管線照舊用它。</p>
-<p><b>Fail 的保證。</b>整卷 fail 時（<code>install</code> 是 <code>none</code>），<code>translations/</code>、<code>docs/</code>、glossary 的 bytes 與指令開始前相同；候選稿、事件、artifact、報告留在 <code>audits/</code>、<code>artifacts/</code>。</p>
+<p><b><code>create_legacy_attestation</code> 封什麼。</b>角色與路徑是固定的：<code>source_data</code>（<code>data/&lt;work&gt;-&lt;NNN&gt;.json</code>）、<code>translation</code>（md）、<code>volume_html</code>（該卷的頁面）、<code>coverage_ledger</code>、<code>audit_event_log_snapshot</code>（事件檔當下內容的 artifact），以及 manifest 裡的<b>每一個</b> artifact（所有 request、response、過關時的候選稿、glossary、policy 與 prompt 的快照），每個 artifact 一個角色。封存之後，這個 job 不再為同一卷產生 artifact。<b>不封</b> live 的 glossary 與 prompt 檔、<code>search.json</code>、兩個索引頁、相鄰卷的頁面：它們會被下一卷的審查或正式工作改動，封了的話審完下一卷，上一卷的封存就失效。分支的 <code>create_volume_attestation</code> 不變，完整管線照舊用它。</p>
+<p><b>Fail 的保證。</b>整卷 fail 而且 <code>install</code> 是 <code>none</code> 時，譯稿、該卷頁面、<code>search.json</code>、glossary、封存的舊版本（<code>translations/versions/</code> 與它們的頁面）的 bytes 與指令開始前相同，唯一的例外是有人在審查期間自己改了譯稿（那時留下的是他存的內容）。候選稿、backup、事件、artifact、報告留在 <code>audits/</code>、<code>artifacts/</code>。</p>
 
 <h3>K6　三個離線後端（只給舊譯文審查的測試與試跑用）</h3>
 <pre><code>A structured prompt is one that matches  輸入 JSON：\n(.*?)\n\n輸出 JSON Schema：  (the test _run_fake already uses).
@@ -406,23 +415,24 @@ python3 scripts/audited.py audit --resume &lt;job id&gt;
 <li><code>tests/test_pipeline_audit.py</code>、<code>tests/test_llm_rate_limits.py</code>：<code>import runner</code> 改成 <code>import audited as runner</code>。</li>
 <li><code>tests/test_pipeline_audit.py</code> L612：<code>ROOT / "prompts" / "translate.txt"</code> 改成 <code>ROOT / "prompts" / "audited" / "translate.txt"</code>。</li>
 <li><code>tests/test_build_translation_html.py</code> L39–L40：<code>bth.render([entry], source, 70, "test")</code> 改成 <code>bth.render([entry], source, "T1579", 70, "test", term_style="policy")</code>。</li>
-<li>聯集後的函式簽名若還逼出其他呼叫端的修改，逐一寫進 <code>implement-report.md</code>（檔案、測試名稱、改了什麼、為什麼）。<b>任何 assertion 的期望值、任何測試名稱都不可以改，不可以刪測試、加 skip。</b>Acceptance 以釘死的 112 個測試 id 逐一執行。</li>
+<li>聯集後的函式簽名若還逼出其他呼叫端的修改，逐一寫進 <code>implement-report.md</code>（檔案、測試名稱、改了什麼、為什麼）。<b>任何 assertion 的期望值、任何測試名稱都不可以改，不可以刪測試、加 skip。</b>Acceptance 以釘死的 112 個測試 id 檢查結果，並把這三個檔的 AST 與「分支的版本套上前三點修改」逐一比對；除了那三點，多一個字都會失敗。真的需要第四種修改時，在 <code>implement-report.md</code> 說明並停下來，由 orchestrator 判斷後改 <code>acceptance.sh</code> 重新上鎖。</li>
 </ul>
 
 <h2 id="state">State and order</h2>
 <p><b>行為者：</b>正式 runner（<code>runner.py run</code>）、網頁介面（<code>webapp.py</code>）、audited 的翻譯 worker（<code>audited.py run</code>）、舊譯文審查指令、手動編輯 md 的人、手動執行 builder 或搜尋索引工具的人、執行 git 的操作者。</p>
-<p><b>這個指令的每一種寫入：</b>job 檔（<code>jobs/audited/</code>）；候選稿、備份、事件、ledger、封存、報告（<code>audits/&lt;job id&gt;/</code>）；artifact（<code>artifacts/sha256/</code>，以內容定址）；該卷的 md（只在第 9 步）；該卷的頁面與各論典的 <code>search.json</code>（只在第 10 步）；<code>locks/runner.pid</code>。它不寫 git、glossary、<code>jobs/*.json</code>、<code>docs/status.*</code>、<code>docs/app/</code>。<b>共用的輸入：</b>md、<code>data/</code>、glossary、<code>prompts/audited/</code>、模型額度（account 層級）。</p>
+<p><b>這個指令的每一種寫入：</b>job 檔（<code>jobs/audited/</code>）；候選稿、備份、事件、ledger、封存、報告（<code>audits/&lt;job id&gt;/</code>）；artifact（<code>artifacts/sha256/</code>，以內容定址）；該卷的 md（只在第 2、9、12 步，而且放檔一律不覆寫）；該卷的頁面與各論典的 <code>search.json</code>（只在第 10、12 步）；<code>locks/runner.pid</code>。它不寫 git、glossary、<code>jobs/*.json</code>、<code>docs/status.*</code>、<code>docs/app/</code>。<b>共用的輸入：</b>md、<code>data/</code>、glossary、<code>prompts/audited/</code>、模型額度（account 層級）。</p>
 <div class="tablewrap"><table>
 <tr><th>事件組合</th><th>預期（使用者看到的）</th></tr>
 <tr><td>審查指令啟動時，正式 runner、audited worker 或另一個審查指令在跑（或反過來）</td><td>後來的那個立刻以 <code>another runner is already active</code> 結束，不寫任何檔。</td></tr>
 <tr><td>審查被中斷後，有人啟動 <code>audited.py run</code></td><td>Worker 不認領審查工作（<code>claimable</code> 回 False），不會對那一卷跑翻譯。只有 <code>audit --resume</code> 能續跑。</td></tr>
 <tr><td>審查期間有人從網頁介面排新工作</td><td>網頁寫 <code>jobs/*.json</code>、<code>docs/status.json</code>、<code>docs/status.html</code>、<code>docs/app/library.json</code>。這些檔審查不讀、不寫、也不封存，互不影響；正式 runner 沒在跑，工作等著。</td></tr>
-<tr><td>審查期間有人從網頁介面核准重跑同一卷（<code>approve_job</code> 會把 md 搬進 <code>versions/</code>）</td><td>第 2 步或第 9 步看到 md 不見或變了：該卷 fail，不寫 md。</td></tr>
+<tr><td>審查期間有人從網頁介面核准重跑同一卷（<code>approve_job</code> 會把 md 搬進 <code>versions/</code>）</td><td>換檔在 <code>flock("jobs")</code> 內，與核准重跑互斥。它若先發生：第 2 步或第 9 步看到 md 不見或變了，該卷 fail，不寫 md。</td></tr>
 <tr><td>第 9 步之前被中斷（Ctrl-C、當機、額度用完後被關掉）</td><td>真正的 md 與網頁沒動。<code>--resume</code> 沿用候選稿，只重做輸入有變或還沒通過的審查。</td></tr>
-<tr><td>第 9 步的兩個 rename 之間被殺（md 暫時不存在）</td><td><code>--resume</code> 走第 2 步的第一種情況，把候選稿寫進去，接著重建與封存。這段時間 md 不存在，是已知的短暫狀態。</td></tr>
-<tr><td>換檔之後、封存之前被殺</td><td><code>--resume</code> 走第 2 步的第二種情況：不呼叫模型，重建頁面與索引（可重現，所以結果與沒被殺時相同），然後封存。</td></tr>
-<tr><td>重建或封存丟例外</td><td>第 12 步：md 換回原本的內容，頁面與索引重建回原狀，該卷 fail。</td></tr>
-<tr><td>審查期間有人改了同一卷的 md，包含過關之後、換檔之前的那一瞬間</td><td>第 9 步先把當下的檔移到 backup 再比對，所以使用者存的 bytes 不會被覆蓋；不符就原樣放回去，該卷 fail。之後 <code>--resume</code> 會以新的 md 重新審（第 2 步的第四種情況）。</td></tr>
+<tr><td>第 9 步把 md 搬進 backup 之後、放回或裝上之前被殺（md 暫時不存在）</td><td><code>--resume</code> 的第 2 步先把 backup 裡那一份放回原位。它若是原稿：審查全部重用，再換一次、重建、封存。它若是 owner 存的新稿：以新稿重新審。兩種情況譯稿都回到它的路徑，使用者存的內容不會留在 backup 裡沒人管。</td></tr>
+<tr><td>換檔之後、封存之前被殺</td><td><code>--resume</code> 重走第 3–8 步：輸入沒變就 0 次模型呼叫，接著重建、封存。這段期間若有人改了 policy、prompt 或 glossary，受影響的段落會先重審，過了才封存；封存裡的快照是這次審查實際用到的版本。</td></tr>
+<tr><td>重建或封存丟例外</td><td>第 12 步：頁面與索引寫回原本的 bytes，譯稿換回原稿，該卷 fail。</td></tr>
+<tr><td>審查期間有人改了同一卷的 md：(1) 換檔之前；(2) md 被搬進 backup 之後、候選稿裝上之前；(3) 裝上之後、還原之前</td><td>(1) 搬進 backup 的就是他存的那一份，比對不符，原樣放回去，該卷 fail。(2) 裝候選稿用的是不覆寫的 <code>place_exclusive</code>，他的檔留在原位，原稿留在 backup，該卷 fail。(3) 還原時搬走的那一份與裝上去的不同，就把它原樣放回去。三種情況他存的 bytes 都還在譯稿的路徑上。之後 <code>--resume</code> 以新的譯稿重新審。</td></tr>
+<tr><td>該卷有封存的舊版本（<code>translations/versions/</code>）</td><td>審查只寫當前這一卷的一頁，不讀寫舊版本的 md 與頁面；fail 時它們逐 byte 不變。</td></tr>
 <tr><td>同一個 job 後面的卷改寫了 <code>search.json</code></td><td>前面已封存的卷不受影響（封存不含 <code>search.json</code>）；整個 job 做完後每一卷的封存都驗得過。</td></tr>
 <tr><td>對已全部封存的 job 再下一次 <code>--resume</code></td><td>驗證封存後什麼都不做，exit 0；不多一筆事件、不改任何檔。</td></tr>
 <tr><td>續跑時輸入變了（policy、prompt、glossary、原文、譯文）</td><td>受影響的 unit 重新審查（prompt 的 hash 不同就不重用）；沒變的不重審。</td></tr>
@@ -430,7 +440,7 @@ python3 scripts/audited.py audit --resume &lt;job id&gt;
 <tr><td>審查者提議新術語</td><td>只記在報告的 <code>proposed_terms</code>，glossary 不變。</td></tr>
 <tr><td>模型回 usage limit</td><td>分支既有行為：記一筆 <code>llm_attempt</code>（<code>rate_limited</code>），睡到重置後再試，最多 10 次。</td></tr>
 <tr><td>語意驗證失敗（JSON 不合契約）</td><td>分支既有行為：重試一次；第二次仍失敗，該卷 fail（blocking 記錯誤訊息），md 不動。</td></tr>
-<tr><td>不拿鎖的 writer：手動 <code>git checkout</code>、手動執行 <code>build_search_index.py</code>、編輯器</td><td>頁面與索引是 md 的函數，重跑第 10 步就回到正確內容；md 內容的變動由第 9 步擋下。<b>操作規則：審查在獨立的 worktree 執行</b>（After the run 就是這樣做）。這是規則而不是機制，列在 Risks。</td></tr>
+<tr><td>不拿鎖的 writer：手動 <code>git checkout</code>、手動執行 <code>build_search_index.py</code>、編輯器</td><td>譯稿：第 9、12 步的放檔都不覆寫，所以它們寫的譯稿不會被蓋掉。頁面與索引是譯稿的函數，再跑一次第 10 步就回到正確內容。<b>操作規則：審查在獨立的 worktree 執行</b>（After the run 就是這樣做）；這是規則而不是機制，列在 Risks。</td></tr>
 </table></div>
 <p><b>共用規則。</b>身分：<code>unit_id = &lt;work&gt;-&lt;juan:03d&gt;-&lt;段落序號:03d&gt;</code>，<code>clause_id</code> = Range 標籤，job id 如上。冪等：封存證明不可變（同一路徑不同內容會被 <code>create_attestation</code> 拒絕），artifact 以 sha256 定址。時區：<code>YOGACARA_TIMEZONE</code>，預設 America/New_York（分支既有）。</p>
 
@@ -479,8 +489,8 @@ python3 scripts/audited.py audit --resume &lt;job id&gt;
 <h3>M4　舊譯文審查</h3>
 <ol>
 <li>照 K5、K7 在 <code>scripts/audited.py</code> 實作 <code>audit</code> 子指令與 <code>audit_existing_juan</code>。</li>
-<li>跑 <code>python3 -m unittest tests.test_legacy_audit_acceptance</code>（planner 寫的 22 個測試，不可修改；run folder 的 <code>files/</code> 裡有一份相同的副本）與整支 acceptance。</li>
-<li>替沒被那 22 個測試涵蓋的路徑補單元測試（新檔）：第 2 步的第一種情況（md 不存在而 backup 在）、第 1 步封存後檔案被改、第 12 步還原本身失敗時的回報、<code>juans</code> 超出卷數範圍的 job。</li>
+<li>跑 <code>python3 -m unittest tests.test_legacy_audit_acceptance</code>（planner 寫的 27 個測試，不可修改；run folder 的 <code>files/</code> 裡有一份相同的副本）與整支 acceptance。</li>
+<li>替沒被那 27 個測試涵蓋的路徑補單元測試（新檔）：<code>place_exclusive</code> 在目的地已存在時不覆寫；第 2 步 md 不存在而且沒有 backup；第 9 步的第二種情況（先還原再換）；第 12 步安裝之後又被別人改的那一支；<code>juans</code> 超出卷數範圍的 job。</li>
 <li>最後跑完整的 <code>python3 -m unittest discover -s tests</code>、<code>python3 scripts/llm.py</code>、<code>python3 scripts/check_html_links.py</code>、<code>python3 scripts/check_paragraph_ids.py</code>。</li>
 </ol>
 <p><b>不要動：</b><code>plans/</code> 下的任何檔、<code>tests/test_legacy_audit_acceptance.py</code>、<code>files/frozen-paths.txt</code> 列的路徑、<code>scripts/audit.py</code>、<code>scripts/publisher.py</code>、<code>prompts/audited/*.txt</code>、<code>HANDOFF.md</code>。不要在 repo 裡實際執行 <code>audited.py audit</code>（不帶 <code>--model echo</code> 會花真的額度；帶了也會在 repo 留下 <code>audits/</code>）。要手動試就複製到暫存資料夾，像驗收測試那樣。不可以替任何測試加 skip；acceptance 會把整個 suite 跑一次，有 skip 就失敗。</p>
@@ -488,8 +498,8 @@ python3 scripts/audited.py audit --resume &lt;job id&gt;
 <h2 id="verification">Verification</h2>
 <p><b>Seams。</b>新行為的測試走這幾個介面：<code>audited.py audit</code> 指令（子程序，暫存樹）；<code>llm.run_llm</code>、<code>llm.classify_output</code>、<code>llm.call_with_limit_retry</code>；<code>check_translation_coverage.check_ranges</code>、<code>range_overlaps</code>、<code>check_coverage_ledger</code>；<code>bth.render</code>、<code>bth.parse_range</code>、builder CLI；<code>audited</code> 的階段函式（分支既有測試的介面）。</p>
 <p><b>Critical modules</b>（hard tier 的 mutation check 對象）：<code>scripts/check_translation_coverage.py</code>、<code>scripts/llm.py</code> 的分類函式、<code>scripts/audited.py</code> 的 <code>audit_existing_juan</code> 與它用到的關卡函式。Repo 沒有 mutation 工具時，orchestrator 以手寫 mutant 抽查這三處並記錄結果。</p>
-<h3><code>acceptance.sh</code>（27 條，無網路，不寫 checkout）</h3>
-<p>它把整個測試 suite 執行<b>一次</b>並記下每個測試的結果，四條與測試有關的檢查都讀這份結果；有 skip、expected failure 或少了釘死的測試 id 就失敗。Builder CLI 的檢查在暫存樹裡跑。在 base 上：9 條通過（防護），18 條失敗（新行為），約 8 秒。</p>
+<h3><code>acceptance.sh</code>（28 條，無網路，不寫 checkout）</h3>
+<p>它把整個測試 suite 執行<b>一次</b>並記下每個測試的結果，四條與測試有關的檢查都讀這份結果；有 skip、expected failure 或少了釘死的測試 id 就失敗。Builder CLI 的檢查在暫存樹裡跑。在 base 上：9 條通過（防護），19 條失敗（新行為），約 9 秒。</p>
 <div class="tablewrap"><table>
 <tr><th>檢查</th><th>證明什麼</th><th>base</th></tr>
 <tr><td>M1: the merge of codex/batch1-69 is recorded</td><td>G1：<code>MERGE_HEAD</code> 是分支頂端，或它已是 HEAD 的祖先</td><td>FAIL</td></tr>
@@ -509,6 +519,7 @@ python3 scripts/audited.py audit --resume &lt;job id&gt;
 <tr><td>M1: builder CLI: sealed writes only, legacy diagnostic, --all</td><td>K3：沒有封存證明時 exit 2 而且暫存樹的 <code>docs/</code> 沒被動；legacy 診斷輸出等於已發布的頁面；診斷輸出不准在 <code>docs/</code> 裡；<code>--all</code> 要 <code>--legacy-rebuild</code></td><td>FAIL</td></tr>
 <tr><td>M1: builder: strict ranges, both term styles, ids in both</td><td>K3</td><td>FAIL</td></tr>
 <tr><td>M2: the branch's 112 tests are all present and pass</td><td>G1：釘死的 112 個 id 都在這次 suite 的結果裡而且是 ok</td><td>FAIL</td></tr>
+<tr><td>M2: the branch tests carry only the reviewed adaptations</td><td>K9：三個改過的分支測試檔，AST 等於分支的版本套上三點修改</td><td>FAIL</td></tr>
 <tr><td>M2: the audited pipeline has its own job folder and prompts</td><td>K4.1、K4.2</td><td>FAIL</td></tr>
 <tr><td>M2: a rewrite keeps the paragraph ids</td><td>K4.3</td><td>FAIL</td></tr>
 <tr><td>M2: the fake backends of the legacy audit</td><td>K6 的字面輸出，含 merge</td><td>FAIL</td></tr>
@@ -516,12 +527,12 @@ python3 scripts/audited.py audit --resume &lt;job id&gt;
 <tr><td>M3: .github/workflows/ci.yml is the reviewed file</td><td>G5</td><td>FAIL</td></tr>
 <tr><td>M3: README documents the audited pipeline and keeps both sides</td><td>R5</td><td>FAIL</td></tr>
 <tr><td>M4: the audit command and its options exist</td><td>K5：有四個選項，而且沒有 <code>--no-push</code></td><td>FAIL</td></tr>
-<tr><td>M4: the 22 acceptance tests of the legacy audit pass</td><td>G4，見下表</td><td>FAIL</td></tr>
-<tr><td>M4: the whole suite passes, with no skip</td><td>至少 178 個測試，每一個都是 ok</td><td>FAIL</td></tr>
+<tr><td>M4: the 27 acceptance tests of the legacy audit pass</td><td>G4，見下表</td><td>FAIL</td></tr>
+<tr><td>M4: the whole suite passes, with no skip</td><td>至少 183 個測試，每一個都是 ok</td><td>FAIL</td></tr>
 <tr><td>M4: no test left a file in the checkout</td><td>所有測試跑完後內容仍與 <code>main</code> 相同，repo 裡沒有 <code>audits/</code>、<code>artifacts/</code></td><td>PASS</td></tr>
 </table></div>
-<h3><code>tests/test_legacy_audit_acceptance.py</code>（planner 寫的 22 個測試，列在 <code>acceptance.manifest</code>）</h3>
-<p>每個測試把 scripts、prompts、translations 與四卷（7、67、72、76）的資料複製到暫存樹，在那裡以子程序執行指令。要把事件放在流程的某一點時（被殺、封存失敗、owner 改檔、攔截真的後端），測試在暫存樹裡寫一支 driver：它 import <code>audited</code>、換掉一個函式，再呼叫 <code>audited.main()</code>。因此這些名字是測試依賴的介面，實作必須以模組屬性的方式呼叫它們：<code>audited.main</code>、<code>audited.record_quality_gate</code>、<code>audited.create_legacy_attestation</code>、<code>bth.build_page</code>、<code>llm.subprocess.run</code>。</p>
+<h3><code>tests/test_legacy_audit_acceptance.py</code>（planner 寫的 27 個測試，列在 <code>acceptance.manifest</code>）</h3>
+<p>每個測試把 scripts、prompts、translations 與四卷（7、67、72、76）的資料複製到暫存樹，在那裡以子程序執行指令。要把事件放在流程的某一點時（被殺、封存失敗、owner 改檔、攔截真的後端），測試在暫存樹裡寫一支 driver：它 import <code>audited</code>、換掉一個函式，再呼叫 <code>audited.main()</code>。因此這些名字是測試依賴的介面，實作必須以模組屬性的方式呼叫它們：<code>audited.main</code>、<code>audited.record_quality_gate</code>、<code>audited.create_legacy_attestation</code>、<code>audited.build_legacy_page</code>、<code>llm.subprocess.run</code>。另外有兩個測試換掉 <code>os.replace</code>，認的是 K5 第 9 步的那個動作：來源是譯稿、目的地的上層資料夾叫 <code>backup</code>。所有帶封存的測試都檢查封存點名了四個固定角色與路徑、有 <code>audit_event_log_snapshot</code>，而且沒有封 <code>search.json</code> 與索引頁。</p>
 <div class="tablewrap"><table>
 <tr><th>測試</th><th>輸入</th><th>斷言</th></tr>
 <tr><td>clean_juan_passes_and_changes_nothing</td><td>卷 7，<code>echo</code></td><td>exit 0；<code>docs/</code> 與 <code>translations/</code> 的 hash 不變；報告 pass、sealed、12 段、沒有重寫與警告；封存驗得過；ledger 是 <code>at_least_once</code>、12 個 clause 各兩筆證據；恰好 12 次 terms 與 12 次 doctrine，沒有別的 stage；quality_gate 是 pass 且 <code>legacy_review</code>；沒有正式的 job 檔、<code>docs/status.json</code>、<code>.git</code>。</td></tr>
@@ -538,9 +549,14 @@ python3 scripts/audited.py audit --resume &lt;job id&gt;
 <tr><td>two_juans_run_in_one_job_and_one_failure_gives_exit_1</td><td>卷 72、76，<code>echo</code></td><td>exit 1；72 fail、76 pass，同一個 job；76 的封存驗得過。</td></tr>
 <tr><td>two_rewritten_juans_keep_both_seals_and_resume_is_free</td><td>卷 7、76，<code>echo-finding</code></td><td>exit 0；兩卷都重寫了第 2 段；<b>兩卷的封存在都做完之後仍驗得過</b>；<code>--resume</code> 不多一次模型呼叫、不改任何檔。</td></tr>
 <tr><td>resume_reuses_reviews_until_an_input_changes</td><td>卷 7，<code>echo-finding-stubborn</code>；resume；改 policy 檔；再 resume</td><td>其他 11 段的審查次數：22、22、44。</td></tr>
-<tr><td>kill_after_the_swap_rolls_forward_on_resume</td><td>卷 7，<code>echo-finding</code>，driver 讓 <code>bth.build_page</code> 直接 <code>os._exit(9)</code></td><td>exit 9；md 已含「【已修】」、沒有封存；<code>--resume</code> exit 0、模型呼叫次數不變、sealed、頁面等於 md。</td></tr>
+<tr><td>kill_after_the_swap_rolls_forward_on_resume</td><td>卷 7，<code>echo-finding</code>，driver 讓 <code>audited.build_legacy_page</code> 直接 <code>os._exit(9)</code></td><td>exit 9；md 已含「【已修】」、沒有封存；<code>--resume</code> exit 0、模型呼叫次數不變、sealed、頁面等於 md。</td></tr>
 <tr><td>seal_failure_restores_the_translation</td><td>卷 7，<code>echo-finding</code>，driver 讓 <code>create_legacy_attestation</code> 丟例外</td><td>exit 1；<code>docs/</code> 與 <code>translations/</code> 的 hash 回到原狀；fail、<code>install</code> 是 none；blocking 含例外訊息。</td></tr>
 <tr><td>translation_edited_during_the_audit_is_never_overwritten</td><td>卷 7，<code>echo-finding</code>，driver 在 <code>record_quality_gate</code> 之後替 md 加一行</td><td>exit 1；md 等於原文加上那一行；頁面沒變；blocking 含 <code>changed during the audit</code>。</td></tr>
+<tr><td>legacy_seal_binds_every_artifact_and_an_edit_after_it_fails_resume</td><td>卷 7，<code>echo</code>；之後改 md 再 <code>--resume</code></td><td>封存點名四個角色與路徑；manifest 的每個 artifact 都在封存裡（至少 34 個）；改了 md 之後 resume 是 exit 1、0 次模型呼叫、不動任何檔。擋下「封存是空的」的實作。</td></tr>
+<tr><td>policy_change_after_the_swap_is_reviewed_again_before_sealing</td><td>卷 7，<code>echo-finding</code>，換檔後被殺；改 policy 檔；<code>--resume</code></td><td>exit 0；審查次數正好多 24（12 段、兩道）；sealed。</td></tr>
+<tr><td>owner_save_between_the_two_renames_survives</td><td>卷 7，<code>echo-finding</code>，driver 在 md 被搬進 backup 的瞬間重新存一份帶標記的 md</td><td>exit 1；md 等於原文加上那個標記；fail、<code>install</code> 是 none；blocking 含 <code>changed during the audit</code>。</td></tr>
+<tr><td>resume_puts_back_a_newer_save_after_a_kill_in_the_swap</td><td>卷 7，<code>echo-finding</code>，owner 在過關後改 md，接著在 md 被搬進 backup 的瞬間被殺；<code>--resume</code></td><td>被殺後 md 不存在；resume 之後 md 回到它的路徑，而且含 owner 的那一行。</td></tr>
+<tr><td>failed_audit_leaves_archived_versions_alone</td><td>卷 7 加上一份封存的舊版本與它的頁面；<code>echo-finding</code>，封存時丟例外</td><td>exit 1；<code>docs/</code> 與 <code>translations/</code> 的 hash 不變，舊版本與它的頁面沒被碰。</td></tr>
 <tr><td>refuses_to_run_while_a_runner_holds_the_lock</td><td>測試先握住 <code>locks/runner.pid</code></td><td>exit 非 0；訊息含 <code>another runner is already active</code>；沒有 <code>audits/</code>。</td></tr>
 <tr><td>other_works_are_refused</td><td><code>audit --work T1821</code>，以及 <code>enqueue --work T1821</code></td><td>都 exit 非 0、訊息含 <code>T1579</code>；沒有 <code>audits/</code>，沒有任何 job 檔。</td></tr>
 <tr><td>resume_rejects_what_is_not_a_job_id</td><td><code>--resume</code> 給 <code>../outside</code>、<code>../../outside</code>、<code>x</code>、絕對路徑、非 hex 結尾的 id</td><td>都 exit 非 0、訊息含 <code>invalid job id</code>；樹外沒有多出任何東西；沒有 <code>audits/</code>、<code>jobs/</code>。</td></tr>
@@ -582,8 +598,9 @@ python3 scripts/audited.py audit --resume &lt;job id&gt;
 <li><b>審查對真的舊譯文可能很嚴，整卷不過。</b>這是資訊不是故障：譯文維持原狀，報告列出原因。</li>
 <li><b>額度。</b>卷 67–72 共 83 段，兩道審查約 166 次呼叫，加上 fix 與重審；與這個 pipeline 的 review 共用同一個 Codex 帳號。先跑最小的一卷量測。</li>
 <li><b>驗收測試是在沒有實作的情況下寫的。</b>若 implementer 回報某個斷言與 K5–K7 矛盾，orchestrator 依「wrong oracle」程序判斷並重新上鎖。</li>
-<li><b>不拿鎖的 writer 沒有機制擋。</b>編輯器、手動 git、手動跑搜尋索引工具都不受 <code>locks/runner.pid</code> 約束。第 9 步的 rename 保證使用者存的 bytes 不會被蓋掉，衍生檔可以重建；剩下的靠操作規則（審查在獨立的 worktree 執行）。第 9 步的兩個 rename 之間 md 短暫不存在。</li>
-<li><b>驗收測試依賴五個內部名字</b>（Verification 列出的那五個）。之後重構要一起改測試。</li>
+<li><b>不拿鎖的 writer 沒有機制擋。</b>編輯器、手動 git、手動跑搜尋索引工具都不受 <code>locks/runner.pid</code> 約束。放到譯稿路徑的動作一律不覆寫，所以它們寫的譯稿不會被蓋掉；頁面與索引可以重建。剩下的靠操作規則（審查在獨立的 worktree 執行）。換檔的兩個動作之間，譯稿的路徑上短暫沒有檔案；這時讀它的程式會看到檔案不存在。</li>
+<li><b>換檔協定的步驟多。</b>它的每一條分支都有鎖定的測試或列在 M4 第 3 點由 implementer 補測試，stage 5 再以 mutation 抽查 <code>audit_existing_juan</code>。</li>
+<li><b>驗收測試依賴五個內部名字與一個動作的形狀</b>（Verification 列出的）。之後重構要一起改測試。</li>
 </ul>
 
 <h2 id="unverified">Unverified</h2>
@@ -594,7 +611,8 @@ python3 scripts/audited.py audit --resume &lt;job id&gt;
 <li>網頁介面（<code>webapp.py</code>）：沒有動它，也沒有實際啟動來看。</li>
 <li>正式 runner 在 <code>require-ci</code> ruleset 下直接 push <code>main</code> 是否仍被接受（既有疑問，與這次的變更無關）：<code>gh api repos/davidshih/Yogcarabhumi-sastra/rulesets</code> 顯示 bypass 是 RepositoryRole。</li>
 <li>分支當初為什麼只撤卷 67–72：commit 沒有說明。</li>
-<li>兩位 reviewer 都沒能在自己的沙箱執行 <code>acceptance.sh</code>（<code>mktemp</code> 被擋）。Base 上的 9 過 18 紅是 planner 在本機跑出來的。</li>
+<li>三次 review 都沒能在 reviewer 的沙箱執行 <code>acceptance.sh</code>（<code>mktemp</code> 被擋）。Base 上的 9 過 19 紅是 planner 在本機跑出來的。</li>
+<li>Round 2 之後的這一版沒有再經過外部 review（兩輪是上限）。實作出來的程式在 stage 5 會由 Codex 與 Grok 各做一次 diff review，Codex 另做 security review。</li>
 </ul>
 
 <h2 id="open-questions">Open questions</h2>
@@ -620,6 +638,17 @@ python3 scripts/audited.py audit --resume &lt;job id&gt;
 <tr><td>G-4</td><td>G</td><td>medium</td><td>Oracle 只用卷 7、72、76，可以針對這三卷寫特例；真正要審的卷 67–72 沒有一卷在測試裡。</td><td>accepted</td><td>屬實。</td><td>Fixture 加入卷 67；測試 a_juan_the_owner_wants_audited_fails_closed。</td></tr>
 </table></div>
 <p>Codex 的問題（內容 push 成功而 metadata push 失敗時怎麼回報）：審查指令不再 push，這個狀態不存在。完整管線的 publisher 不在這個 run 的修改範圍。</p>
+<p>Round 2：Codex gpt-6.1-sol xhigh 審上一版 plan-final（<code>plan-final.review.md</code>，REVISE，6 條，沒有問題）。</p>
+<div class="tablewrap"><table>
+<tr><th>#</th><th>Source</th><th>Severity</th><th>Finding</th><th>Decision</th><th>Reason</th><th>Where it changed the plan</th></tr>
+<tr><td>R2-1</td><td>C</td><td>high</td><td>先 rename 再比對仍有空窗：編輯器在兩個動作之間重建 md，第二個 <code>os.replace</code> 會蓋掉它；還原時的「先比對再 replace」也一樣。網頁核准重跑只拿 <code>jobs.lock</code>。</td><td>accepted</td><td>屬實，上一版寫的「不會被蓋掉」說過頭了。把檔案放到譯稿路徑改用不覆寫的 <code>place_exclusive</code>（hard link 在目的地存在時會失敗）；換檔在 <code>flock("jobs")</code> 內。</td><td>K5 的放檔規則、第 9、12 步；State 表；測試 owner_save_between_the_two_renames_survives。</td></tr>
+<tr><td>R2-2</td><td>C</td><td>high</td><td>Owner 存了新稿、審查把它搬進 backup 後被殺：backup 的 hash 與原稿不同，上一版的續跑沒有這條分支，譯稿路徑一直缺檔。</td><td>accepted</td><td>屬實。續跑在 md 不存在時一律先把 backup 放回原位，再照一般情況判斷。</td><td>K5 第 2 步；測試 resume_puts_back_a_newer_save_after_a_kill_in_the_swap。</td></tr>
+<tr><td>R2-3</td><td>C</td><td>high</td><td>換檔後續跑的捷徑只看譯稿 hash，中間改了 policy、prompt 或 glossary 也會直接封存舊審查，而且封存存的是新的 policy。</td><td>accepted</td><td>屬實。拿掉捷徑：每次嘗試都重走第 3–8 步，由 prompt hash 的重用條件決定要不要呼叫模型。Glossary、policy、prompt 的快照在過關時存，封存封那些 artifact。</td><td>K5 第 2、8、11 步；State 表；測試 policy_change_after_the_swap_is_reviewed_again_before_sealing。</td></tr>
+<tr><td>R2-4</td><td>C</td><td>high</td><td><code>create_legacy_attestation</code> 傳空的檔案清單也能通過驗收：測試只檢查封存檔存在而且驗得過。</td><td>accepted</td><td>屬實，又是我的 oracle 的洞。</td><td>K5 的封存內容（固定的角色與路徑）；測試的 <code>assert_sealed</code> 檢查四個角色、快照、不含共用檔；測試 legacy_seal_binds_every_artifact_and_an_edit_after_it_fails_resume。</td></tr>
+<tr><td>R2-5</td><td>C</td><td>medium</td><td><code>bth.build_page</code> 會替封存的舊版本補 id、重寫它們的頁面，超出安裝與還原的範圍；fail 時它們可能已被改寫。</td><td>accepted</td><td>屬實：<code>build_translation_html.py</code> L512–L526。照建議只寫當前這一頁；還原改成寫回記下的 bytes，不靠重建。</td><td>K5 第 10、12 步的 <code>build_legacy_page</code>；測試 failed_audit_leaves_archived_versions_alone；kill 的測試改換 <code>audited.build_legacy_page</code>。</td></tr>
+<tr><td>R2-6</td><td>C</td><td>medium</td><td>Acceptance 釘住測試 id 卻沒釘住內容：在允許修改的三個測試檔裡替方法加一行 <code>return</code>，名稱與 assertion 都還在，結果仍是 ok。</td><td>accepted</td><td>屬實。</td><td>K9；<code>acceptance.sh</code> 的「M2: the branch tests carry only the reviewed adaptations」（AST 比對）。</td></tr>
+</table></div>
+<p>Round 2 的判定是 REVISE 而不是 BLOCK，所以依 pipeline 的規則裁決後進入實作，不開第三輪。</p>
 </main>
 </body>
 </html>

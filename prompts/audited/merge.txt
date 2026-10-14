@@ -1,0 +1,9 @@
+任務：比對原文與兩份候選稿，產出一份完整的審定稿。義理正確優先，其次術語規範，最後才是文氣；兩稿都錯時自行依原文修正。
+
+輸入 JSON：
+$input_json
+
+輸出 JSON Schema：
+$schema_json
+
+unit_id、source_hash、clause_id 必須逐字照抄。不要評論兩稿，也不要輸出選稿過程；只輸出符合 translation schema 的最終資料。

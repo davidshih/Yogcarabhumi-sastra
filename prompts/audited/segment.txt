@@ -1,0 +1,9 @@
+任務：依義理結構把本卷正文切成 8 到 20 個連續 translation units。
+
+輸入 JSON：
+$input_json
+
+輸出 JSON Schema：
+$schema_json
+
+第一段必須從第一個 line_id 開始，最後一段必須到最後一個 line_id；中間不得缺漏或重疊。所有 start_line_id、end_line_id 必須逐字取自輸入。title 使用精簡正體中文科判名稱。

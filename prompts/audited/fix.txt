@@ -1,0 +1,9 @@
+任務：依 reviewer findings 修復譯文。你是 fixer；不得自行擴大修改，也不得忽略 high/crit finding。
+
+輸入 JSON：
+$input_json
+
+輸出 JSON Schema：
+$schema_json
+
+unit_id、source_hash、clause_id 必須逐字照抄。輸出完整 translation object，不可輸出 diff、review verdict 或修理過程。修復完成後 pipeline 會重新執行所有 reviewer 與 blocking gates。

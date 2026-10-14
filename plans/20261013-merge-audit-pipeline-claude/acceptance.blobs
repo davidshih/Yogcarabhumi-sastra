@@ -1,0 +1,3 @@
+20316e2bbfb575854bb9c6beb9e3d291cc64d82e  plans/20261013-merge-audit-pipeline-claude/acceptance.sh
+10da222c88e1e54c14fd570dc460747b74a15d9b  plans/20261013-merge-audit-pipeline-claude/acceptance.manifest
+07ef1286386e4d4bc244f0465f611f9da0abf00d  tests/test_legacy_audit_acceptance.py

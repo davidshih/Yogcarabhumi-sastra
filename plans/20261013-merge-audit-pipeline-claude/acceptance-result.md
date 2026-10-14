@@ -264,15 +264,39 @@ State after fix round 2 (2026-10-13 20:41 EDT):
 
 ## Re-review of fix round 2
 
-State at 2026-10-13 20:58 EDT: no reviewer has read fix round 2 yet. Three attempts ended on usage limits.
-
 | Attempt | Result |
 | --- | --- |
-| Codex `gpt-6.1-sol` xhigh, incremental since tree `7505d51` (20:42) | exit 3, `CODEX_UNAVAILABLE`: the usage limit of the 5-hour window (it stood at 98% at the start; another session of this account was reviewing at the same time). It resets at 23:44. |
+| Codex `gpt-6.1-sol` xhigh, incremental since tree `7505d51` (2026-10-13 20:42) | exit 3, `CODEX_UNAVAILABLE`: the usage limit of the 5-hour window (it stood at 98% at the start; another session of this account was reviewing at the same time). |
 | Codex's slot through Cursor, `gpt-5.6-sol` xhigh (20:44) | exit 3, `CURSOR_UNAVAILABLE`: the monthly usage limit of that model on Cursor. It resets on 2026-11-02, or with a spend limit, which only the owner sets. |
 | Grok `grok-4.7-xhigh` through Cursor (20:42 to 20:58) | exit 1: `You're out of usage` on Cursor after 16 minutes. No review was written. |
+| Codex `gpt-6.1-sol` xhigh, incremental since tree `7505d51` (23:47, after the quota reset) | exit 0. **Verdict FIX, 2 findings (both medium).** File: `diff.review.md`. It confirms that the two `put_back` findings of the round before are fixed. |
 
-Next: the Codex incremental review runs after 23:44. Until its verdict the branch is pushed and the pull request stays a draft; nothing is merged. The fix limit is reached: a verdict of FIX or REJECT ends the run and goes to the owner.
+Grok did not read fix round 2: Cursor stays out of usage. So this re-review has one outside reviewer.
+
+Between the attempts the branch was committed (`a979331`, `ac3fa85`), pushed, and opened as draft pull request #9. Its `ci` check passed on GitHub (run 38493433975, the first run of the new workflow, Python 3.12 on ubuntu).
+
+### Diff review disposition, re-review of fix round 2
+
+I ran both counterexamples as written on the final tree, in a throwaway copy: both are red.
+
+| # | Source | Severity | Finding | Decision | Reason | Fix |
+| --- | --- | --- | --- | --- | --- | --- |
+| C3-1 | Codex | medium | When a later attempt cannot take the candidate out (the original cannot be linked back), `undo_install` calls `restore_site(rebuild_search=False)`, which writes the whole snapshot of every search index back. A juan that another job published between the kill and the resume loses its records in `search.json`. The G2-2 fix introduced this: it keeps the candidate out of the index, at the price of the other juan. | valid; **not fixed** | Counterexample red: `OTHER-JOB` was gone from `docs/T1579/search.json`. It needs four things at once: a kill after the rebuild, another job that publishes before the resume, a resume that fails, and an original that cannot be linked back. The md files and the pages are not touched; the index is whole again at the next rebuild. | none: the fix limit is reached. Proposed: in that one case put back only the records of the failed juan from the snapshot and keep every other record of the live index. |
+| C3-2 | Codex | medium | `pinned_review_inputs` takes its list of prompt files from `glob("*.txt")`, and `review_input_bytes` reads a path that is not in the pin from the live file. A required prompt that is absent while the folder is listed and created again right after is read live during the last check and is not stored at the gate. | valid; **not fixed** | Counterexample red: the juan sealed and the gate had no `prompt:review_terms.txt` artifact. It needs a prompt file to disappear at the instant of the listing and to come back before the first prompt is built. | none: the fix limit is reached. Proposed: pin the required files by name, and refuse (not read live) any review input that is not in the pin. |
+
+Valid 2 of 2. Fixed 0: both fixes would be a third fix round.
+
+## Run status: stopped at the fix limit
+
+The run used its two fix rounds, and the review of the second one still says FIX. By the rule of the pipeline the orchestrator stops here and the owner decides. Nothing is merged: pull request #9 is a draft.
+
+What holds on the pushed commit `ac3fa85`: the acceptance lock, `harness.sh integrity` (exit 0), `acceptance.sh` (28 PASS, exit 0), 272 tests on Python 3.14.7 and 3.12.13, the gates, `ci` on GitHub, and no difference in `docs/`, `translations/`, `data/` against `main`. The two open findings are in failure paths of `scripts/audited.py audit`; the merge itself, the production runner and the site are not affected by them.
+
+The choices for the owner:
+
+1. Allow a third fix round for C3-1 and C3-2 only, then one more Codex review (Grok is not available before 2026-11-02 without a spend limit).
+2. Merge as it is and fix the two findings in a follow-up pull request before the audit command is used on juan 67 to 72.
+3. Merge as it is and accept the two findings as known limits of the audit command.
 
 ## Codex cost
 
@@ -292,7 +316,8 @@ Next: the Codex incremental review runs after 23:44. Until its verdict the branc
 | Re-review of fix round 2, Codex (failed: usage limit) | `quota: 5h 98%->100% (+2), weekly 52%->52% (+0), input 285455 tokens (235136 cached), output 1632` |
 | Re-review of fix round 2, Codex's slot through Cursor (failed: usage limit) | `cursor usage: unknown` |
 | Re-review of fix round 2, Grok (failed: out of usage) | `cursor usage: unknown` |
+| Re-review of fix round 2, Codex after the quota reset | `quota: 5h 0%->6% (+6), weekly 52%->53% (+1), input 1415378 tokens (1289472 cached), output 11047` |
 
 ## Quality gate
 
-Not degraded. Outside-family reviewers produced the plan reviews (Codex twice, Grok once), the diff review (Codex and Grok) and the security review (Codex). The one same-family fallback that was tried (the security review on `plan-reviewer`) produced nothing and was replaced by the Codex retry.
+Not degraded. Outside-family reviewers produced the plan reviews (Codex twice, Grok once), every diff review (Codex and Grok on the implementation and on fix round 1, Codex alone on fix round 2) and the security review (Codex). The one same-family fallback that was tried (the security review on `plan-reviewer`) produced nothing and was replaced by the Codex retry. No same-family review stood in for an outside one.

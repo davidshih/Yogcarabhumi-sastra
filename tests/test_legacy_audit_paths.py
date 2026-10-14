@@ -106,6 +106,22 @@ def replace_then_owner_save(src, dst, *args, **kwargs):
             Path(src).write_bytes(b"OWNER-SAVE-DURING-THE-RESTORE")
 os.replace = replace_then_owner_save
 """
+# A prompt file is away while the audit lists the prompt folder for its pin, and back, changed, right after.
+A_PROMPT_IS_AWAY_DURING_THE_LISTING = """
+real_glob = Path.glob
+OMITTED = []
+def prompt_absent_during_listing(folder, pattern, *args, **kwargs):
+    if folder == audited.PROMPTS_DIR and pattern == "*.txt" and not OMITTED:
+        OMITTED.append(True)
+        prompt = folder / "review_terms.txt"
+        original = prompt.read_bytes()
+        prompt.unlink()
+        listing = list(real_glob(folder, pattern, *args, **kwargs))
+        prompt.write_bytes(original + b"\\nUNPINNED-PROMPT\\n")
+        return iter(listing)
+    return real_glob(folder, pattern, *args, **kwargs)
+Path.glob = prompt_absent_during_listing
+"""
 KILL_WHILE_THE_LINK_PROBE_EXISTS = """
 real_unlink = os.unlink
 def kill_at_the_probe(path, *args, **kwargs):
@@ -802,6 +818,28 @@ class LegacyAuditPathTests(unittest.TestCase):
         self.assertEqual(old_page, self.page.read_bytes())
         self.assertEqual(old_search, search.read_bytes(), "no index is built from a candidate that did not pass")
 
+    def test_a_resume_that_cannot_take_the_candidate_out_keeps_the_search_update_of_another_job(self) -> None:
+        search = self.tree / "docs" / WORK / "search.json"
+        killed = fixture.drive(self.tree, KILL_AT_THE_SEAL, "--juans", "7", "--model", "echo-finding")
+        self.assert_exit(killed, 9)
+        # Before the resume, another job publishes a change of juan 76 and rebuilds the search indexes.
+        other = self.tree / "translations" / fixture.md_name(76)
+        text = other.read_text(encoding="utf-8")
+        published = re.sub(r"(Translation:\n<<<\n.*?)(\n>>>)", r"\1OTHER-JOB\2", text, count=1, flags=re.DOTALL)
+        self.assertNotEqual(text, published)
+        other.write_text(published, encoding="utf-8")
+        self.assert_exit(fixture.run_python(self.tree, "scripts/build_search_index.py"), 0)
+        self.assertIn("OTHER-JOB", search.read_text(encoding="utf-8"))
+        (self.tree / "data" / f"{WORK}-007.json").unlink()  # the resume cannot pass
+
+        resumed = fixture.drive(self.tree, THE_ORIGINAL_CANNOT_BE_LINKED, "--resume", self.job_path().stem)
+
+        self.assert_exit(resumed, 1)
+        self.assertEqual("installed", self.report()["install"])
+        index = search.read_text(encoding="utf-8")
+        self.assertNotIn(MARK, index, "the candidate that could not be taken out is not in the index")
+        self.assertIn("OTHER-JOB", index, "the update of the other job is not rolled back with it")
+
     # ---------- the gate stores the inputs that the reviews answered ----------
 
     def test_the_gate_stores_the_policy_that_every_review_answered(self) -> None:
@@ -850,6 +888,26 @@ class LegacyAuditPathTests(unittest.TestCase):
 
     def test_a_policy_that_changes_and_is_put_back_in_the_last_check_reaches_no_review(self) -> None:
         self.assert_a_late_change_is_not_part_of_the_audit(LATE_POLICY_AND_BACK, "policy", "- Late policy.")
+
+    def test_a_prompt_that_the_listing_missed_is_pinned_by_name_and_stored_at_the_gate(self) -> None:
+        done = fixture.drive(self.tree, A_PROMPT_IS_AWAY_DURING_THE_LISTING, "--juans", "7", "--model", "echo")
+
+        self.assert_exit(done, 0)
+        self.assert_sealed(self.report())
+        gate = self.assert_every_review_answered_the_policy_of_the_gate()
+        self.assertIn("prompt:review_terms.txt", gate["artifacts"])
+        stored = self.artifact_text(gate["artifacts"]["prompt:review_terms.txt"])
+        self.assertIn("UNPINNED-PROMPT", stored, "the template that the last check used is the one that is stored")
+        self.assertEqual(36, self.model_calls(), "the 12 term reviews were asked again with the template that came back")
+
+    def test_a_review_input_outside_the_pin_is_refused(self) -> None:
+        late = audited.PROMPTS_DIR / "not-there-when-the-audit-pinned.txt"
+        with audited.pinned_review_inputs():
+            self.assertEqual(audited.POLICY_PATH.read_bytes(), audited.review_input_bytes(audited.POLICY_PATH))
+            with self.assertRaises(audited.AuditBlocked) as refused:
+                audited.review_input_bytes(late)
+        self.assertIn("is not among the inputs that the audit pinned", str(refused.exception))
+        self.assertIsNone(audited.PINNED_REVIEW_INPUTS)
 
     def test_a_unit_that_is_asked_again_in_the_last_check_answers_the_pinned_policy(self) -> None:
         # The first review answered the policy of the start. The policy then changes once during round 1

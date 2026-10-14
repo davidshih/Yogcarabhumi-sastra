@@ -281,22 +281,50 @@ I ran both counterexamples as written on the final tree, in a throwaway copy: bo
 
 | # | Source | Severity | Finding | Decision | Reason | Fix |
 | --- | --- | --- | --- | --- | --- | --- |
-| C3-1 | Codex | medium | When a later attempt cannot take the candidate out (the original cannot be linked back), `undo_install` calls `restore_site(rebuild_search=False)`, which writes the whole snapshot of every search index back. A juan that another job published between the kill and the resume loses its records in `search.json`. The G2-2 fix introduced this: it keeps the candidate out of the index, at the price of the other juan. | valid; **not fixed** | Counterexample red: `OTHER-JOB` was gone from `docs/T1579/search.json`. It needs four things at once: a kill after the rebuild, another job that publishes before the resume, a resume that fails, and an original that cannot be linked back. The md files and the pages are not touched; the index is whole again at the next rebuild. | none: the fix limit is reached. Proposed: in that one case put back only the records of the failed juan from the snapshot and keep every other record of the live index. |
-| C3-2 | Codex | medium | `pinned_review_inputs` takes its list of prompt files from `glob("*.txt")`, and `review_input_bytes` reads a path that is not in the pin from the live file. A required prompt that is absent while the folder is listed and created again right after is read live during the last check and is not stored at the gate. | valid; **not fixed** | Counterexample red: the juan sealed and the gate had no `prompt:review_terms.txt` artifact. It needs a prompt file to disappear at the instant of the listing and to come back before the first prompt is built. | none: the fix limit is reached. Proposed: pin the required files by name, and refuse (not read live) any review input that is not in the pin. |
+| C3-1 | Codex | medium | When a later attempt cannot take the candidate out (the original cannot be linked back), `undo_install` calls `restore_site(rebuild_search=False)`, which writes the whole snapshot of every search index back. A juan that another job published between the kill and the resume loses its records in `search.json`. The G2-2 fix introduced this: it keeps the candidate out of the index, at the price of the other juan. | valid; fixed in fix round 3, which the owner allowed | Counterexample red: `OTHER-JOB` was gone from `docs/T1579/search.json`. It needs four things at once: a kill after the rebuild, another job that publishes before the resume, a resume that fails, and an original that cannot be linked back. The md files and the pages are not touched; the index is whole again at the next rebuild. | `restore_juan_search_records`; `restore_site(search="juan")` for a later attempt whose candidate is still at the path. Test: `test_a_resume_that_cannot_take_the_candidate_out_keeps_the_search_update_of_another_job` (Codex's counterexample). |
+| C3-2 | Codex | medium | `pinned_review_inputs` takes its list of prompt files from `glob("*.txt")`, and `review_input_bytes` reads a path that is not in the pin from the live file. A required prompt that is absent while the folder is listed and created again right after is read live during the last check and is not stored at the gate. | valid; fixed in fix round 3, which the owner allowed | Counterexample red: the juan sealed and the gate had no `prompt:review_terms.txt` artifact. It needs a prompt file to disappear at the instant of the listing and to come back before the first prompt is built. | `pinned_review_inputs` reads the glossary, the policy and the prompts of both review passes by name; `review_input_bytes` refuses an input that is not in the pin. Tests: `test_a_prompt_that_the_listing_missed_is_pinned_by_name_and_stored_at_the_gate` (Codex's counterexample, the branch where the audit seals), `test_a_review_input_outside_the_pin_is_refused`. |
 
-Valid 2 of 2. Fixed 0: both fixes would be a third fix round.
+Valid 2 of 2. Both are fixed in fix round 3.
 
-## Run status: stopped at the fix limit
+## Run status: stopped at the fix limit, then a third round by the owner's decision
 
-The run used its two fix rounds, and the review of the second one still says FIX. By the rule of the pipeline the orchestrator stops here and the owner decides. Nothing is merged: pull request #9 is a draft.
+The run used its two fix rounds, and the review of the second one said FIX. By the rule of the pipeline the orchestrator stopped and asked the owner (2026-10-13 23:57 EDT), with these choices: a third fix round for C3-1 and C3-2 only and one more Codex review; a merge with a follow-up fix; a merge that accepts the two findings; or no action. Before asking, the orchestrator prepared the fix in a throwaway copy only and verified it there (both counterexamples green, the whole suite green on Python 3.14.7 and 3.12.13); the repository was not changed. The owner chose the third fix round.
 
-What holds on the pushed commit `ac3fa85`: the acceptance lock, `harness.sh integrity` (exit 0), `acceptance.sh` (28 PASS, exit 0), 272 tests on Python 3.14.7 and 3.12.13, the gates, `ci` on GitHub, and no difference in `docs/`, `translations/`, `data/` against `main`. The two open findings are in failure paths of `scripts/audited.py audit`; the merge itself, the production runner and the site are not affected by them.
+## Fix round 3 (allowed by the owner)
 
-The choices for the owner:
+Made by the orchestrator with the harness hold off: the fix that was verified in the throwaway copy, applied unchanged. Two files: `scripts/audited.py` and `tests/test_legacy_audit_paths.py`.
 
-1. Allow a third fix round for C3-1 and C3-2 only, then one more Codex review (Grok is not available before 2026-11-02 without a spend limit).
-2. Merge as it is and fix the two findings in a follow-up pull request before the audit command is used on juan 67 to 72.
-3. Merge as it is and accept the two findings as known limits of the audit command.
+| Part | Change in `scripts/audited.py` |
+| --- | --- |
+| C3-1 | New `restore_juan_search_records`: the records of the failed juan come from the snapshot, every other record of the live index stays, in its place. `restore_site` takes `search` (`"snapshot"`, `"rebuild"` or `"juan"`); `undo_install` uses `"juan"` for a later attempt whose candidate is still at the path. |
+| C3-2 | `pinned_review_inputs` reads the glossary, the policy and the prompt files of both review passes by name, then every other prompt file of the folder. While a pin is held, `review_input_bytes` refuses an input that is not in it. |
+
+Tests: 3 new in `tests/test_legacy_audit_paths.py` (44 in the file); the suite has 275 tests.
+
+| Check (2026-10-14 07:12 EDT) | Result |
+| --- | --- |
+| Acceptance lock (trusted copy) | 3 files OK, exit 0 |
+| `harness.sh integrity` | exit 0, no finding |
+| `timeout 5m bash plans/20261013-merge-audit-pipeline-claude/acceptance.sh` | **exit 0: 28 PASS, 0 FAIL**, 56 s |
+| `python3 -B -m unittest discover -s tests` | **275 tests, OK** on Python 3.14.7 and on 3.12.13 |
+| `scripts/llm.py`, `check_html_links.py`, `check_paragraph_ids.py`, `plans/20260929-progress-page/acceptance.sh`, `actionlint` | all pass |
+| `git diff origin/main -- docs translations data` | empty |
+| gitleaks / semgrep | 0 / 1 (S-1 again, rejected above) |
+
+Mutants of round 3, in a throwaway copy, against the two test files of the audit command: 6 of 6 killed.
+
+| Mutant | Killed by |
+| --- | --- |
+| Q1 the pin takes its prompt list from the folder listing only | `test_a_prompt_that_the_listing_missed_is_pinned_by_name_and_stored_at_the_gate` |
+| Q2 an input outside the pin is read from its file | `test_a_review_input_outside_the_pin_is_refused` |
+| Q3 with the candidate still at the path, the whole snapshot of the indexes goes back | `test_a_resume_that_cannot_take_the_candidate_out_keeps_the_search_update_of_another_job` |
+| Q4 with the candidate still at the path, the indexes stay as they are | `test_a_resume_that_cannot_take_the_candidate_out_keeps_it_out_of_the_site` and 1 more |
+| Q5 the records of the juan go to the end of the index | `test_a_resume_that_cannot_take_the_candidate_out_keeps_it_out_of_the_site` |
+| Q6 the records of the juan come from the live index | `test_a_resume_that_cannot_take_the_candidate_out_keeps_it_out_of_the_site` and 1 more |
+
+## Re-review of fix round 3
+
+Codex `gpt-6.1-sol` xhigh, incremental since the tree of the review before (`4aac67d`). Grok is not run: Cursor is out of usage until 2026-11-02. Results: see "Re-review of fix round 3: results" below.
 
 ## Codex cost
 

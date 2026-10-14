@@ -490,10 +490,16 @@ PINNED_REVIEW_INPUTS: dict[Path, bytes] | None = None
 
 
 def review_input_bytes(path: Path) -> bytes:
-    """A review input (glossary, policy, prompt file): the pinned bytes while an audit holds them, else the file."""
-    if PINNED_REVIEW_INPUTS is not None and path in PINNED_REVIEW_INPUTS:
-        return PINNED_REVIEW_INPUTS[path]
-    return path.read_bytes()
+    """A review input (glossary, policy, prompt file): the pinned bytes while an audit holds them, else the file.
+
+    While an audit holds a pin, an input that is not in it is refused and not read from its file: a
+    version that the gate does not store must not reach a prompt or a check.
+    """
+    if PINNED_REVIEW_INPUTS is None:
+        return path.read_bytes()
+    if path not in PINNED_REVIEW_INPUTS:
+        raise AuditBlocked([f"the review input {path.name} is not among the inputs that the audit pinned"])
+    return PINNED_REVIEW_INPUTS[path]
 
 
 def review_input_text(path: Path) -> str:
@@ -510,9 +516,10 @@ def pinned_review_inputs():
     thread and holds locks/runner.pid, so no worker shares this module state.
     """
     global PINNED_REVIEW_INPUTS
-    PINNED_REVIEW_INPUTS = {
-        path: path.read_bytes() for path in (GLOSSARY_PATH, POLICY_PATH, *sorted(PROMPTS_DIR.glob("*.txt")))
-    }
+    # The files that the last check and the gate read are named: one that is missing fails the audit here,
+    # whatever a listing of the folder shows. Every other prompt file is pinned and stored with them.
+    required = (GLOSSARY_PATH, POLICY_PATH, *(PROMPTS_DIR / f"{name}.txt" for name in AUDIT_REVIEW_PASSES))
+    PINNED_REVIEW_INPUTS = {path: path.read_bytes() for path in (*required, *sorted(PROMPTS_DIR.glob("*.txt")))}
     try:
         yield
     finally:
@@ -2816,18 +2823,43 @@ def snapshot_site(job: dict, prog: dict, md_path: Path) -> bool:
     return True
 
 
-def restore_site(job: dict, prog: dict, md_path: Path, *, rebuild_search: bool) -> None:
+def restore_juan_search_records(folder: Path, md_path: Path) -> None:
+    """Put the search records of one juan back from the snapshot and keep every other record as it is now."""
+    work, juan = bth.infer_work_juan(md_path)
+    live = ROOT / "docs" / work / "search.json"
+    copy = folder / live.relative_to(ROOT)
+    if not live.is_file() or not copy.is_file():
+        return  # no index now, or none before the audit: nothing of this juan to put back
+    page = f"translations/{md_path.stem}.html"
+
+    def of_this_juan(record: dict) -> bool:
+        return record.get("j") == juan and str(record.get("u", "")).startswith(page)
+
+    records = json.loads(live.read_text(encoding="utf-8"))
+    before = [record for record in json.loads(copy.read_text(encoding="utf-8")) if of_this_juan(record)]
+    place = next((index for index, record in enumerate(records) if of_this_juan(record)), len(records))
+    others = [record for record in records if not of_this_juan(record)]
+    place -= sum(1 for record in records[:place] if of_this_juan(record))
+    merged = others[:place] + before + others[place:]
+    if merged != records:
+        atomic_write(live, json.dumps(merged, ensure_ascii=False))
+
+
+def restore_site(job: dict, prog: dict, md_path: Path, *, search: str) -> None:
     """K5 step 12, the site: the page and the search indexes go back to what they were before the audit.
 
     The page belongs to this juan: it always comes from the snapshot. A search index holds every juan of
-    its work. Without rebuild_search the bytes of the snapshot are written back. With it the indexes are
-    built again from the translations: a later attempt does that, because another job may have published
-    a juan since the snapshot, and only when the translation went back, so that no candidate is indexed.
+    its work, so `search` says how it goes back:
+    "snapshot": the bytes of the snapshot. Right for the attempt that took it, seconds ago.
+    "rebuild": built again from the translations. A later attempt does that when the translation went
+    back, because another job may have published a juan since the snapshot.
+    "juan": a later attempt whose candidate is still at the path. Only the records of this juan come from
+    the snapshot; every other record stays, so no candidate is indexed and no other juan loses an update.
     """
     folder = recorded_site_backup(job, prog.get("site_backup"))
     if folder is not None:
         paths = {bth.translation_output_path(md_path, None)}
-        if not rebuild_search:
+        if search == "snapshot":
             paths |= {ROOT / copy.relative_to(folder) for copy in folder.glob("docs/*/search.json")}
             paths |= set(search_index_paths())
         for path in sorted(paths):
@@ -2836,8 +2868,10 @@ def restore_site(job: dict, prog: dict, md_path: Path, *, rebuild_search: bool) 
                 path.unlink(missing_ok=True)  # the audit created it
             elif not path.is_file() or path.read_bytes() != copy.read_bytes():
                 atomic_write_bytes(path, copy.read_bytes())
-        if rebuild_search:
+        if search == "rebuild":
             rebuild_search_indexes()
+        elif search == "juan":
+            restore_juan_search_records(folder, md_path)
     prog.pop("site_backup", None)  # only now: an error above leaves the record for the next attempt
     save_job(job)
 
@@ -2848,10 +2882,9 @@ def undo_install(job: dict, prog: dict, md_path: Path, *, same_attempt: bool) ->
     for step in ("translation", "site"):
         try:
             if step == "site":
-                # While the candidate is still at the path (it could not be taken out), the indexes are
-                # not built from the translations: the snapshot holds no candidate text.
+                still_installed = prog.get("install") == "installed"  # the candidate could not be taken out
                 restore_site(job, prog, md_path,
-                             rebuild_search=not same_attempt and prog.get("install") != "installed")
+                             search="snapshot" if same_attempt else "juan" if still_installed else "rebuild")
             elif prog.get("install") == "installed":
                 with flock("jobs"):
                     restore_original_translation(job, prog, md_path)

@@ -14,10 +14,10 @@
 - Every translation paragraph has a stable id: `<p id="...">` directly inside `.translation-text` on all 81 pages (11,556 paragraphs). The 追更簿 app restores the reading position by these ids. The ids live in `translations/*.md` (see Decisions). `python3 scripts/check_paragraph_ids.py` fails on a missing, invalid, reserved or duplicate id.
 
 ## Done in thread merge-audit-pipeline (2026-10-13)
-- A codex-pipeline run, tier hard; everything is in `plans/20261013-merge-audit-pipeline-claude/` (`plan-final.html`, the reviews, `acceptance.sh`, `acceptance-result.md`, the status report). The merge commit has `origin/codex/batch1-69` (`a5f0779`) as its second parent. `origin/codex/auditable-translation-pipeline` is recorded as merged with `-s ours`: `batch1-69` contains its work.
+- Pull request #9, merged with a merge commit on 2026-10-14 (the branch commits are `a979331` merge, `ac3fa85` ours-merge, `0d46614` the record of the review of fix round 2, `3b7e49d` fix round 3, and the closing commit). A codex-pipeline run, tier hard; everything is in `plans/20261013-merge-audit-pipeline-claude/` (`plan-final.html`, the reviews, `acceptance.sh`, `acceptance-result.md`, the status report). The merge commit has `origin/codex/batch1-69` (`a5f0779`) as its second parent. `origin/codex/auditable-translation-pipeline` is recorded as merged with `-s ours`: `batch1-69` contains its work.
 - Shared libraries are a real union of both sides: `scripts/llm.py`, `scripts/build_translation_html.py`, `scripts/check_translation_coverage.py`. Branch files that came over unchanged: `scripts/audit.py`, `scripts/publisher.py`, the 8 prompts, 5 test files.
-- Tests: 272 pass on Python 3.14.7 and 3.12.13 (44 of `main`, 112 of the branch, 27 locked acceptance tests of the audit command, 89 new). `acceptance.sh`: 28 PASS. All 81 pages and the 4 `search.json` files still reproduce byte for byte from the md.
-- Reviews: plan review by Codex gpt-6.1-sol and Grok 4.7 (20 findings accepted over two rounds); diff review by both in three passes (4 findings on the implementation, 4 on the first fix round, all fixed in two fix rounds, each with a regression test; one more defect found by the orchestrator); security review by Codex: PASS, 0 findings.
+- Tests: 275 pass on Python 3.14.7 and 3.12.13 (44 of `main`, 112 of the branch, 27 locked acceptance tests of the audit command, 92 new). The `ci` check passed on GitHub (Python 3.12 on ubuntu). `acceptance.sh`: 28 PASS. All 81 pages and the 4 `search.json` files still reproduce byte for byte from the md.
+- Reviews: plan review by Codex gpt-6.1-sol and Grok 4.7 (20 findings accepted over two rounds); diff review in four passes (Codex and Grok on the implementation and on fix round 1, Codex alone on fix rounds 2 and 3 because Cursor ran out of usage). 12 findings: 11 fixed, each with a regression test (one found by the orchestrator, not a reviewer); the owner allowed a third fix round past the limit of two; C4-1 is open as a known limit by the owner's decision. Security review by Codex: PASS, 0 findings.
 
 ## Done in thread paragraph-ids (2026-10-08)
 - PR #8, squash-merged as `7f3fc85` (branch commits `9aec2a2` code, `faca6ea` backfill, `0e0341e` status report in `plans/20261008-paragraph-ids/`). Deploy Pages run 37743621955: success. The live T1579-001 page is byte-identical to the main build and has an id on all 109 translation paragraphs; `#T30n1579_p0281b03-997ff5` scrolls that paragraph to the top.
@@ -55,6 +55,7 @@
 ## Gotchas
 - `scripts/audited.py audit` without `--model echo` calls the real Codex backend and spends quota. It writes `audits/`, `artifacts/`, `jobs/audited/` and, for a juan that passes, the md, its page and every `docs/*/search.json`. Run it on a branch of its own, never on `main`, and never as an experiment in the main checkout. The offline backends are `echo` (every review passes), `echo-finding`, `echo-finding-stubborn` and `echo-finding-merge`.
 - The audit command needs a filesystem with hard links. Without them it refuses the install before it moves the translation (`no hard link can be made here`).
+- Known limit C4-1 (accepted by the owner, 2026-10-14): if `docs/T1579/search.json` does not exist when an audit starts, and a kill comes after the rebuild, and the resume fails, and the original cannot be linked back, the records of the candidate stay in the new index. Do not delete `docs/T1579/search.json` before an audit. A 4-line fix is described in `plans/20261013-merge-audit-pipeline-claude/acceptance-result.md` (C4-1).
 - When a hard link fails after the translation moved (an I/O error), the command ends with the path of the translation empty. The report line names the file (`the translation is in audits/<job>/backup/<n>-<name>: it could not go back to its path`), and `python3 scripts/audited.py audit --resume <job id>` puts it back. Do not copy it back by hand while a job is running.
 - `audits/` and `artifacts/` are not in `.gitignore`: they are the audit trail and are committed with the audited juans. `jobs/` and `locks/` are ignored.
 - A merge to `main` of this repo must use a merge commit when the branch carries a merge of another branch (a squash loses the second parent). The repo has no linear-history rule.
@@ -68,7 +69,6 @@
 - `works.json` metadata has drifted: T1558 still says `pipeline_ready: false` with 30/30 juans done; T1579 `scope: 聲聞地`, but translations cover 1–12 and 51–80 too. Not changed.
 
 ## Todo
-- Thread merge-audit-pipeline is not merged. Pull request #9 is a draft. The codex-pipeline run stopped at its fix limit on 2026-10-13 with two medium findings (C3-1, C3-2); the owner allowed a third fix round on 2026-10-14, which fixes both. It waits for one more Codex review: `bash ~/.claude/skills/codex-pipeline/scripts/run_codex.sh --env plans/20261013-merge-audit-pipeline-claude/models.env diffreview plans/20261013-merge-audit-pipeline-claude/plan-final.html hard` in the worktree `../yogacara-merge-audit-pipeline`. A PASS: mark the pull request ready and merge it with a merge commit. Grok and gpt-5.6-sol on Cursor are out of usage until 2026-11-02.
 - Audit T1579 juan 67–72 with `scripts/audited.py audit` (owner decision 2026-10-13: review chain only, these six juans only). Branch `claude/audit-t1579-067-072` from the merged `main`. Run juan 72 first and report the Codex quota it used; then the other five. Deliver `audits/`, `artifacts/`, the rewritten md and pages and the reports as one PR. A juan that fails is reported and its text stays.
 - Two older defects on `main` that the security review of this thread named: `scripts/build_shengwen_di_html.py` `fetch_json` retries without TLS verification after a certificate error (CWE-295), and the site search writes `search.json` text into the page with `innerHTML` (CWE-79). Not fixed in this thread.
 - iPhone app: done. The 佛典 tab of the 追更簿 app (`~/projects/manga-tracker`, PR #5 then PR #6 `5a794a7` on main) reads `docs/app/library.json`; the user checked it on the iPhone on 2026-10-06. Keep the manifest shape (version 1) stable or update `Sutra.swift` there in the same change.
@@ -76,7 +76,7 @@
 
 ## Commands
 ```bash
-python3 -B -m unittest discover -s tests                                  # 272 tests
+python3 -B -m unittest discover -s tests                                  # 275 tests
 bash plans/20261013-merge-audit-pipeline-claude/acceptance.sh             # 28 checks of the merge
 python3 scripts/audited.py audit --juans 7 --model echo                   # offline dry run; do it in a scratch copy
 python3 -m unittest discover -s tests -q

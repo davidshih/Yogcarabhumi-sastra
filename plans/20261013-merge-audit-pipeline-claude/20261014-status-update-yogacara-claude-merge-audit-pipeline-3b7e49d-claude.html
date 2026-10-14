@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>yogacara — Status Update</title>
+<style>
+:root{--bg:#f6f7f9;--panel:#fff;--ink:#1a1d21;--muted:#5c6470;--line:#e3e6ea;--accent:#0b6bcb;--accent-soft:#e8f1fb;--crit:#c62828;--high:#d84315;--med:#b8860b;--low:#607d8b;--ok:#2e7d32;--code:#f0f2f5}
+:root[data-theme=dark]{--bg:#14171b;--panel:#1d2126;--ink:#e6e9ed;--muted:#9aa4b0;--line:#2c323a;--accent:#5aa2e8;--accent-soft:#1c2a3a;--crit:#ef6a5f;--high:#f0885c;--med:#e0b84f;--low:#93a7b3;--ok:#7bc47f;--code:#12151a}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#14171b;--panel:#1d2126;--ink:#e6e9ed;--muted:#9aa4b0;--line:#2c323a;--accent:#5aa2e8;--accent-soft:#1c2a3a;--crit:#ef6a5f;--high:#f0885c;--med:#e0b84f;--low:#93a7b3;--ok:#7bc47f;--code:#12151a}}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang TC",sans-serif;overflow-x:hidden}main{max-width:1000px;margin:auto;padding:32px 38px 72px}.ps-fallback{display:flex;flex-wrap:wrap;gap:4px 14px;margin-bottom:20px;padding-bottom:10px;border-bottom:1px solid var(--line)}.ps-fallback a{color:var(--muted);text-decoration:none}@media(max-width:800px){main{padding:24px 16px}}h1{margin:0 0 6px}h2{margin-top:2em;border-bottom:2px solid var(--line)}code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--code);padding:.12em .4em;border-radius:5px;word-break:break-word}.meta{color:var(--muted)}.statgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px}.stat,.card,.next,details,.bluf{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px;margin:12px 0}.bluf{border-left:4px solid var(--accent)}.stat .n{font-size:1.7rem;font-weight:800}.progress{height:12px;background:var(--code);border-radius:10px;overflow:hidden;margin:8px 0}.progress span{display:block;height:100%;background:var(--accent)}.timeline{border-left:2px solid var(--line);padding-left:22px}.timeline li{margin:14px 0}.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px}table{width:100%;border-collapse:collapse}th,td{padding:9px 12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}.badge{display:inline-block;border-radius:99px;padding:.1em .55em;font-size:.75rem;font-weight:700}.crit{color:var(--crit)}.high{color:var(--high)}.med{color:var(--med)}.low{color:var(--low)}.ok{color:var(--ok)}
+</style>
+</head>
+<body>
+<!-- page-shell v2: collapsible numbered TOC (open by default) + Light/Dark theme switch (no stored choice: follow the OS). Canonical copy: repo-docs skill, templates/page-shell.html. Paste it unchanged right after <body>, or run scripts/page_shell.py FILE.html to insert or refresh it. -->
+<style>
+:root{--ps-w:272px;--ps-rail:52px;--ps-bar:52px;--ps-bg:#fff;--ps-ink:#1a1d21;--ps-muted:#5c6470;--ps-line:#e3e6ea;--ps-accent:#0b6bcb;--ps-hover:#eef3f9;color-scheme:light}
+:root[data-theme=dark]{--ps-bg:#1d2126;--ps-ink:#e6e9ed;--ps-muted:#9aa4b0;--ps-line:#2c323a;--ps-accent:#7ab6f0;--ps-hover:#262c34;color-scheme:dark}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--ps-bg:#1d2126;--ps-ink:#e6e9ed;--ps-muted:#9aa4b0;--ps-line:#2c323a;--ps-accent:#7ab6f0;--ps-hover:#262c34;color-scheme:dark}}
+.ps-side{display:none}.ps-js .ps-fallback{display:none}
+.ps-js{padding-left:var(--ps-w)}.ps-js[data-toc=closed]{padding-left:var(--ps-rail)}
+.ps-js .ps-side{display:flex;flex-direction:column;position:fixed;z-index:1000;top:0;bottom:0;left:0;width:var(--ps-w);background:var(--ps-bg);color:var(--ps-ink);border-right:1px solid var(--ps-line);font:14px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang TC",sans-serif;text-align:left}
+.ps-head{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:10px;border-bottom:1px solid var(--ps-line)}
+.ps-side button{display:inline-flex;align-items:center;gap:5px;min-height:32px;margin:0;padding:4px 9px;font:inherit;color:inherit;background:transparent;border:1px solid var(--ps-line);border-radius:7px;cursor:pointer}
+.ps-side button:focus-visible,.ps-toc a:focus-visible{outline:2px solid var(--ps-accent);outline-offset:1px}
+.ps-theme{display:flex;gap:3px}.ps-theme button{padding:4px 7px;font-size:13px}
+.ps-theme button[aria-pressed=true]{background:var(--ps-accent);border-color:var(--ps-accent);color:var(--ps-bg);font-weight:600}
+.ps-toc{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:8px 6px 24px}
+.ps-toc ol{list-style:none;margin:0;padding:0}.ps-toc ol ol{margin:0 0 4px 16px}
+.ps-toc a{display:flex;gap:7px;padding:4px 8px;border-radius:6px;color:var(--ps-ink);text-decoration:none}
+.ps-toc ol ol a{color:var(--ps-muted);font-size:13px}
+.ps-num{flex:none;color:var(--ps-accent);font-variant-numeric:tabular-nums}
+.ps-js[data-toc=closed] .ps-side{width:var(--ps-rail)}
+.ps-js[data-toc=closed] .ps-head,.ps-js[data-toc=closed] .ps-theme{flex-direction:column}
+.ps-js[data-toc=closed] .ps-head{border-bottom:0}
+.ps-js[data-toc=closed] .ps-label,.ps-js[data-toc=closed] .ps-toc{display:none}
+@media(hover:hover){.ps-side button:not([aria-pressed=true]):hover,.ps-toc a:hover{background:var(--ps-hover)}}
+@media(max-width:800px){
+.ps-js,.ps-js[data-toc]{padding-left:0;padding-top:var(--ps-bar);scroll-padding-top:calc(var(--ps-bar) + 8px)}
+.ps-js .ps-side,.ps-js[data-toc] .ps-side{right:0;bottom:auto;width:auto;border-right:0;border-bottom:1px solid var(--ps-line)}
+.ps-js .ps-head,.ps-js[data-toc] .ps-head{flex-direction:row;flex-wrap:nowrap;justify-content:space-between;height:var(--ps-bar);padding:0 12px;border-bottom:0}
+.ps-js[data-toc] .ps-theme{flex-direction:row}.ps-js[data-toc] .ps-label{display:inline}
+.ps-toc{max-height:calc(100vh - var(--ps-bar));max-height:calc(100dvh - var(--ps-bar));border-top:1px solid var(--ps-line)}
+}
+@media(max-width:420px){.ps-js[data-toc] .ps-theme .ps-label{display:none}}
+@media print{.ps-side{display:none!important}.ps-js{padding:0!important}}
+</style>
+<aside class="ps-side" id="ps-side" aria-label="頁面工具">
+<div class="ps-head">
+<button type="button" id="ps-toggle" aria-controls="ps-toc" aria-expanded="true" aria-label="目錄" title="收合 / 展開目錄"><span aria-hidden="true">☰</span><span class="ps-label">目錄</span></button>
+<div class="ps-theme" role="group" aria-label="主題">
+<button type="button" data-theme-choice="light" aria-pressed="false" aria-label="Light" title="Light"><span aria-hidden="true">☀</span><span class="ps-label">Light</span></button>
+<button type="button" data-theme-choice="dark" aria-pressed="false" aria-label="Dark" title="Dark"><span aria-hidden="true">☾</span><span class="ps-label">Dark</span></button>
+</div>
+</div>
+<nav class="ps-toc" id="ps-toc" aria-label="目錄"></nav>
+</aside>
+<script>
+(function(){
+var d=document,root=d.documentElement,side=d.getElementById('ps-side'),toggle=d.getElementById('ps-toggle'),toc=d.getElementById('ps-toc');
+if(!side||!toggle||!toc)return;
+var mobile=window.matchMedia('(max-width:800px)'),os=window.matchMedia('(prefers-color-scheme:dark)'),choices=side.querySelectorAll('[data-theme-choice]');
+function get(k){try{return window.localStorage.getItem(k)}catch(e){return null}}
+function put(k,v){try{window.localStorage.setItem(k,v)}catch(e){}}
+function pressed(t){for(var i=0;i<choices.length;i++)choices[i].setAttribute('aria-pressed',String(choices[i].getAttribute('data-theme-choice')===t))}
+function shown(){var t=root.getAttribute('data-theme');return t==='light'||t==='dark'?t:(os.matches?'dark':'light')}
+function theme(t){if(t==='light'||t==='dark')root.setAttribute('data-theme',t);else root.removeAttribute('data-theme');pressed(shown())}
+function open(o,save){root.setAttribute('data-toc',o?'open':'closed');toggle.setAttribute('aria-expanded',String(o));if(save&&!mobile.matches)put('page-shell-toc',o?'open':'closed')}
+function start(){open(!mobile.matches&&get('page-shell-toc')!=='closed')}
+theme(get('page-shell-theme'));
+if(os.addEventListener)os.addEventListener('change',function(){pressed(shown())});
+root.classList.add('ps-js');
+start();
+if(mobile.addEventListener)mobile.addEventListener('change',start);
+toggle.addEventListener('click',function(){open(toggle.getAttribute('aria-expanded')!=='true',true)});
+side.addEventListener('click',function(e){var b=e.target.closest('[data-theme-choice]');if(b){var t=b.getAttribute('data-theme-choice');theme(t);put('page-shell-theme',t)}});
+toc.addEventListener('click',function(e){var a=e.target.closest('a');if(!a)return;for(var t=d.getElementById(decodeURIComponent(a.hash.slice(1)));t;t=t.parentElement)if(t.tagName==='DETAILS')t.open=true;if(mobile.matches)open(false)});
+function build(){
+var heads=d.querySelectorAll('h2,h3'),list=d.createElement('ol'),item=null,sub=null,n=0,m=0;
+for(var i=0;i<heads.length;i++){
+var h=heads[i],text=h.textContent.replace(/\s+/g,' ').trim(),label=text.replace(/^(?:\d+(?:\.\d+)*[.)、:]?\s+|[①-⑳]\s*)/,'')||text;
+if(!label||side.contains(h))continue;
+if(!h.id){var base=label.toLowerCase().replace(/[^\p{L}\p{N}]+/gu,'-').replace(/^-+|-+$/g,'')||'section',id=base,k=2;while(d.getElementById(id))id=base+'-'+k++;h.id=id}
+var li=d.createElement('li'),a=d.createElement('a'),num=d.createElement('span');
+num.className='ps-num';a.href='#'+encodeURIComponent(h.id);a.appendChild(num);a.appendChild(d.createTextNode(label));li.appendChild(a);
+if(h.tagName==='H3'&&item){m++;num.textContent=n+'.'+m;if(!sub){sub=d.createElement('ol');item.appendChild(sub)}sub.appendChild(li)}
+else{n++;m=0;num.textContent=String(n);item=li;sub=null;list.appendChild(li)}
+}
+toc.appendChild(list);
+}
+if(d.readyState==='loading')d.addEventListener('DOMContentLoaded',build);else build();
+})();
+</script>
+<!-- /page-shell -->
+
+<main>
+<nav class="ps-fallback" aria-label="目錄">
+<strong>Status Update</strong>
+<a href="#overview">1. 進度總覽</a>
+<a href="#timeline">2. 工作時間軸</a>
+<a href="#status">3. 當前狀態</a>
+<a href="#unverified">未驗證</a>
+<a href="#findings">4. 待處理發現</a>
+<a href="#next">5. 下一步計畫</a>
+<a href="#details">6. 技術細節附錄</a>
+</nav>
+<h1>yogacara — Status Update</h1>
+<p class="meta">日期時間: <b>2026-10-14 08:28</b> · 專案: <b>yogacara</b> · 分支: <code>claude/merge-audit-pipeline</code> · Commit: <code>3b7e49d</code> · 作者: Claude Code/claude-opus-5-5</p>
+<div class="bluf" id="bluf"><b>🟢 綠</b> 合併已完成全部驗證（275 個測試、acceptance 28/28、GitHub <code>ci</code> 通過、網站逐 byte 不變），12 個 diff review finding 修掉 11 個，剩下的 C4-1 依你的決定記成已知限制，接著用 merge commit 合併 PR #9；需要你決定：無。</div>
+
+<h2 id="overview">1. 進度總覽</h2>
+<div class="statgrid">
+<div class="stat"><div class="n">28 / 28</div><div><code>acceptance.sh</code> PASS（exit 0）</div></div>
+<div class="stat"><div class="n">275</div><div>測試全過（Python 3.14.7 與 3.12.13）</div></div>
+<div class="stat"><div class="n">11 / 12</div><div>finding 已修（1 個由你決定當已知限制）</div></div>
+<div class="stat"><div class="n">0</div><div>security review finding</div></div>
+<div class="stat"><div class="n">81 / 81</div><div>已發布頁面逐 byte 不變</div></div>
+</div>
+<p>合併 <code>codex/batch1-69</code> 進 <code>main</code>（plan、兩輪 plan review、實作、驗證、三輪修正）</p><div class="progress"><span style="width:95%"></span></div><p>95%（剩合併 PR #9 與確認 Pages 部署）</p>
+<p>卷 67–72 重審（只跑審查鏈，owner 已核准，另開 PR）</p><div class="progress"><span style="width:0%"></span></div><p>0%（等這個 PR merge 之後才開始，先跑卷 72 量額度）</p>
+
+<h2 id="timeline">2. 工作時間軸</h2>
+<ol class="timeline">
+<li><span class="badge ok">已完成</span> Plan v1 → Codex 與 Grok 第一輪 review（14 列裁決全收）→ Codex 第二輪（6 個 finding 全收）→ <code>plan-final.html</code>，locked oracle 27 個測試、<code>acceptance.sh</code> 28 項檢查。</li>
+<li><span class="badge ok">已完成</span> <code>opus-implementer-max</code> 實作：<code>scripts/runner.py</code>、<code>docs/</code>、<code>translations/</code>、<code>data/</code> 維持 main 的 bytes；分支的 runner 以 <code>scripts/audited.py</code> 並存；三個共用函式庫真合併；新增 <code>audit</code> 指令與 CI workflow。</li>
+<li><span class="badge ok">已完成</span> Stage 5 驗證：lock、integrity、acceptance、gates、gitleaks、semgrep、手工 mutant。Codex 與 Grok 的 diff review 共 4 個 finding（其中兩個是同一個缺陷），反例全部實跑為紅。</li>
+<li><span class="badge ok">已完成</span> 修正輪 1：換檔中途出錯不再留下空路徑、網站快照改存磁碟並跨程序還原、審查輸入與封存綁定；另外自己重讀時抓到「重試才過的審查不會被重用」也一起修。新增 18 個測試。</li>
+<li><span class="badge ok">已完成</span> 修正輪 1 的重審：Codex 2 個、Grok 2 個 finding，都在修正輪 1 新加的程式上，反例實跑全紅。</li>
+<li><span class="badge ok">已完成</span> 修正輪 2（最後一輪）：拿掉「複製寫回」的備援，放回譯稿只用 hard link，搬動前先探測；最後核對改成釘住術語庫、policy 與 prompt 的 bytes；候選稿拿不出來時不重建搜尋索引。</li>
+<li><span class="badge ok">已完成</span> 修正輪 2 的重審：Codex 與 Cursor（含 Grok）都撞到用量上限，先推 draft PR #9；23:44 額度重置後 Codex 重審，FIX 2 個 medium，兩輪修正用完所以停手問你。</li>
+<li><span class="badge ok">已完成</span> 你同意第三輪：只修 C3-1、C3-2（副本先驗證過才套用），Codex 重審確認兩個修好，但又抓到 1 個 medium 邊角 C4-1。</li>
+<li><span class="badge ok">已完成</span> 你決定 C4-1 記成已知限制、直接合併（前提是審查前 T1579 沒有 search.json，這個 repo 碰不到）。</li>
+<li><span class="badge high">當前</span> 收尾 commit、PR #9 轉 ready、用 merge commit 合併，確認 <code>ci</code> 與 Pages 部署。</li>
+<li><span class="badge low">待做</span> 卷 72 先審一卷量 Codex 額度，回報後再跑 67–71；結果另開 PR。</li>
+<li><span class="badge low">待做</span> dharma-site monorepo M2（treatises 匯入）等這個 merge。</li>
+</ol>
+
+<h2 id="status">3. 當前狀態</h2>
+<div class="tablewrap"><table>
+<tr><th>項目</th><th>狀態</th><th>驗證</th></tr>
+<tr><td>Acceptance lock（trusted copy）</td><td><span class="badge ok">完成</span></td><td>3 個檔 OK，exit 0</td></tr>
+<tr><td><code>harness.sh integrity</code></td><td><span class="badge ok">完成</span></td><td>exit 0，沒有刪測試、加 skip、砍 assert</td></tr>
+<tr><td><code>acceptance.sh</code></td><td><span class="badge ok">完成</span></td><td>base 9 PASS / 19 FAIL → 最終 28 PASS / 0 FAIL，exit 0，56 秒</td></tr>
+<tr><td>整套測試</td><td><span class="badge ok">完成</span></td><td>base：repo 的 44 個過、planner 的 27 個依設計紅 → 最終 275 個全過（3.14.7 與 3.12.13），沒有 skip</td></tr>
+<tr><td>既有 gates</td><td><span class="badge ok">完成</span></td><td><code>llm.py</code> self-check OK；連結全通；81 頁 11,556 個段落 id 齊全；<code>plans/20260929-progress-page/acceptance.sh</code> 12 PASS；<code>actionlint</code> 乾淨</td></tr>
+<tr><td>網站不變</td><td><span class="badge ok">完成</span></td><td><code>git diff &lt;base&gt; -- docs translations data</code> 是空的</td></tr>
+<tr><td>Deterministic scan</td><td><span class="badge ok">完成</span></td><td>gitleaks 0；semgrep 1（main 既有的 SHA-1 段落 id，非密碼學用途，已駁回）</td></tr>
+<tr><td>Security review（Codex gpt-6.1-sol xhigh）</td><td><span class="badge ok">PASS</span></td><td>26 個變更檔全讀，0 finding；第一次嘗試斷線、Fable 備援撞額度，第二次成功</td></tr>
+<tr><td>Diff review 第一輪（Codex ∥ Grok）</td><td><span class="badge ok">已修</span></td><td>FIX：Codex 3 個、Grok 1 個，全收，全部有紅轉綠的 regression test</td></tr>
+<tr><td>修正輪 1 的重審（Codex ∥ Grok）</td><td><span class="badge ok">已修</span></td><td>FIX：Codex 2 個、Grok 2 個，全收，反例照原樣實跑全紅</td></tr>
+<tr><td>修正輪 2 的重審（Codex）</td><td><span class="badge ok">已修</span></td><td>FIX：2 個 medium，你同意第三輪後修掉</td></tr>
+<tr><td>修正輪 3 的重審（Codex）</td><td><span class="badge med">已知限制</span></td><td>FIX：1 個 medium（C4-1），反例實跑為紅；你決定記成已知限制</td></tr>
+<tr><td>GitHub <code>ci</code></td><td><span class="badge ok">通過</span></td><td>新 workflow 第一次執行（ubuntu、Python 3.12）就過</td></tr>
+<tr><td>Mutation（手工，repo 沒有 mutmut）</td><td><span class="badge ok">完成</span></td><td>審查前 25 個 mutant 殺 22（3 個存活都已處理）；修正輪 1、2 的程式 34 個、第三輪 6 個 mutant 全殺。repo 沒有 mutmut，用手工 mutant 代替</td></tr>
+</table></div>
+<h3 id="unverified">未驗證</h3>
+<ul>
+<li>真實模型跑 <code>audit</code>：到目前只用離線後端（<code>echo</code>、<code>echo-finding*</code>）與攔截過的 CLI 測過，沒花過真額度，也不知道一卷要多少 — 合併後在新 branch 跑 <code>python3 scripts/audited.py audit --juans 72</code>。</li>
+<li>Merge 後的 Pages 部署：內容應該逐 byte 相同，但還沒實際部署 — merge 後看 <code>gh run list --workflow deploy-pages.yml --limit 1</code>，再抓一頁比對。</li>
+<li>沒有 hard link 的檔案系統：指令會在搬動譯稿前拒絕，但只用 patch <code>os.link</code> 的測試模擬過，沒在真的 exFAT 或網路磁碟上跑 — 需要時把 repo 複製到那種磁碟跑 <code>python3 -B -m unittest tests.test_legacy_audit_paths</code>。</li>
+<li>分支原本的完整 audited pipeline（<code>enqueue</code> 加 <code>run</code>）在合併後沒有用真模型跑過，只有它自己的 112 個測試 — <code>python3 -B -m unittest tests.test_pipeline_audit</code>。</li>
+</ul>
+
+<h2 id="findings">4. 待處理發現</h2>
+<div class="card"><span class="badge med">MED</span><p><b>C4-1 已知限制（你的決定）。</b>審查前若沒有 <code>docs/T1579/search.json</code>，加上重建後被殺、續跑失敗、原稿又連不回去，候選稿的搜尋紀錄會留在新建的索引。這個 repo 的 T1579 索引一直存在，所以碰不到；不要在審查前手動刪它。4 行修法寫在 <code>acceptance-result.md</code>（C4-1）。</p></div>
+<div class="card"><span class="badge med">MED</span><p><b>main 上既有的兩個安全缺陷（不是這次造成，也沒被這次改到）。</b><code>scripts/build_shengwen_di_html.py:60</code> 抓 CBETA 資料遇到憑證錯誤會改用不驗證 TLS 重試（CWE-295）；同檔 <code>:373</code> 的站內搜尋用 <code>innerHTML</code> 把 <code>search.json</code> 的文字直接塞進頁面（CWE-79），而那些文字是模型輸出。已開成獨立 task chip，沒有塞進這個 PR。</p></div>
+<div class="card"><span class="badge low">LOW</span><p><b>repo 沒有 mutation 工具。</b><code>command -v mutmut</code> 找不到，repo 也沒有 <code>pyproject.toml</code>。這次用手工 mutant 代替。要正式的 mutation check 需要你同意裝：<code>uv add --dev mutmut</code>。</p></div>
+<div class="card"><span class="badge low">LOW</span><p><b>外部 reviewer 的額度。</b>Codex 在昨晚用到 5 小時上限（現在已重置）；Cursor（Grok 與 gpt-5.6-sol）月額度用完，到 11/2 才恢復。卷 67–72 的審查吃的是 Codex 額度，所以先跑一卷量。</p></div>
+
+<h2 id="next">5. 下一步計畫</h2>
+<div class="next"><b>P0 · 約 15 分鐘</b><p>收尾 commit、PR #9 轉 ready、用 merge commit 合併，確認 <code>ci</code> 綠、Pages 部署成功、<code>docs translations data</code> 沒變。</p></div>
+<div class="next"><b>P1 · 約 30–60 分鐘（看模型速度）</b><p>從新的 <code>main</code> 開 <code>claude/audit-t1579-067-072</code>，先跑卷 72，回報花了多少額度與結果，再決定其餘五卷怎麼排。</p></div>
+<div class="next"><b>P2 · 視額度而定</b><p>卷 67–71 重審，結果（<code>audits/</code>、<code>artifacts/</code>、改寫的 md 與頁面、報告）另開 PR。沒過的卷只給報告，譯文不動。</p></div>
+<div class="next"><b>P3</b><p>dharma-site monorepo M2：把 treatises 匯入，snapshot 取合併後的 <code>main</code>。</p></div>
+
+<h2 id="details">6. 技術細節附錄</h2>
+<details><summary>Root cause / evidence：diff review 的四個 finding</summary>
+<p><b>C-1 / G-1（high）換檔中途出錯，正式譯稿不見。</b>第 9 步先 <code>os.replace(md, backup)</code> 再把候選稿 hard link 到原路徑；原本只接 <code>FileExistsError</code>，其他 <code>OSError</code> 會讓指令以 fail 收場但路徑是空的。修法：所有換檔都經過 <code>settle_swap</code>，路徑空就用 hard link 把搬走的檔放回去；候選稿已到位但沒記錄的，補記成 installed，之後失敗就會把原稿換回來；放不回去時保留紀錄、報告寫出檔案位置，下一次 <code>--resume</code> 再放。</p>
+<p><b>C-2（high）重建後被殺再續跑失敗，網站停在候選稿。</b>頁面與搜尋索引的快照原本只在記憶體（plan 自己就這樣寫，是 plan 的洞）。修法：快照存到 <code>audits/&lt;job&gt;/backup/&lt;n&gt;-site/</code>；任何一次失敗都還原譯稿與網站。隔了一次程序的還原不把舊索引寫回去，而是從譯稿重建，因為中間可能有別的工作發布了別卷。</p>
+<p><b>C-3（medium）審查等待期間改了 policy，封存的版本跟實際審的不一致。</b>修法：事件的 policy hash 在送出時取；過關前用重用規則把每一段再對一次（沒變就不呼叫模型，變了就重審那一段）；quality gate 存的就是這次對過的那一份；對的過程中又變就讓該卷 fail，<code>--resume</code> 會補完。</p>
+<p><b>C3-1、C3-2（Codex，第二輪修正的重審）。</b>候選稿拿不出來時，整份索引快照寫回去會把別卷剛發布的更新退回；釘住輸入的清單靠列目錄，漏掉的 prompt 會改讀 live 檔。第三輪的修法：只把這一卷的搜尋紀錄放回去；必要檔案按名稱釘住，釘住期間清單外的輸入直接擋下。</p>
+<p><b>C4-1（Codex，第三輪的重審，medium）。</b>見第 4 節，已知限制。</p>
+<p><b>O-1（medium，自己重讀修正時抓到的）重試才過的審查不會被重用。</b>審查答案第一次不合格、重試才過時，佐證指向的是重試那筆事件，它的 prompt hash 是重試信封的 hash，跟重用規則比對的原始 prompt 不同，所以永遠被當成沒審過：續跑會重問，而 C-3 新加的最後核對會讓每次執行都多問一次，還可能問出新的 finding。修法：事件多記一個原始 prompt 的 hash，重用規則兩個都認。</p>
+<p><b>修正輪 1 的重審抓到的四個（都在修正輪 1 新加的程式上）。</b>C2-1、C2-2（Codex，high）：為了「連不了 hard link 也要放回去」加的複製備援，清理時會刪掉不是自己建的檔，被殺在半路會留下半份譯稿、續跑把它當成 owner 的新稿。修法是把複製整個拿掉，放回譯稿只用 hard link（唯一既原子又不覆寫的步驟），並在搬動譯稿之前先探測檔案系統做不做得出 hard link。G2-1（Grok，high）：最後核對是前後各讀一次輸入比對，改了又改回去比不出來。修法是只讀一次並釘住，最後核對、其餘檢查與封存都用這一份 bytes。G2-2（Grok，medium）：候選稿拿不出來時還從譯稿重建搜尋索引，索引會出現沒過審的文字。修法是這種情況寫回快照。</p>
+<p>每一輪的反例都先在丟棄式副本實跑確認為紅才裁決。最終的測試檔對著修正輪 1 的程式跑有 13 個紅；修正輪 1、2 的程式做了 34 個手工 mutant、第三輪 6 個，全部被測試殺掉。</p>
+</details>
+<details><summary>Changed files</summary>
+<p><code>scripts/audited.py</code> — 分支的 runner 加上 K4 調整與舊譯文審查指令；三輪修正新增 <code>put_back</code>、<code>require_hard_link</code>、<code>record_install</code>、<code>settle_swap</code>、<code>recorded_site_backup</code>、<code>snapshot_site</code>、<code>restore_site</code>、<code>undo_install</code>、<code>pinned_review_inputs</code>、<code>gate_audit_candidate</code>、<code>restore_juan_search_records</code>。</p>
+<p><code>scripts/llm.py</code>、<code>scripts/build_translation_html.py</code>、<code>scripts/check_translation_coverage.py</code> — 兩邊的真合併。</p>
+<p><code>scripts/audit.py</code>、<code>scripts/publisher.py</code>、<code>prompts/audited/*.txt</code>（8 個）— 分支的 bytes。</p>
+<p><code>tests/</code> — 分支的 5 個測試檔與 <code>tests/__init__.py</code>；新增 <code>test_legacy_audit_acceptance.py</code>（27，locked）、<code>test_audited_adaptations.py</code>、<code>test_shared_libraries_union.py</code>、<code>test_legacy_audit_paths.py</code>（44）。</p>
+<p><code>.github/workflows/ci.yml</code>、<code>README.md</code>、<code>HANDOFF.md</code>、<code>plans/20261013-merge-audit-pipeline-claude/</code>。</p>
+<p>沒變：<code>scripts/runner.py</code>、<code>docs/</code>、<code>translations/</code>、<code>data/</code>。</p>
+</details>
+<details><summary>Suggested commit message</summary>
+<p><code>(feat) merge codex/batch1-69: the audited pipeline runs beside the production runner, with a review-only audit of published juans</code></p>
+</details>
+</main>
+</body>
+</html>

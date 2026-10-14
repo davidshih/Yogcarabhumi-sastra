@@ -324,7 +324,15 @@ Mutants of round 3, in a throwaway copy, against the two test files of the audit
 
 ## Re-review of fix round 3
 
-Codex `gpt-6.1-sol` xhigh, incremental since the tree of the review before (`4aac67d`). Grok is not run: Cursor is out of usage until 2026-11-02. Results: see "Re-review of fix round 3: results" below.
+Codex `gpt-6.1-sol` xhigh, incremental since the tree of the review before (`4aac67d`), 2026-10-14 07:18. Grok was not run: Cursor is out of usage until 2026-11-02. **Verdict FIX, 1 finding (medium).** File: `diff.review.md`. It confirms that C3-1 and C3-2 are fixed.
+
+| # | Source | Severity | Finding | Decision | Reason | Fix |
+| --- | --- | --- | --- | --- | --- | --- |
+| C4-1 | Codex | medium | `restore_juan_search_records` returns when the snapshot has no `search.json` of the work. If the work had no search index before the audit, a later attempt that cannot take the candidate out leaves the records of the candidate in the index that the killed attempt built. | valid; **not fixed: accepted as a known limit by the owner** (2026-10-14) | Counterexample red (run as written in a throwaway copy): the mark of the candidate stayed in `docs/T1579/search.json`. It needs no index of the work before the audit, a kill after the rebuild, a resume that fails, and an original that cannot be linked back. The audit command supports T1579 only, and `docs/T1579/search.json` exists and is rebuilt by every publish, so the first condition does not hold in this repository unless the file is deleted by hand. | none. A fix was prepared and verified in a throwaway copy only (4 lines in `restore_juan_search_records`: with no snapshot of the index, the juan had no records, so its records only go; one test; the counterexample green, the whole suite green on Python 3.14.7 and 3.12.13). The owner chose to merge without it and record the limit. |
+
+## Run status: done
+
+The owner decided on 2026-10-14 to merge with C4-1 recorded as a known limit of `scripts/audited.py audit` (it is in `HANDOFF.md` under Gotchas). Pull request #9 is merged with a merge commit after the `ci` check passes on its last commit.
 
 ## Codex cost
 
@@ -345,6 +353,7 @@ Codex `gpt-6.1-sol` xhigh, incremental since the tree of the review before (`4aa
 | Re-review of fix round 2, Codex's slot through Cursor (failed: usage limit) | `cursor usage: unknown` |
 | Re-review of fix round 2, Grok (failed: out of usage) | `cursor usage: unknown` |
 | Re-review of fix round 2, Codex after the quota reset | `quota: 5h 0%->6% (+6), weekly 52%->53% (+1), input 1415378 tokens (1289472 cached), output 11047` |
+| Re-review of fix round 3, Codex | `quota: 5h 4%->8% (+4), weekly 54%->55% (+1), input 707686 tokens (616576 cached), output 6635` |
 
 ## Quality gate
 

@@ -1,5 +1,5 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "work": "T1579",
   "scope": "Yogacarabhumi Sravakabhumi vernacular translation",
   "principles": [
@@ -33,7 +33,33 @@
         "作意思惟"
       ],
       "status": "stable",
-      "rule": "作為七作意等術語時保留「作意」；需白話展開時用「專注觀修（作意）」或「作意思惟」。"
+      "rule": "作為七作意等術語時保留「作意」；需白話展開時用「專注觀修（作意）」或「作意思惟」。",
+      "language_evidence": {
+        "chinese": [
+          {
+            "form": "作意",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "sanskrit": [
+          {
+            "form": "manaskara",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "pali": [
+          {
+            "form": "manasikara",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ]
+      }
     },
     {
       "id": "adhimoksha",
@@ -58,7 +84,33 @@
         "決定勝解"
       ],
       "status": "stable",
-      "rule": "不簡化為一般理解；重點是對所緣相決定取持。"
+      "rule": "不簡化為一般理解；重點是對所緣相決定取持。",
+      "language_evidence": {
+        "chinese": [
+          {
+            "form": "勝解",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "sanskrit": [
+          {
+            "form": "adhimoksha",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "pali": [
+          {
+            "form": "adhimokkha",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ]
+      }
     },
     {
       "id": "pudgala",
@@ -84,7 +136,33 @@
         "個體"
       ],
       "status": "stable",
-      "rule": "可譯為「人」，但首次或論義精密處保留玄奘音譯。"
+      "rule": "可譯為「人」，但首次或論義精密處保留玄奘音譯。",
+      "language_evidence": {
+        "chinese": [
+          {
+            "form": "補特伽羅",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "sanskrit": [
+          {
+            "form": "pudgala",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "pali": [
+          {
+            "form": "puggala",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ]
+      }
     },
     {
       "id": "shamatha",
@@ -110,7 +188,39 @@
         "止"
       ],
       "status": "stable",
-      "rule": "白話用「止」，重要處用「止（奢摩他）」。"
+      "rule": "白話用「止」，重要處用「止（奢摩他）」。",
+      "language_evidence": {
+        "chinese": [
+          {
+            "form": "奢摩他",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "sanskrit": [
+          {
+            "form": "shamatha",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          },
+          {
+            "form": "samatha",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "pali": [
+          {
+            "form": "samatha",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ]
+      }
     },
     {
       "id": "vipashyana",
@@ -136,7 +246,39 @@
         "觀"
       ],
       "status": "stable",
-      "rule": "白話用「觀」，重要處用「觀（毘鉢舍那）」。"
+      "rule": "白話用「觀」，重要處用「觀（毘鉢舍那）」。",
+      "language_evidence": {
+        "chinese": [
+          {
+            "form": "毘鉢舍那",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "sanskrit": [
+          {
+            "form": "vipashyana",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          },
+          {
+            "form": "vipasyana",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "pali": [
+          {
+            "form": "vipassana",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ]
+      }
     },
     {
       "id": "prayoga",
@@ -158,7 +300,26 @@
         "加行"
       ],
       "status": "stable",
-      "rule": "保留玄奘詞；必要時以語境說明為修行上的用功、預備或推進。"
+      "rule": "保留玄奘詞；必要時以語境說明為修行上的用功、預備或推進。",
+      "language_evidence": {
+        "chinese": [
+          {
+            "form": "加行",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "sanskrit": [
+          {
+            "form": "prayoga",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "pali": []
+      }
     },
     {
       "id": "dausthulya",
@@ -186,7 +347,32 @@
         "粗重"
       ],
       "status": "review",
-      "rule": "依玄奘原詞保留「麁」於括注；白話正文多用「粗重」。"
+      "rule": "依玄奘原詞保留「麁」於括注；白話正文多用「粗重」。",
+      "language_evidence": {
+        "chinese": [
+          {
+            "form": "麁性",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "sanskrit": [
+          {
+            "form": "audarya",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          },
+          {
+            "form": "dausthulya",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "pali": []
+      }
     },
     {
       "id": "shanta",
@@ -213,7 +399,33 @@
         "寂靜"
       ],
       "status": "stable",
-      "rule": "與下地麁相相對；白話用「寂靜相／寂靜性」。"
+      "rule": "與下地麁相相對；白話用「寂靜相／寂靜性」。",
+      "language_evidence": {
+        "chinese": [
+          {
+            "form": "靜性",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "sanskrit": [
+          {
+            "form": "shanta",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "pali": [
+          {
+            "form": "santa",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ]
+      }
     },
     {
       "id": "viveka",
@@ -244,7 +456,45 @@
         "厭離欲"
       ],
       "status": "stable",
-      "rule": "依語境分辨離欲界欲、離煩惱欲、境界離，不一律譯成抽象厭離。"
+      "rule": "依語境分辨離欲界欲、離煩惱欲、境界離，不一律譯成抽象厭離。",
+      "language_evidence": {
+        "chinese": [
+          {
+            "form": "離欲",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "sanskrit": [
+          {
+            "form": "viveka",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          },
+          {
+            "form": "vairagya",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "pali": [
+          {
+            "form": "viveka",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          },
+          {
+            "form": "viraga",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ]
+      }
     },
     {
       "id": "pratipassrabdhi",
@@ -268,7 +518,33 @@
         "輕安"
       ],
       "status": "stable",
-      "rule": "保留「輕安」；必要時加身心或廣大等語境。"
+      "rule": "保留「輕安」；必要時加身心或廣大等語境。",
+      "language_evidence": {
+        "chinese": [
+          {
+            "form": "輕安",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "sanskrit": [
+          {
+            "form": "prashrabdhi",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "pali": [
+          {
+            "form": "passaddhi",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ]
+      }
     },
     {
       "id": "ekagrata",
@@ -292,7 +568,33 @@
         "心專注一境"
       ],
       "status": "stable",
-      "rule": "首次用雙軌，之後可保留玄奘詞。"
+      "rule": "首次用雙軌，之後可保留玄奘詞。",
+      "language_evidence": {
+        "chinese": [
+          {
+            "form": "心一境性",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "sanskrit": [
+          {
+            "form": "cittaikagrata",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "pali": [
+          {
+            "form": "cittass'ekaggata",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ]
+      }
     },
     {
       "id": "dhyana",
@@ -322,7 +624,33 @@
         "禪定"
       ],
       "status": "stable",
-      "rule": "卷11/12與等持、等至並列時保留「靜慮」；必要時說明為靜慮定，不可把等持、等至也都混譯成禪定。"
+      "rule": "卷11/12與等持、等至並列時保留「靜慮」；必要時說明為靜慮定，不可把等持、等至也都混譯成禪定。",
+      "language_evidence": {
+        "chinese": [
+          {
+            "form": "靜慮",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "sanskrit": [
+          {
+            "form": "dhyana",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "pali": [
+          {
+            "form": "jhana",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ]
+      }
     },
     {
       "id": "vashikara",
@@ -343,7 +671,19 @@
         "暫時伏斷"
       ],
       "status": "stable",
-      "rule": "必須和「永害種子」區分；世間道此處只是暫伏，不作究竟斷。"
+      "rule": "必須和「永害種子」區分；世間道此處只是暫伏，不作究竟斷。",
+      "language_evidence": {
+        "chinese": [
+          {
+            "form": "伏斷",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "sanskrit": [],
+        "pali": []
+      }
     },
     {
       "id": "anuśaya",
@@ -368,7 +708,33 @@
         "潛伏"
       ],
       "status": "stable",
-      "rule": "保留「隨眠」；需要白話時說明為尚未永斷的潛伏煩惱。"
+      "rule": "保留「隨眠」；需要白話時說明為尚未永斷的潛伏煩惱。",
+      "language_evidence": {
+        "chinese": [
+          {
+            "form": "隨眠",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "sanskrit": [
+          {
+            "form": "anushaya",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "pali": [
+          {
+            "form": "anusaya",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ]
+      }
     },
     {
       "id": "parikarman",
@@ -392,7 +758,33 @@
         "近分"
       ],
       "status": "review",
-      "rule": "無色定段落多與根本定相對；先保留玄奘詞。"
+      "rule": "無色定段落多與根本定相對；先保留玄奘詞。",
+      "language_evidence": {
+        "chinese": [
+          {
+            "form": "近分",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "sanskrit": [
+          {
+            "form": "samantaka",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "pali": [
+          {
+            "form": "upacara",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ]
+      }
     },
     {
       "id": "mulasamapatti",
@@ -414,7 +806,26 @@
         "根本"
       ],
       "status": "review",
-      "rule": "與近分相對時譯為根本定；不要只譯成一般的根本。"
+      "rule": "與近分相對時譯為根本定；不要只譯成一般的根本。",
+      "language_evidence": {
+        "chinese": [
+          {
+            "form": "根本",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "sanskrit": [],
+        "pali": [
+          {
+            "form": "appana",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ]
+      }
     },
     {
       "id": "animitta-samapatti",
@@ -437,7 +848,33 @@
         "無想定"
       ],
       "status": "stable",
-      "rule": "保留定名，並標明唯異生能入。"
+      "rule": "保留定名，並標明唯異生能入。",
+      "language_evidence": {
+        "chinese": [
+          {
+            "form": "無想定",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "sanskrit": [
+          {
+            "form": "asamjni-samapatti",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "pali": [
+          {
+            "form": "asanna-samapatti",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ]
+      }
     },
     {
       "id": "nirodha-samapatti",
@@ -460,7 +897,33 @@
         "滅盡定"
       ],
       "status": "stable",
-      "rule": "保留定名，並標明唯聖者能入。"
+      "rule": "保留定名，並標明唯聖者能入。",
+      "language_evidence": {
+        "chinese": [
+          {
+            "form": "滅盡定",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "sanskrit": [
+          {
+            "form": "nirodha-samapatti",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "pali": [
+          {
+            "form": "nirodha-samapatti",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ]
+      }
     },
     {
       "id": "abhijna",
@@ -484,7 +947,33 @@
         "神通"
       ],
       "status": "stable",
-      "rule": "保留神通類名；各通名依玄奘詞。"
+      "rule": "保留神通類名；各通名依玄奘詞。",
+      "language_evidence": {
+        "chinese": [
+          {
+            "form": "五神通",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "sanskrit": [
+          {
+            "form": "abhijna",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "pali": [
+          {
+            "form": "abhinna",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ]
+      }
     },
     {
       "id": "four-noble-truths",
@@ -516,7 +1005,33 @@
         "聖諦"
       ],
       "status": "stable",
-      "rule": "諦名保留玄奘詞；不可只譯成普通道理。必要時解釋為苦、苦因集起、苦滅、滅苦之道。"
+      "rule": "諦名保留玄奘詞；不可只譯成普通道理。必要時解釋為苦、苦因集起、苦滅、滅苦之道。",
+      "language_evidence": {
+        "chinese": [
+          {
+            "form": "四聖諦",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "sanskrit": [
+          {
+            "form": "catvari aryasatyani",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "pali": [
+          {
+            "form": "cattari ariyasaccani",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ]
+      }
     },
     {
       "id": "sixteen-aspects",
@@ -570,7 +1085,23 @@
         "出行"
       ],
       "status": "stable",
-      "rule": "此處「行」是觀察行相，不是一般行為；「苦行」不可譯成苦修或禁欲修行。"
+      "rule": "此處「行」是觀察行相，不是一般行為；「苦行」不可譯成苦修或禁欲修行。",
+      "language_evidence": {
+        "chinese": [
+          {
+            "form": "十六行",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "sanskrit": [],
+        "pali": []
+      },
+      "source_exclusions": [
+        "空行風"
+      ],
+      "sense_note": "Air-moving wind is not the emptiness aspect of the truths."
     },
     {
       "id": "nirvedha-bhagiya",
@@ -601,7 +1132,26 @@
         "世第一法"
       ],
       "status": "stable",
-      "rule": "卷34依原文用「煗」不改為「煖」；此處「忍」是道位與忍可，不是忍耐。"
+      "rule": "卷34依原文用「煗」不改為「煖」；此處「忍」是道位與忍可，不是忍耐。",
+      "language_evidence": {
+        "chinese": [
+          {
+            "form": "順決擇分",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "sanskrit": [
+          {
+            "form": "nirvedha-bhagiya",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "pali": []
+      }
     },
     {
       "id": "abhisamaya",
@@ -629,7 +1179,33 @@
         "現證"
       ],
       "status": "stable",
-      "rule": "連到見道與證果；不可譯成一般觀察。"
+      "rule": "連到見道與證果；不可譯成一般觀察。",
+      "language_evidence": {
+        "chinese": [
+          {
+            "form": "現觀",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "sanskrit": [
+          {
+            "form": "abhisamaya",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "pali": [
+          {
+            "form": "abhisamaya",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ]
+      }
     },
     {
       "id": "darshana-marga",
@@ -652,7 +1228,26 @@
         "見道所斷"
       ],
       "status": "stable",
-      "rule": "保留玄奘詞；不可白話成看見道路。"
+      "rule": "保留玄奘詞；不可白話成看見道路。",
+      "language_evidence": {
+        "chinese": [
+          {
+            "form": "見道",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "sanskrit": [
+          {
+            "form": "darshana-marga",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "pali": []
+      }
     },
     {
       "id": "bhavana-marga",
@@ -675,7 +1270,26 @@
         "修所斷"
       ],
       "status": "stable",
-      "rule": "保留玄奘詞；與見道所斷區分。"
+      "rule": "保留玄奘詞；與見道所斷區分。",
+      "language_evidence": {
+        "chinese": [
+          {
+            "form": "修道",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "sanskrit": [
+          {
+            "form": "bhavana-marga",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "pali": []
+      }
     },
     {
       "id": "pratyekabuddha",
@@ -714,7 +1328,33 @@
         "獨覺行"
       ],
       "status": "stable",
-      "rule": "保留術語；不可譯成孤獨的人。"
+      "rule": "保留術語；不可譯成孤獨的人。",
+      "language_evidence": {
+        "chinese": [
+          {
+            "form": "獨覺",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "sanskrit": [
+          {
+            "form": "pratyekabuddha",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "pali": [
+          {
+            "form": "paccekabuddha",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ]
+      }
     },
     {
       "id": "rhinoceros-like",
@@ -739,7 +1379,19 @@
         "部眾同行"
       ],
       "status": "stable",
-      "rule": "麟角喻重點是獨行；部行喻重點是可與部眾同行。"
+      "rule": "麟角喻重點是獨行；部行喻重點是可與部眾同行。",
+      "language_evidence": {
+        "chinese": [
+          {
+            "form": "麟角喻",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "sanskrit": [],
+        "pali": []
+      }
     },
     {
       "id": "kaushalya",
@@ -771,7 +1423,33 @@
         "善知"
       ],
       "status": "stable",
-      "rule": "此處是對法類別的通達能力，不只是技巧熟練。"
+      "rule": "此處是對法類別的通達能力，不只是技巧熟練。",
+      "language_evidence": {
+        "chinese": [
+          {
+            "form": "善巧",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "sanskrit": [
+          {
+            "form": "kaushalya",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "pali": [
+          {
+            "form": "kosalla",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ]
+      }
     },
     {
       "id": "fruits",
@@ -799,7 +1477,33 @@
         "究竟邊際"
       ],
       "status": "stable",
-      "rule": "果位名保留；不可泛譯成成果。"
+      "rule": "果位名保留；不可泛譯成成果。",
+      "language_evidence": {
+        "chinese": [
+          {
+            "form": "沙門果",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "sanskrit": [
+          {
+            "form": "shramanya-phala",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "pali": [
+          {
+            "form": "samannaphala",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ]
+      }
     },
     {
       "id": "samahita-bhumi",
@@ -824,7 +1528,26 @@
         "等引地"
       ],
       "status": "stable",
-      "rule": "保留地名骨架；不可泛譯成「禪修」而丟掉本地分的分類。"
+      "rule": "保留地名骨架；不可泛譯成「禪修」而丟掉本地分的分類。",
+      "language_evidence": {
+        "chinese": [
+          {
+            "form": "三摩呬多地",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "sanskrit": [
+          {
+            "form": "samahita-bhumi",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "pali": []
+      }
     },
     {
       "id": "samadhi",
@@ -853,7 +1576,33 @@
         "心安住一境"
       ],
       "status": "stable",
-      "rule": "與「等至／三摩鉢底」分開；等持偏定心狀態與心一境性。"
+      "rule": "與「等至／三摩鉢底」分開；等持偏定心狀態與心一境性。",
+      "language_evidence": {
+        "chinese": [
+          {
+            "form": "等持",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "sanskrit": [
+          {
+            "form": "samadhi",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "pali": [
+          {
+            "form": "samadhi",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ]
+      }
     },
     {
       "id": "samapatti",
@@ -881,7 +1630,33 @@
         "定境現前"
       ],
       "status": "stable",
-      "rule": "不譯成等持；偏進入並成就某種定境。"
+      "rule": "不譯成等持；偏進入並成就某種定境。",
+      "language_evidence": {
+        "chinese": [
+          {
+            "form": "等至",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "sanskrit": [
+          {
+            "form": "samapatti",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "pali": [
+          {
+            "form": "samapatti",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ]
+      }
     },
     {
       "id": "vimoksha",
@@ -909,7 +1684,33 @@
         "親身證得"
       ],
       "status": "stable",
-      "rule": "卷11/12多指八解脫分類，不只是一般解放；「身作證具足住」宜譯為親身證得並具足安住。"
+      "rule": "卷11/12多指八解脫分類，不只是一般解放；「身作證具足住」宜譯為親身證得並具足安住。",
+      "language_evidence": {
+        "chinese": [
+          {
+            "form": "解脫",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "sanskrit": [
+          {
+            "form": "vimoksha",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "pali": [
+          {
+            "form": "vimokkha",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ]
+      }
     },
     {
       "id": "five-hindrances",
@@ -941,7 +1742,33 @@
         "疑蓋"
       ],
       "status": "stable",
-      "rule": "五蓋是入靜慮與等至的障礙；合稱不可拆錯。"
+      "rule": "五蓋是入靜慮與等至的障礙；合稱不可拆錯。",
+      "language_evidence": {
+        "chinese": [
+          {
+            "form": "五蓋",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "sanskrit": [
+          {
+            "form": "panca nivaranani",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "pali": [
+          {
+            "form": "panca nivaranani",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ]
+      }
     },
     {
       "id": "ahara-nonahara",
@@ -968,7 +1795,33 @@
         "非食"
       ],
       "status": "stable",
-      "rule": "此處「食」是使蓋增長的條件，「非食」是不生或斷除的對治條件；不可譯成飲食。"
+      "rule": "此處「食」是使蓋增長的條件，「非食」是不生或斷除的對治條件；不可譯成飲食。",
+      "language_evidence": {
+        "chinese": [
+          {
+            "form": "食／非食",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "sanskrit": [
+          {
+            "form": "ahara",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "pali": [
+          {
+            "form": "ahara",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ]
+      }
     },
     {
       "id": "seven-root-attentions",
@@ -1005,7 +1858,19 @@
         "七種專注觀修"
       ],
       "status": "stable",
-      "rule": "七名應固定保留，不自由改寫；需要白話時可總稱七階段觀修。"
+      "rule": "七名應固定保留，不自由改寫；需要白話時可總稱七階段觀修。",
+      "language_evidence": {
+        "chinese": [
+          {
+            "form": "七種作意",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "sanskrit": [],
+        "pali": []
+      }
     },
     {
       "id": "three-samadhis",
@@ -1036,7 +1901,33 @@
         "無相"
       ],
       "status": "stable",
-      "rule": "「無願」不是沒有志願；是對五取蘊不再希求。"
+      "rule": "「無願」不是沒有志願；是對五取蘊不再希求。",
+      "language_evidence": {
+        "chinese": [
+          {
+            "form": "三三摩地",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "sanskrit": [
+          {
+            "form": "trayah samadhayah",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "pali": [
+          {
+            "form": "tayo samadhi",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ]
+      }
     },
     {
       "id": "meditation-objects-aspects",
@@ -1066,7 +1957,19 @@
         "所緣"
       ],
       "status": "stable",
-      "rule": "「相」是修定時取用、遠離或修習的操作對象，不是抽象外貌。"
+      "rule": "「相」是修定時取用、遠離或修習的操作對象，不是抽象外貌。",
+      "language_evidence": {
+        "chinese": [
+          {
+            "form": "所緣諸相",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "sanskrit": [],
+        "pali": []
+      }
     },
     {
       "id": "assada-samadhi",
@@ -1093,7 +1996,26 @@
         "愛味相應"
       ],
       "status": "stable",
-      "rule": "「愛味」不是滋味好，是對定功德生貪戀。"
+      "rule": "「愛味」不是滋味好，是對定功德生貪戀。",
+      "language_evidence": {
+        "chinese": [
+          {
+            "form": "愛味相應靜慮等定",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "sanskrit": [],
+        "pali": [
+          {
+            "form": "assada",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ]
+      }
     },
     {
       "id": "pure-samadhi",
@@ -1115,7 +2037,19 @@
         "不愛味的定"
       ],
       "status": "stable",
-      "rule": "仍可能是世間定；不可直接等同無漏解脫。"
+      "rule": "仍可能是世間定；不可直接等同無漏解脫。",
+      "language_evidence": {
+        "chinese": [
+          {
+            "form": "清淨靜慮等定",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "sanskrit": [],
+        "pali": []
+      }
     },
     {
       "id": "anasrava-samadhi",
@@ -1139,7 +2073,26 @@
         "聖道相應定"
       ],
       "status": "stable",
-      "rule": "要與愛味相應、清淨二類分層。"
+      "rule": "要與愛味相應、清淨二類分層。",
+      "language_evidence": {
+        "chinese": [
+          {
+            "form": "無漏靜慮等定",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "sanskrit": [
+          {
+            "form": "anasrava-samadhi",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "pali": []
+      }
     },
     {
       "id": "fourfold-samadhi-tendencies",
@@ -1165,7 +2118,19 @@
         "順決擇分"
       ],
       "status": "stable",
-      "rule": "「分」是趨向、分位；不是把定切成四塊。"
+      "rule": "「分」是趨向、分位；不是把定切成四塊。",
+      "language_evidence": {
+        "chinese": [
+          {
+            "form": "四分定",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "sanskrit": [],
+        "pali": []
+      }
     },
     {
       "id": "kasina-ayatana",
@@ -1199,7 +2164,45 @@
         "遍處"
       ],
       "status": "stable",
-      "rule": "此處「色」多為形色或色法，不可一律譯成顏色。"
+      "rule": "此處「色」多為形色或色法，不可一律譯成顏色。",
+      "language_evidence": {
+        "chinese": [
+          {
+            "form": "勝處／遍處",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "sanskrit": [
+          {
+            "form": "abhibhvayatana",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          },
+          {
+            "form": "krtsnayatana",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "pali": [
+          {
+            "form": "abhibhayatana",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          },
+          {
+            "form": "kasina",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ]
+      }
     },
     {
       "id": "four-cultivations-of-samadhi",
@@ -1227,7 +2230,19 @@
         "盡諸漏"
       ],
       "status": "stable",
-      "rule": "這是依修定目的分類，不是四個禪定層級。"
+      "rule": "這是依修定目的分類，不是四個禪定層級。",
+      "language_evidence": {
+        "chinese": [
+          {
+            "form": "四修定",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "sanskrit": [],
+        "pali": []
+      }
     },
     {
       "id": "five-noble-knowledges-samadhi",
@@ -1248,7 +2263,19 @@
         "五種聖智相定"
       ],
       "status": "stable",
-      "rule": "經句讚定的五面向，勿拆成五個獨立定。"
+      "rule": "經句讚定的五面向，勿拆成五個獨立定。",
+      "language_evidence": {
+        "chinese": [
+          {
+            "form": "五聖智三摩地",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "sanskrit": [],
+        "pali": []
+      }
     },
     {
       "id": "five-limbed-noble-samadhi",
@@ -1269,7 +2296,19 @@
         "五支聖定"
       ],
       "status": "stable",
-      "rule": "前四支依四現法樂住，第五支依審觀緣起斷結。"
+      "rule": "前四支依四現法樂住，第五支依審觀緣起斷結。",
+      "language_evidence": {
+        "chinese": [
+          {
+            "form": "聖五支三摩地",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "sanskrit": [],
+        "pali": []
+      }
     },
     {
       "id": "noble-right-samadhi-causes",
@@ -1291,7 +2330,19 @@
         "聖正定"
       ],
       "status": "stable",
-      "rule": "五道支為因、三道支為具；別譯要保留八正道結構。"
+      "rule": "五道支為因、三道支為具；別譯要保留八正道結構。",
+      "language_evidence": {
+        "chinese": [
+          {
+            "form": "有因有具聖正三摩地",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "sanskrit": [],
+        "pali": []
+      }
     },
     {
       "id": "vajropama-samadhi",
@@ -1318,7 +2369,26 @@
         "金剛"
       ],
       "status": "stable",
-      "rule": "不是裝飾性比喻；指能摧伏最後煩惱的學位定。"
+      "rule": "不是裝飾性比喻；指能摧伏最後煩惱的學位定。",
+      "language_evidence": {
+        "chinese": [
+          {
+            "form": "金剛喻三摩地",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "sanskrit": [
+          {
+            "form": "vajropama-samadhi",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "pali": []
+      }
     },
     {
       "id": "image-object",
@@ -1343,7 +2413,19 @@
         "分別體境"
       ],
       "status": "stable",
-      "rule": "有分別偏毘鉢舍那，無分別偏奢摩他；不可譯成哲學上的絕對無分別。"
+      "rule": "有分別偏毘鉢舍那，無分別偏奢摩他；不可譯成哲學上的絕對無分別。",
+      "language_evidence": {
+        "chinese": [
+          {
+            "form": "影像所緣",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "sanskrit": [],
+        "pali": []
+      }
     },
     {
       "id": "perfuming-dhyana",
@@ -1366,7 +2448,19 @@
         "相間熏習定力"
       ],
       "status": "stable",
-      "rule": "不譯成薰香；是有漏與無漏相間入定以得自在。"
+      "rule": "不譯成薰香；是有漏與無漏相間入定以得自在。",
+      "language_evidence": {
+        "chinese": [
+          {
+            "form": "薰修靜慮",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "sanskrit": [],
+        "pali": []
+      }
     },
     {
       "id": "tongue-consciousness",
@@ -1390,7 +2484,33 @@
         "舌識"
       ],
       "status": "review",
-      "rule": "玄奘詞保留，括號附白話解釋；前後一致。"
+      "rule": "玄奘詞保留，括號附白話解釋；前後一致。",
+      "language_evidence": {
+        "chinese": [
+          {
+            "form": "舌識",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "sanskrit": [
+          {
+            "form": "jihvā-vijñāna",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "pali": [
+          {
+            "form": "jivhā-viññāṇa",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ]
+      }
     },
     {
       "id": "taste-object",
@@ -1414,7 +2534,40 @@
         "味境"
       ],
       "status": "review",
-      "rule": "作所緣對象時譯「味境」以別於滋味泛稱，全篇一致。"
+      "rule": "作所緣對象時譯「味境」以別於滋味泛稱，全篇一致。",
+      "language_evidence": {
+        "chinese": [
+          {
+            "form": "味",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "sanskrit": [
+          {
+            "form": "rasa",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "pali": [
+          {
+            "form": "rasa",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ]
+      },
+      "source_exclusions": [
+        "愛味",
+        "味定",
+        "一味",
+        "極少滋味"
+      ],
+      "sense_note": "These compounds express attachment, uniformity, or the gratification of desires, not the gustatory object. Other occurrences of 味 still require checking."
     },
     {
       "id": "neutral-object-upeksa",
@@ -1440,7 +2593,33 @@
         "捨處所"
       ],
       "status": "review",
-      "rule": "指非苦非樂之中庸味，對應捨受；保留玄奘詞並附白話。"
+      "rule": "指非苦非樂之中庸味，對應捨受；保留玄奘詞並附白話。",
+      "language_evidence": {
+        "chinese": [
+          {
+            "form": "捨處所",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "sanskrit": [
+          {
+            "form": "upekṣā-sthāna",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "pali": [
+          {
+            "form": "upekkhā-ṭhāna",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ]
+      }
     },
     {
       "id": "to-taste",
@@ -1466,7 +2645,33 @@
         "甞（品嘗）"
       ],
       "status": "review",
-      "rule": "玄奘原動詞保留，括號附白話；與吞、噉、飲、舐、吮各別其義。"
+      "rule": "玄奘原動詞保留，括號附白話；與吞、噉、飲、舐、吮各別其義。",
+      "language_evidence": {
+        "chinese": [
+          {
+            "form": "甞",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "sanskrit": [
+          {
+            "form": "āsvādana",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "pali": [
+          {
+            "form": "āsādana",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ]
+      }
     },
     {
       "id": "gandharva",
@@ -1491,7 +2696,33 @@
         "健達縛"
       ],
       "status": "review",
-      "rule": "玄奘音譯詞，首次出現須以「白話（玄奘詞）」雙軌標注等同中有／中陰身"
+      "rule": "玄奘音譯詞，首次出現須以「白話（玄奘詞）」雙軌標注等同中有／中陰身",
+      "language_evidence": {
+        "chinese": [
+          {
+            "form": "健達縛",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "sanskrit": [
+          {
+            "form": "gandharva",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "pali": [
+          {
+            "form": "gandhabba",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ]
+      }
     },
     {
       "id": "alaya-vijnana",
@@ -1515,7 +2746,26 @@
         "阿賴耶識"
       ],
       "status": "review",
-      "rule": "玄奘譯『阿賴耶識』，本論亦稱『一切種子識』，二者同體異名；白話首次出現時以『一切種子識（阿賴耶識）』雙軌標示，其後可徑用其一。"
+      "rule": "玄奘譯『阿賴耶識』，本論亦稱『一切種子識』，二者同體異名；白話首次出現時以『一切種子識（阿賴耶識）』雙軌標示，其後可徑用其一。",
+      "language_evidence": {
+        "chinese": [
+          {
+            "form": "阿賴耶識",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "sanskrit": [
+          {
+            "form": "ālaya-vijñāna",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "pali": []
+      }
     },
     {
       "id": "svabhava-vedana",
@@ -1538,7 +2788,26 @@
         "自性受"
       ],
       "status": "review",
-      "rule": "玄奘譯『自性受』，特指處胎時不苦不樂、依識增長之異熟所攝受；白話雙軌標示其義，不可與一般苦樂受混淆。"
+      "rule": "玄奘譯『自性受』，特指處胎時不苦不樂、依識增長之異熟所攝受；白話雙軌標示其義，不可與一般苦樂受混淆。",
+      "language_evidence": {
+        "chinese": [
+          {
+            "form": "自性受",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "sanskrit": [
+          {
+            "form": "svabhāva-vedanā",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "pali": []
+      }
     },
     {
       "id": "vipaka",
@@ -1567,7 +2836,33 @@
         "異熟所生"
       ],
       "status": "review",
-      "rule": "玄奘譯『異熟』，白話解為『果報』；『異熟所攝／所生／境界緣生』為本論判受之關鍵三分，須保留原術語並附白話。"
+      "rule": "玄奘譯『異熟』，白話解為『果報』；『異熟所攝／所生／境界緣生』為本論判受之關鍵三分，須保留原術語並附白話。",
+      "language_evidence": {
+        "chinese": [
+          {
+            "form": "異熟",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "sanskrit": [
+          {
+            "form": "vipāka",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "pali": [
+          {
+            "form": "vipāka",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ]
+      }
     },
     {
       "id": "prapanca",
@@ -1593,7 +2888,33 @@
         "戲論"
       ],
       "status": "review",
-      "rule": "玄奘譯『戲論』，指無始虛妄分別名言；為感生自體之最勝因，不可意譯為『遊戲言論』。"
+      "rule": "玄奘譯『戲論』，指無始虛妄分別名言；為感生自體之最勝因，不可意譯為『遊戲言論』。",
+      "language_evidence": {
+        "chinese": [
+          {
+            "form": "戲論",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "sanskrit": [
+          {
+            "form": "prapañca",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "pali": [
+          {
+            "form": "papañca",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ]
+      }
     },
     {
       "id": "sumeru",
@@ -1618,7 +2939,33 @@
         "須彌山"
       ],
       "status": "review",
-      "rule": "玄奘音譯「蘇迷盧」，白話作「須彌山」；雙軌標為「蘇迷盧山（須彌山）」。"
+      "rule": "玄奘音譯「蘇迷盧」，白話作「須彌山」；雙軌標為「蘇迷盧山（須彌山）」。",
+      "language_evidence": {
+        "chinese": [
+          {
+            "form": "蘇迷盧",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "sanskrit": [
+          {
+            "form": "sumeru",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "pali": [
+          {
+            "form": "sumeru",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ]
+      }
     },
     {
       "id": "yojana",
@@ -1644,7 +2991,33 @@
         "由旬"
       ],
       "status": "review",
-      "rule": "長度單位；玄奘音譯「踰繕那」，舊譯「由旬」，白話可作由旬並標註約數。"
+      "rule": "長度單位；玄奘音譯「踰繕那」，舊譯「由旬」，白話可作由旬並標註約數。",
+      "language_evidence": {
+        "chinese": [
+          {
+            "form": "踰繕那",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "sanskrit": [
+          {
+            "form": "yojana",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "pali": [
+          {
+            "form": "yojana",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ]
+      }
     },
     {
       "id": "naraka",
@@ -1671,7 +3044,33 @@
         "地獄"
       ],
       "status": "review",
-      "rule": "玄奘音譯「那洛迦」即地獄；八大那洛迦、獨一、寒、近邊等為其分類，白話作地獄並標原音。"
+      "rule": "玄奘音譯「那洛迦」即地獄；八大那洛迦、獨一、寒、近邊等為其分類，白話作地獄並標原音。",
+      "language_evidence": {
+        "chinese": [
+          {
+            "form": "那洛迦",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "sanskrit": [
+          {
+            "form": "naraka",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "pali": [
+          {
+            "form": "naraka",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ]
+      }
     },
     {
       "id": "asura",
@@ -1697,7 +3096,33 @@
         "阿修羅"
       ],
       "status": "review",
-      "rule": "玄奘意譯「非天」（有天之福無天之德），白話作阿修羅；雙軌標為「非天（阿修羅）」。"
+      "rule": "玄奘意譯「非天」（有天之福無天之德），白話作阿修羅；雙軌標為「非天（阿修羅）」。",
+      "language_evidence": {
+        "chinese": [
+          {
+            "form": "非天",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "sanskrit": [
+          {
+            "form": "asura",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "pali": [
+          {
+            "form": "asura",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ]
+      }
     },
     {
       "id": "garuda",
@@ -1723,7 +3148,33 @@
         "金翅鳥"
       ],
       "status": "review",
-      "rule": "玄奘意譯「妙翅鳥」，舊譯「金翅鳥」；雙軌標為「妙翅鳥（金翅鳥）」。龍之天敵，卵胎濕化四生食龍。"
+      "rule": "玄奘意譯「妙翅鳥」，舊譯「金翅鳥」；雙軌標為「妙翅鳥（金翅鳥）」。龍之天敵，卵胎濕化四生食龍。",
+      "language_evidence": {
+        "chinese": [
+          {
+            "form": "妙翅鳥",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "sanskrit": [
+          {
+            "form": "garuḍa",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "pali": [
+          {
+            "form": "garuḷa",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ]
+      }
     },
     {
       "id": "anavatapta",
@@ -1751,7 +3202,38 @@
         "無熱大池"
       ],
       "status": "review",
-      "rule": "玄奘意譯「無熱」（無熱惱），舊譯「阿耨達」；為贍部洲中心大池，四大河之源。"
+      "rule": "玄奘意譯「無熱」（無熱惱），舊譯「阿耨達」；為贍部洲中心大池，四大河之源。",
+      "language_evidence": {
+        "chinese": [
+          {
+            "form": "無熱池",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "sanskrit": [
+          {
+            "form": "anavatapta",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "pali": [
+          {
+            "form": "anotatta",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ]
+      },
+      "source_exclusions": [
+        "無熱天",
+        "無煩、無熱、善現"
+      ],
+      "sense_note": "The pure-abode heaven is not Lake Anavatapta. Other lake mentions remain checked."
     },
     {
       "id": "four-rivers",
@@ -1786,7 +3268,69 @@
         "縛芻"
       ],
       "status": "review",
-      "rule": "玄奘音譯四河名：殑伽（Ganges，恆河）、信度（Sindhu，印度河）、私多（Śītā）、縛芻（Vakṣu，阿姆河）；音譯原稱保留，校註標註今名。"
+      "rule": "玄奘音譯四河名：殑伽（Ganges，恆河）、信度（Sindhu，印度河）、私多（Śītā）、縛芻（Vakṣu，阿姆河）；音譯原稱保留，校註標註今名。",
+      "language_evidence": {
+        "chinese": [
+          {
+            "form": "殑伽等四河",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "sanskrit": [
+          {
+            "form": "gaṅgā",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          },
+          {
+            "form": "sindhu",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          },
+          {
+            "form": "śītā",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          },
+          {
+            "form": "vakṣu",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "pali": [
+          {
+            "form": "gaṅgā",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          },
+          {
+            "form": "sindhu",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          },
+          {
+            "form": "sītā",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          },
+          {
+            "form": "vakṣu",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ]
+      }
     },
     {
       "id": "krosa",
@@ -1810,7 +3354,33 @@
         "拘盧舍"
       ],
       "status": "review",
-      "rule": "長度單位，一由旬的四分之一；玄奘音譯「拘盧舍」，全篇一致保留。"
+      "rule": "長度單位，一由旬的四分之一；玄奘音譯「拘盧舍」，全篇一致保留。",
+      "language_evidence": {
+        "chinese": [
+          {
+            "form": "拘盧舍",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "sanskrit": [
+          {
+            "form": "krośa",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "pali": [
+          {
+            "form": "kosa",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ]
+      }
     },
     {
       "id": "sphatika",
@@ -1836,7 +3406,33 @@
         "頗胝"
       ],
       "status": "review",
-      "rule": "玄奘音譯「頗胝」即寶石/水晶類；火頗胝、水頚胝分指日輪、月輪材質，全篇一致保留音譯並標寶石。"
+      "rule": "玄奘音譯「頗胝」即寶石/水晶類；火頗胝、水頚胝分指日輪、月輪材質，全篇一致保留音譯並標寶石。",
+      "language_evidence": {
+        "chinese": [
+          {
+            "form": "頗胝",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "sanskrit": [
+          {
+            "form": "sphaṭika",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "pali": [
+          {
+            "form": "phaṭika",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ]
+      }
     },
     {
       "id": "rūpa-kalāpa",
@@ -1861,7 +3457,33 @@
         "色聚（物質積聚）"
       ],
       "status": "review",
-      "rule": "玄奘譯『色聚』指極微聚集之物質群，白話雙軌作『色聚（物質積聚）』"
+      "rule": "玄奘譯『色聚』指極微聚集之物質群，白話雙軌作『色聚（物質積聚）』",
+      "language_evidence": {
+        "chinese": [
+          {
+            "form": "色聚",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "sanskrit": [
+          {
+            "form": "rūpa-kalāpa",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "pali": [
+          {
+            "form": "rūpa-kalāpa",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ]
+      }
     },
     {
       "id": "citta-caitta-pinda",
@@ -1884,7 +3506,33 @@
         "心心所品（心與心所這一類）"
       ],
       "status": "review",
-      "rule": "『品』表品類，雙軌作『心心所品（心與心所這一類）』，避免僅譯為『心心所』而失落『品』義"
+      "rule": "『品』表品類，雙軌作『心心所品（心與心所這一類）』，避免僅譯為『心心所』而失落『品』義",
+      "language_evidence": {
+        "chinese": [
+          {
+            "form": "心心所品",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "sanskrit": [
+          {
+            "form": "citta-caitta-piṇḍa",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "pali": [
+          {
+            "form": "citta-cetasika-piṇḍa",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ]
+      }
     },
     {
       "id": "asaṃskṛta",
@@ -1909,7 +3557,33 @@
         "無為（無為法）"
       ],
       "status": "review",
-      "rule": "玄奘『無為』即無為法，雙軌作『無為（無為法）』"
+      "rule": "玄奘『無為』即無為法，雙軌作『無為（無為法）』",
+      "language_evidence": {
+        "chinese": [
+          {
+            "form": "無為",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "sanskrit": [
+          {
+            "form": "asaṃskṛta",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "pali": [
+          {
+            "form": "asaṅkhata",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ]
+      }
     },
     {
       "id": "prajñapti-sat",
@@ -1934,7 +3608,33 @@
         "假有法（假名安立之法）"
       ],
       "status": "review",
-      "rule": "『假有』謂無實體、唯假名安立，雙軌作『假有法（假名安立之法）』"
+      "rule": "『假有』謂無實體、唯假名安立，雙軌作『假有法（假名安立之法）』",
+      "language_evidence": {
+        "chinese": [
+          {
+            "form": "假有法",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "sanskrit": [
+          {
+            "form": "prajñapti-sat",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "pali": [
+          {
+            "form": "paññatti",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ]
+      }
     },
     {
       "id": "paramāṇu",
@@ -1958,7 +3658,33 @@
         "極微（物質分析到最小的假立單位）"
       ],
       "status": "review",
-      "rule": "玄奘譯『極微』指分析色法至邊際所假立之最小單位，非實體，白話雙軌作『極微（物質分析到最小的假立單位）』。"
+      "rule": "玄奘譯『極微』指分析色法至邊際所假立之最小單位，非實體，白話雙軌作『極微（物質分析到最小的假立單位）』。",
+      "language_evidence": {
+        "chinese": [
+          {
+            "form": "極微",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "sanskrit": [
+          {
+            "form": "paramāṇu",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "pali": [
+          {
+            "form": "paramāṇu",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ]
+      }
     },
     {
       "id": "dharatu",
@@ -1993,7 +3719,33 @@
         "風界"
       ],
       "status": "review",
-      "rule": "此處「界」指色法之性質類別（大種界），非十八界之認識範疇、亦非三界之生存境界；譯文保留「界」並視情況加註「大種」以消歧義。"
+      "rule": "此處「界」指色法之性質類別（大種界），非十八界之認識範疇、亦非三界之生存境界；譯文保留「界」並視情況加註「大種」以消歧義。",
+      "language_evidence": {
+        "chinese": [
+          {
+            "form": "界",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "sanskrit": [
+          {
+            "form": "dhātu",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "pali": [
+          {
+            "form": "dhātu",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ]
+      }
     },
     {
       "id": "upadi",
@@ -2023,7 +3775,40 @@
         "無執受"
       ],
       "status": "review",
-      "rule": "「執受」特指心心所執持之內身色及種子，與外色之「無執受」相對；不可譯為一般執著。"
+      "rule": "「執受」特指心心所執持之內身色及種子，與外色之「無執受」相對；不可譯為一般執著。",
+      "language_evidence": {
+        "chinese": [
+          {
+            "form": "執受",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "sanskrit": [
+          {
+            "form": "upādi",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          },
+          {
+            "form": "upādāna",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ],
+        "pali": [
+          {
+            "form": "upādāna",
+            "status": "unresolved",
+            "evidence": [],
+            "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
+          }
+        ]
+      }
     }
-  ]
+  ],
+  "codex_contribution": "Added per-language evidence states and documented context exclusions; preserved all legacy candidate spellings and translation statuses."
 }

@@ -12,6 +12,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import publisher
+from check_translation_terms import validate_language_evidence
 from typing import Any
 
 
@@ -78,9 +79,97 @@ def _tip_lines(term: dict[str, Any]) -> list[str]:
     lines = [f"{term['xuanzang']}｜{term['plain']}"]
     if term.get("sanskrit"):
         lines.append("梵 " + " / ".join(term["sanskrit"]))
+    if term.get("pali"):
+        lines.append("巴 " + " / ".join(term["pali"]))
+    lines.append("外語對應狀態與來源：請開啟術語卡；未附證據者待考證。")
     if term.get("english"):
         lines.append("英 " + " / ".join(term["english"]))
     return lines
+
+
+# Codex contribution: accessible cards preserve uncertainty for each language candidate.
+def render_term_cards(glossary: dict[str, Any]) -> str:
+    labels = {"chinese": "漢文術語", "sanskrit": "梵語", "pali": "巴利語"}
+    states = {"attested": "有文獻依據", "inferred": "推定", "comparative": "跨傳統比較", "unresolved": "待考證"}
+    templates = []
+    for term in glossary["terms"]:
+        issues = validate_language_evidence(term, glossary.get("schema_version", 1) == 2)
+        if issues:
+            raise ValueError("; ".join(issues))
+        sections = []
+        for language, label in labels.items():
+            forms = [term["xuanzang"]] if language == "chinese" else term.get(language, [])
+            records = term.get("language_evidence", {}).get(language, [
+                {"form": form, "status": "unresolved", "evidence": []} for form in forms
+            ])
+            candidates = []
+            for record in records:
+                sources = []
+                for item in record["evidence"]:
+                    sources.append(
+                        f'<li><a href="{html.escape(item["url"], quote=True)}" target="_blank" rel="noopener noreferrer">'
+                        f'{html.escape(item["source_id"])}</a> · {html.escape(item["locator"])}'
+                        f'<blockquote>{html.escape(item["quote"])}</blockquote></li>'
+                    )
+                note = f'<p>{html.escape(record["note"])}</p>' if record.get("note") else ""
+                review = (f'<p>審核：{html.escape(record["reviewed_by"])} · {html.escape(record["reviewed_at"])}</p>'
+                          if record.get("reviewed_by") and record.get("reviewed_at") else "")
+                evidence = '<ul>' + ''.join(sources) + '</ul>' if sources else '<p>無來源證據；尚未核定本段對應。</p>'
+                candidates.append(f'<div class="term-candidate"><b>{html.escape(record["form"])}</b> '
+                                  f'<span class="term-evidence-state">{states[record["status"]]}</span>'
+                                  f'{note}{review}{evidence}</div>')
+            sections.append(f'<section><h3>{label}</h3>' + (''.join(candidates) or '<p>未提供對應詞。</p>') + '</section>')
+        template_id = html.escape('term-card-' + term['id'], quote=True)
+        templates.append(f'<template id="{template_id}"><h2 id="term-card-title">{html.escape(term["xuanzang"])}</h2>'
+                         f'<p>{html.escape(term["plain"])}</p><p>中文譯法沿用狀態：{html.escape({"stable": "既有用語", "review": "待審"}.get(term.get("status"), "未標示"))}。'
+                         '此標記不代表梵巴詞形或本段對應已通過考證。</p>' + ''.join(sections) + '</template>')
+    return '\n'.join(templates) + r'''
+<!-- Codex contribution: keyboard and touch accessible evidence dialog. -->
+<dialog id="term-card-dialog" aria-labelledby="term-card-title">
+  <button type="button" class="term-card-close" autofocus>關閉術語卡</button>
+  <div id="term-card-content"></div>
+</dialog>
+<style>
+#term-card-dialog {box-sizing:border-box; width:min(38rem,calc(100vw - 2rem)); max-height:85dvh; padding:1.25rem; border:1px solid var(--rule); border-radius:12px; background:var(--surface); color:var(--ink); overflow:auto; overflow-wrap:anywhere;}
+#term-card-dialog::backdrop {background:rgba(0,0,0,.48);}
+#term-card-dialog h2 {margin-top:.75rem;}
+#term-card-dialog h3 {margin-bottom:.5rem;}
+#term-card-dialog blockquote {margin:.5rem 0; padding:.5rem; border-left:3px solid var(--accent); white-space:pre-wrap;}
+.term-card-close {padding:.6rem 1rem; border:1px solid var(--rule); border-radius:8px; background:var(--surface-raised); color:var(--ink); cursor:pointer;}
+.term-candidate {padding:.7rem 0; border-bottom:1px solid var(--rule);}
+.term-evidence-state {font-size:.85em; padding:.2rem .4rem; border:1px solid var(--rule); border-radius:4px;}
+.term-cards-enabled .term:hover::after,.term-cards-enabled .term:focus::after {display:none;}
+.term-cards-enabled .term {cursor:pointer;}
+.term-cards-enabled .term:focus-visible {outline:2px solid var(--accent); outline-offset:3px;}
+</style>
+<script>
+// Codex contribution: native dialog traps focus and Escape restores the trigger.
+(function () {
+  const dialog = document.getElementById('term-card-dialog');
+  if (!dialog || typeof dialog.showModal !== 'function') return;
+  let trigger = null;
+  document.body.classList.add('term-cards-enabled');
+  function openCard(term) {
+    const template = document.getElementById('term-card-' + term.dataset.termId);
+    if (!template) return;
+    trigger = term;
+    document.getElementById('term-card-content').replaceChildren(template.content.cloneNode(true));
+    dialog.showModal();
+  }
+  document.querySelectorAll('.term[data-term-id]').forEach(term => {
+    term.setAttribute('role', 'button');
+    term.setAttribute('aria-haspopup', 'dialog');
+    term.addEventListener('click', () => openCard(term));
+    term.addEventListener('keydown', event => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault(); openCard(term);
+      }
+    });
+  });
+  dialog.querySelector('.term-card-close').addEventListener('click', () => dialog.close());
+  dialog.addEventListener('close', () => { if (trigger) trigger.focus(); });
+})();
+</script>'''
 
 
 def build_term_tips(glossary: dict[str, Any]) -> tuple[TermTip, ...]:
@@ -251,7 +340,8 @@ def infer_title(text: str, juan: int) -> str:
 def render(entries: list[Entry], source: Path, juan: int, title: str) -> str:
     pairs = []
     toc_items = []
-    tips = term_tips()
+    glossary = json.loads(GLOSSARY_PATH.read_text(encoding="utf-8"))
+    tips = build_term_tips(glossary)
     first_terms: set[str] = set()
     for entry in entries:
         source_start, source_end = parse_range(entry.range_label)
@@ -301,7 +391,7 @@ def render(entries: list[Entry], source: Path, juan: int, title: str) -> str:
     <div class="kicker">CBETA T1579 / Juan {juan}</div>
     <h1>{html.escape(title)}</h1>
     <p>底本範圍：{html.escape(first_start)} 至 {html.escape(last_end)}。</p>
-    <p>譯例：核心術語採白話詞（玄奘詞）雙軌，疑難處以精簡校註標示；術語下有虛線者可懸停或點按看註解。</p>
+    <p>譯例：核心術語首次採玄奘詞〔白話解釋〕，疑難處以精簡校註標示；術語下有虛線者可點按，或以鍵盤 Enter 開啟梵巴對照、證據狀態與來源。</p>
     <nav class="translation-tools">
       <div class="mode-switch" role="group" aria-label="閱讀模式">
         <button type="button" data-mode="trans" aria-pressed="true">白話</button>
@@ -326,6 +416,7 @@ def render(entries: list[Entry], source: Path, juan: int, title: str) -> str:
 {chr(10).join(pairs)}
     </main>
   </div>
+  {render_term_cards(glossary)}
   <nav class="section-nav" aria-label="段落導航">
     <button type="button" id="prevSection" aria-label="上一段">↑</button>
     <button type="button" id="nextSection" aria-label="下一段">↓</button>

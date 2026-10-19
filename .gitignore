@@ -4,3 +4,6 @@ jobs/
 locks/
 config/
 runner.log
+
+# Codex contribution: keep the project virtual environment local.
+.venv/

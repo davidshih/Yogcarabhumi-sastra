@@ -21,7 +21,8 @@
     <div id="status">尚無進行中的翻譯工作。</div>
   </main>
   <script>
-    fetch("status.json").then(r => r.ok ? r.json() : null).then(data => {
+    // Codex contribution: job progress has a separate artifact from handoff metadata.
+    fetch("jobs-status.json").then(r => r.ok ? r.json() : null).then(data => {
       if (!data || !data.jobs || !data.jobs.length) return;
       const zh = {queued: "排隊中", running: "進行中", done: "完成", failed: "失敗", waiting_limit: "等待額度重置"};
       document.getElementById("status").innerHTML = "<ol>" + data.jobs.map(j => {

@@ -37,7 +37,7 @@ import publisher
 import build_translation_html as bth
 import build_shengwen_di_html as bsh
 from make_translation_skeleton import extract_lines, read_segments, render as render_skeleton, line_key
-from check_translation_terms import validate_glossary, check_translation_terms as term_issues, parse_entries as parse_term_entries
+from check_translation_terms import source_term_matches, validate_glossary, check_translation_terms as term_issues, parse_entries as parse_term_entries
 from check_translation_coverage import (
     canonical_source,
     check_coverage_ledger,
@@ -53,7 +53,8 @@ LOCKS_DIR = ROOT / "locks"
 PROMPTS_DIR = ROOT / "prompts"
 WORKS_PATH = ROOT / "works.json"
 GLOSSARY_PATH = ROOT / "translations" / "glossary" / "T1579-terms.json"
-STATUS_JSON = ROOT / "docs" / "status.json"
+# Codex contribution: reserve status.json for repository handoff metadata.
+STATUS_JSON = ROOT / "docs" / "jobs-status.json"
 REVIEW_PASSES = ("review_terms", "review_doctrine", "review_parallel")
 POLL_SECONDS = 10
 VOLUME_STATES = {"queued", "running", "waiting_limit", "done", "failed", "cancelled"}
@@ -764,7 +765,7 @@ def load_glossary() -> dict:
 
 
 def glossary_subset_json(glossary: dict, source: str) -> str:
-    terms = [t for t in glossary["terms"] if any(s in source for s in t["source_terms"])]
+    terms = [t for t in glossary["terms"] if source_term_matches(t, source)]
     return json.dumps(terms, ensure_ascii=False)
 
 
@@ -779,6 +780,14 @@ def append_new_terms(raw_json: str, job: dict) -> None:
         glossary = load_glossary()
         existing = {t["id"] for t in glossary["terms"]}
         added = [t for t in new_terms if isinstance(t, dict) and t.get("id") not in existing]
+        # Codex contribution: model proposals cannot certify their own language evidence.
+        for term in added:
+            term["language_evidence"] = {
+                language: [{"form": form, "status": "unresolved", "evidence": []}
+                           for form in ([term.get("xuanzang", "")] if language == "chinese"
+                                        else (term.get(language, []) if isinstance(term.get(language, []), list) else []))]
+                for language in ("chinese", "sanskrit", "pali")
+            }
         candidate = {**glossary, "terms": glossary["terms"] + added}
         if added and not validate_glossary(candidate):
             atomic_write(GLOSSARY_PATH, json.dumps(candidate, ensure_ascii=False, indent=2))

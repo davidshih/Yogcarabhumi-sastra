@@ -7,6 +7,8 @@ import argparse
 import json
 import re
 import sys
+from datetime import date
+from urllib.parse import urlsplit
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -63,6 +65,81 @@ def require_list(term: dict[str, Any], field: str) -> list[str]:
     return value
 
 
+# Codex contribution: share sense selection between checks and model inputs.
+def source_term_matches(term: dict[str, Any], source: str) -> bool:
+    """Ignore a sense only inside an explicitly documented longer expression."""
+    text = re.sub(r"\s+", "", source)
+    excluded = [match.span() for phrase in term.get("source_exclusions", [])
+                for match in re.finditer(re.escape(re.sub(r"\s+", "", phrase)), text)]
+    for word in term.get("source_terms", []):
+        for match in re.finditer(re.escape(re.sub(r"\s+", "", word)), text):
+            if not any(start <= match.start() and match.end() <= end for start, end in excluded):
+                return True
+    return False
+
+
+# Codex contribution: evidence is per language and candidate, not inherited from stable.
+def validate_language_evidence(term: dict[str, Any], required: bool = False) -> list[str]:
+    metadata = term.get("language_evidence")
+    if metadata is None and not required:
+        return []  # Legacy terms remain readable as unresolved candidates.
+    prefix = str(term.get("id", "<unknown>"))
+    if not isinstance(metadata, dict):
+        return [f"{prefix}: language_evidence must be an object"]
+    issues = []
+    for language in ("chinese", "sanskrit", "pali"):
+        forms = [term.get("xuanzang")] if language == "chinese" else term.get(language, [])
+        records = metadata.get(language)
+        if not isinstance(records, list):
+            issues.append(f"{prefix}: {language} evidence must be a list")
+            continue
+        if not isinstance(forms, list) or not all(isinstance(form, str) and form.strip() for form in forms):
+            issues.append(f"{prefix}: {language} forms must be nonempty strings")
+            continue
+        if [record.get("form") if isinstance(record, dict) else None for record in records] != forms:
+            issues.append(f"{prefix}: {language} evidence forms must match the candidate list")
+        for record in records:
+            if not isinstance(record, dict):
+                issues.append(f"{prefix}: invalid {language} record")
+                continue
+            status = record.get("status")
+            if not isinstance(status, str) or status not in {"attested", "inferred", "comparative", "unresolved"}:
+                issues.append(f"{prefix}: invalid {language} evidence status")
+            evidence = record.get("evidence")
+            if not isinstance(evidence, list):
+                issues.append(f"{prefix}: {language} evidence must be a list")
+                continue
+            if status != "unresolved" and not evidence:
+                issues.append(f"{prefix}: {language} {status} needs source evidence")
+            if status == "attested":
+                try:
+                    date.fromisoformat(record.get("reviewed_at", ""))
+                except (TypeError, ValueError):
+                    issues.append(f"{prefix}: attested evidence needs a review date")
+                if not isinstance(record.get("reviewed_by"), str) or not record["reviewed_by"].strip():
+                    issues.append(f"{prefix}: attested evidence needs a reviewer")
+            for field in ("reviewed_by", "reviewed_at"):
+                if field in record and not isinstance(record[field], str):
+                    issues.append(f"{prefix}: {field} must be text")
+            if "note" in record and not isinstance(record["note"], str):
+                issues.append(f"{prefix}: evidence note must be text")
+            for item in evidence:
+                if not isinstance(item, dict) or not all(
+                    isinstance(item.get(key), str) and item[key].strip()
+                    for key in ("source_id", "locator", "quote", "url")
+                ):
+                    issues.append(f"{prefix}: source evidence needs id, locator, quote and URL")
+                    continue
+                try:
+                    url = urlsplit(item["url"])
+                    valid = url.scheme in {"https", "http"} and bool(url.hostname) and not url.username
+                except ValueError:
+                    valid = False
+                if not valid:
+                    issues.append(f"{prefix}: evidence URL must be HTTP(S)")
+    return issues
+
+
 def validate_glossary(glossary: dict[str, Any]) -> list[str]:
     issues: list[str] = []
     terms = glossary.get("terms")
@@ -82,6 +159,12 @@ def validate_glossary(glossary: dict[str, Any]) -> list[str]:
         if term_id in seen_ids:
             issues.append(f"Duplicate term id: {term_id}")
         seen_ids.add(term_id)
+        issues.extend(validate_language_evidence(term, glossary.get("schema_version", 1) == 2))
+        exclusions = term.get("source_exclusions", [])
+        if not isinstance(exclusions, list) or not all(isinstance(item, str) and item.strip() for item in exclusions):
+            issues.append(f"{term_id}: source_exclusions must contain nonempty strings")
+        elif exclusions and not term.get("sense_note"):
+            issues.append(f"{term_id}: source_exclusions need a sense_note")
         for field in ("source_terms", "translation_patterns"):
             try:
                 values = require_list(term, field)
@@ -100,7 +183,7 @@ def check_translation_terms(glossary: dict[str, Any], entries: list[Entry]) -> l
         for term in terms:
             source_terms = require_list(term, "source_terms")
             patterns = require_list(term, "translation_patterns")
-            if any(source_term in entry.source for source_term in source_terms):
+            if source_term_matches(term, entry.source):
                 if not any(pattern in entry.translation for pattern in patterns):
                     issues.append(
                         f"{entry.title}: source has {term['xuanzang']} but translation lacks "

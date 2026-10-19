@@ -1,0 +1,125 @@
+# Terminology warning audit
+
+Created by Codex.
+
+Snapshot: 26658a9 baseline -> current implementation.
+29 original warnings: 13 context false positives resolved; 16 remain open.
+No translation or existing test assertion was changed.
+Remaining warnings are not declared translation errors. The checker keeps them visible.
+
+- `T1579-003-baihua.md` / `04 色聚十四事與諸界相攝` / `sixteen-aspects`
+  - Classification: Resolved: unrelated sense matched by a substring.
+  - Source excerpt: 恒旋轉風。不恒相續者，謂旋風及空行風。又闇色、明色，說名空界及孔隙。又諸闇
+  - Original warning: 04 色聚十四事與諸界相攝: source has 十六行 but translation lacks one of 十六行, 四行, 行相, 無常行, 苦行, 空行, 無我行, 因行, 集行, 起行, 緣行, 滅行, 靜行, 妙行, 離行, 道行, 如行, 行行, 出行
+- `T1579-003-baihua.md` / `10 善不善無記法建立` / `vipaka`
+  - Classification: Open: source term retained, but required gloss pattern absent; editorial policy review.
+  - Source excerpt: 知事故。無記法者，略有四種。謂異熟生，及一分威儀路、工巧處及變化。若諸工巧
+  - Original warning: 10 善不善無記法建立: source has 異熟 but translation lacks one of 異熟（果報）, 異熟所攝, 異熟所生
+- `T1579-003-baihua.md` / `11 眼耳鼻舌身差別門` / `vipaka`
+  - Classification: Open: source term retained, but required gloss pattern absent; editorial policy review.
+  - Source excerpt: 謂能見色。或立二種。謂長養眼、異熟生眼。或立三種。謂肉眼、天眼、慧眼。或立
+  - Original warning: 11 眼耳鼻舌身差別門: source has 異熟 but translation lacks one of 異熟（果報）, 異熟所攝, 異熟所生
+- `T1579-003-baihua.md` / `12 意差別門` / `taste-object`
+  - Classification: Resolved: unrelated sense matched by a substring.
+  - Source excerpt: 對觸相應、依耽嗜、依出離、有愛味、無愛味、世間、出世間。或立九種。謂依九
+  - Original warning: 12 意差別門: source has 味 but translation lacks one of 味境
+- `T1579-003-baihua.md` / `14 法界總略與差別門` / `vipaka`
+  - Classification: Open: source term retained, but required gloss pattern absent; editorial policy review.
+  - Source excerpt: 種，謂得、無想定、滅盡定、無想異熟、命根、眾同分、異生性、生、老、住、無常
+  - Original warning: 14 法界總略與差別門: source has 異熟 but translation lacks one of 異熟（果報）, 異熟所攝, 異熟所生
+- `T1579-003-baihua.md` / `14 法界總略與差別門` / `asaṃskṛta`
+  - Classification: Open: source term retained, but required gloss pattern absent; editorial policy review.
+  - Source excerpt: 第、時、方、數、和合、不和合。無為有八事。謂虛空、非擇滅、擇滅、善、不善、
+  - Original warning: 14 法界總略與差別門: source has 無為 but translation lacks one of 無為（無為法）
+- `T1579-003-baihua.md` / `16 善巧所攝與如來語言九事` / `rūpa-kalāpa`
+  - Classification: Open: source term retained, but required gloss pattern absent; editorial policy review.
+  - Source excerpt: 天眾，八、梵天眾。又嗢拕南曰：色聚、相應品、世、相、及與緣、善等差別門、巧
+  - Original warning: 16 善巧所攝與如來語言九事: source has 色聚 but translation lacks one of 色聚（物質積聚）
+- `T1579-012-baihua.md` / `04 四得靜慮` / `taste-object`
+  - Classification: Resolved: unrelated sense matched by a substring.
+  - Source excerpt: 靜慮或所餘定。如是入已，後生愛味。云何見上靜慮者？謂如有一，從自師所，或
+  - Original warning: 04 四得靜慮: source has 味 but translation lacks one of 味境
+- `T1579-012-baihua.md` / `05 味定淨定無漏定` / `taste-object`
+  - Classification: Resolved: unrelated sense matched by a substring.
+  - Source excerpt: 復次，云何愛味相應靜慮等定？謂有鈍根，或貪行故，或煩惱
+  - Original warning: 05 味定淨定無漏定: source has 味 but translation lacks one of 味境
+- `T1579-012-baihua.md` / `06 四分定與次第超越` / `taste-object`
+  - Classification: Resolved: unrelated sense matched by a substring.
+  - Source excerpt: ，彼唯得聞諸定功德，廣說如前愛味相應。於所得定唯生愛味，不能上進，亦不退
+  - Original warning: 06 四分定與次第超越: source has 味 but translation lacks one of 味境
+- `T1579-012-baihua.md` / `07 薰修差別` / `taste-object`
+  - Classification: Resolved: unrelated sense matched by a substring.
+  - Source excerpt: 靜慮定故，生靜慮地，不由習近愛味相應。既生彼已，若起愛味，即便退沒；若修
+  - Original warning: 07 薰修差別: source has 味 but translation lacks one of 味境
+- `T1579-012-baihua.md` / `09 八勝處` / `taste-object`
+  - Classification: Open: source term retained, but required gloss pattern absent; editorial policy review.
+  - Source excerpt: 名為惡色。言劣色者，謂聲、香、味、觸不可意色。與此相違，當知勝色。此四顯
+  - Original warning: 09 八勝處: source has 味 but translation lacks one of 味境
+- `T1579-012-baihua.md` / `10 十遍處與總料簡` / `taste-object`
+  - Classification: Open: source term retained, but required gloss pattern absent; editorial policy review.
+  - Source excerpt: 相續故。眼等根色唯屬自身，香、味二塵不遍一切；聲聲有間，是故不說如是有色
+  - Original warning: 10 十遍處與總料簡: source has 味 but translation lacks one of 味境
+- `T1579-012-baihua.md` / `12 有尋有伺三摩地` / `taste-object`
+  - Classification: Resolved: unrelated sense matched by a substring.
+  - Source excerpt: 地相？謂於尋伺心生棄捨，唯由一味，於內所緣而作勝解，又
+  - Original warning: 12 有尋有伺三摩地: source has 味 but translation lacks one of 味境
+- `T1579-012-baihua.md` / `13 小大無量三摩地` / `taste-object`
+  - Classification: Resolved: unrelated sense matched by a substring.
+  - Source excerpt: 唯一味平等顯現。復次，云何小三摩地？謂或由所緣
+  - Original warning: 13 小大無量三摩地: source has 味 but translation lacks one of 味境
+- `T1579-012-baihua.md` / `16 五聖智三摩地` / `taste-object`
+  - Classification: Resolved: unrelated sense matched by a substring.
+  - Source excerpt: 永寂靜故。微妙者，自地煩惱不愛味故。得安隱道者，所得之道無退轉故。證心一
+  - Original warning: 16 五聖智三摩地: source has 味 but translation lacks one of 味境
+- `T1579-012-baihua.md` / `16 五聖智三摩地` / `vipaka`
+  - Classification: Open: source term retained, but required gloss pattern absent; editorial policy review.
+  - Source excerpt: 在安樂者，能得現法樂住故。後樂異熟者，引無餘依涅槃樂故。正念而入者，善取能
+  - Original warning: 16 五聖智三摩地: source has 異熟 but translation lacks one of 異熟（果報）, 異熟所攝, 異熟所生
+- `T1579-012-baihua.md` / `17 聖五支三摩地` / `taste-object`
+  - Classification: Resolved: unrelated sense matched by a substring.
+  - Source excerpt: 散動。不弱者，喻無染污，亦無愛味。又於第二喻有差別。山者，喻於無尋伺定。
+  - Original warning: 17 聖五支三摩地: source has 味 but translation lacks one of 味境
+- `T1579-033-baihua.md` / `06 了相作意：欲界麁相與初禪靜相` / `taste-object`
+  - Classification: Resolved: unrelated sense matched by a substring.
+  - Source excerpt: 諸欲有五過患。謂彼諸欲，極少滋味，多諸苦惱、多諸過患。又彼諸欲，於習近時
+  - Original warning: 06 了相作意：欲界麁相與初禪靜相: source has 味 but translation lacks one of 味境
+- `T1579-033-baihua.md` / `11 第二禪語句廣解` / `taste-object`
+  - Classification: Resolved: unrelated sense matched by a substring.
+  - Source excerpt: ，於不怱務所行境界安住其心；一味寂靜、極寂靜轉，是故說言：尋伺寂靜故、內
+  - Original warning: 11 第二禪語句廣解: source has 味 but translation lacks one of 味境
+- `T1579-033-baihua.md` / `19 神境通相關五想` / `rūpa-kalāpa`
+  - Classification: Open: source term retained, but required gloss pattern absent; editorial policy review.
+  - Source excerpt: 勝解已，隨所欲往，若於中間有諸色聚能為障礙，爾時便起勝解作意，於彼色中作空
+  - Original warning: 19 神境通相關五想: source has 色聚 but translation lacks one of 色聚（物質積聚）
+- `T1579-033-baihua.md` / `23 修世間淨定的受生差別` / `anavatapta`
+  - Classification: Resolved: unrelated sense matched by a substring.
+  - Source excerpt: 當生五淨居天眾同分中。謂無煩、無熱、善現、善見、色究竟天。若於空處、識處、
+  - Original warning: 23 修世間淨定的受生差別: source has 無熱池 but translation lacks one of 無熱池, 無熱大池
+- `T1579-033-baihua.md` / `24 離欲者相` / `taste-object`
+  - Classification: Open: source term retained, but required gloss pattern absent; editorial policy review.
+  - Source excerpt: ；如是耳聞聲已、鼻嗅香已、舌甞味已、身覺觸已，唯覺了聲乃至其觸，不因覺了
+  - Original warning: 24 離欲者相: source has 味 but translation lacks one of 味境
+- `T1579-033-baihua.md` / `24 離欲者相` / `to-taste`
+  - Classification: Open: spelling or display-policy mismatch; compare the retained taste action.
+  - Source excerpt: 貪；如是耳聞聲已、鼻嗅香已、舌甞味已、身覺觸已，唯覺了聲乃至其觸，不因覺
+  - Original warning: 24 離欲者相: source has 甞 but translation lacks one of 甞（品嘗）
+- `T1579-034-baihua.md` / `04 苦諦十行：無常行與三種增上作意` / `taste-object`
+  - Classification: Open: source term retained, but required gloss pattern absent; editorial policy review.
+  - Source excerpt: 如是眼識正現在前，會遇聲、香、味、觸境等餘境餘緣，起異分識。其餘一切，如
+  - Original warning: 04 苦諦十行：無常行與三種增上作意: source has 味 but translation lacks one of 味境
+- `T1579-034-baihua.md` / `05 苦諦十行：別離、法性、合會與苦空無我` / `vipaka`
+  - Classification: Open: source term retained, but required gloss pattern absent; editorial policy review.
+  - Source excerpt: 或復說彼能造諸業、能受種種果及異熟。由是諸行皆悉是空，無有我故。如是名為由
+  - Original warning: 05 苦諦十行：別離、法性、合會與苦空無我: source has 異熟 but translation lacks one of 異熟（果報）, 異熟所攝, 異熟所生
+- `T1579-034-baihua.md` / `07 勝解作意：十六行決定與無邊際勝解` / `taste-object`
+  - Classification: Open: source term retained, but required gloss pattern absent; editorial policy review.
+  - Source excerpt: 。彼於長夜，其心愛樂世間色聲香味觸等，為諸色聲香味觸等滋長積集。由是因緣
+  - Original warning: 07 勝解作意：十六行決定與無邊際勝解: source has 味 but translation lacks one of 味境
+- `T1579-034-baihua.md` / `13 加行究竟果作意：阿羅漢果與無學相` / `taste-object`
+  - Classification: Open: source term retained, but required gloss pattern absent; editorial policy review.
+  - Source excerpt: 。如是耳聞聲已、鼻嗅香已、舌甞味已、身覺觸已、意了法已，無喜無憂，安住上
+  - Original warning: 13 加行究竟果作意：阿羅漢果與無學相: source has 味 but translation lacks one of 味境
+- `T1579-034-baihua.md` / `13 加行究竟果作意：阿羅漢果與無學相` / `to-taste`
+  - Classification: Open: spelling or display-policy mismatch; compare the retained taste action.
+  - Source excerpt: 知。如是耳聞聲已、鼻嗅香已、舌甞味已、身覺觸已、意了法已，無喜無憂，安住
+  - Original warning: 13 加行究竟果作意：阿羅漢果與無學相: source has 甞 but translation lacks one of 甞（品嘗）

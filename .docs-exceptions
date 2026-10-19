@@ -1,0 +1,4 @@
+# Created by Codex. Preserve published site URLs and translation source formats.
+docs/T1579/ # Published reader pages and existing workflow URL.
+docs/index.html # Published site entry point.
+docs/status.html # Published runner progress page.

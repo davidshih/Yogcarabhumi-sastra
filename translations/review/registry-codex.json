@@ -1,0 +1,302 @@
+{
+  "schema_version": 1,
+  "created_by": "Codex",
+  "sources": [
+    {
+      "id": "T1821",
+      "work": "T1821",
+      "author": "普光",
+      "title": "俱舍論記",
+      "role": "俱舍註釋",
+      "edition": "CBETA xml-p5 snapshot",
+      "url": "https://cbetaonline.dila.edu.tw/zh/T1821",
+      "snapshot": "translations/review/sources/t1821-codex.json",
+      "sha256": "021f8434aa4781fbcd0c59af042a03e8ce52c951c602e422f7a512b48621d55a"
+    },
+    {
+      "id": "T1822",
+      "work": "T1822",
+      "author": "法寶",
+      "title": "俱舍論疏",
+      "role": "俱舍註釋",
+      "edition": "CBETA xml-p5 snapshot",
+      "url": "https://cbetaonline.dila.edu.tw/zh/T1822",
+      "snapshot": "translations/review/sources/t1822-codex.json",
+      "sha256": "351ddb6cd816981c850448b9b57439e7ad4b206fcca58c2389d33b6b262a7548"
+    },
+    {
+      "id": "T1828",
+      "work": "T1828",
+      "author": "遁倫",
+      "title": "瑜伽論記",
+      "role": "諸家說集錄",
+      "edition": "CBETA xml-p5 snapshot",
+      "url": "https://cbetaonline.dila.edu.tw/zh/T1828",
+      "snapshot": "translations/review/sources/t1828-codex.json",
+      "sha256": "e59f3124a340a8543ea042c6ecb93226c60e95032cc7906f80f6764a863afd20"
+    },
+    {
+      "id": "T1829",
+      "work": "T1829",
+      "author": "窺基",
+      "title": "瑜伽師地論略纂",
+      "role": "本論註釋",
+      "edition": "CBETA xml-p5 snapshot",
+      "url": "https://cbetaonline.dila.edu.tw/zh/T1829",
+      "snapshot": "translations/review/sources/t1829-codex.json",
+      "sha256": "f9770e0f3929257e027451d51fbc80941d6d396d282ecb23f795325ea1789529"
+    },
+    {
+      "id": "X0836",
+      "work": "X0836",
+      "author": "神泰",
+      "title": "俱舍論疏",
+      "role": "俱舍註釋",
+      "edition": "CBETA xml-p5 snapshot",
+      "url": "https://cbetaonline.dila.edu.tw/zh/X0836",
+      "snapshot": "translations/review/sources/x0836-codex.json",
+      "sha256": "29b0856f931650c1718041eeaefca73f8a6be522468a5b94d2cfb37915b8ee89"
+    }
+  ],
+  "evidence": [
+    {
+      "id": "guang-attention",
+      "source_id": "T1821",
+      "locators": [
+        "T41n1821_p0074b27",
+        "T41n1821_p0074b28",
+        "T41n1821_p0074b29"
+      ],
+      "quote": "作動於意故名作意",
+      "relation": "cross_text",
+      "term_ids": [
+        "manaskara"
+      ],
+      "interpretation": "普光就作意說明警覺取境；用於對照心所語境，不直接代替七作意的修道次第。",
+      "adoption": "比較參考；尚未裁定本論各段採用。"
+    },
+    {
+      "id": "bao-attention",
+      "source_id": "T1822",
+      "locators": [
+        "T41n1822_p0527c17",
+        "T41n1822_p0527c18",
+        "T41n1822_p0527c19",
+        "T41n1822_p0527c20",
+        "T41n1822_p0527c21"
+      ],
+      "quote": "此即世間說為留意",
+      "relation": "cross_text",
+      "term_ids": [
+        "manaskara"
+      ],
+      "interpretation": "法寶此段先引《正理論》再述義；直接引語作者與法寶解說須分辨。",
+      "quoted_author": "眾賢（所引《正理論》）",
+      "adoption": "比較參考；不以此證成梵巴原形。"
+    },
+    {
+      "id": "bao-on-guang",
+      "source_id": "T1822",
+      "locators": [
+        "T41n1822_p0518c17",
+        "T41n1822_p0518c18",
+        "T41n1822_p0518c19",
+        "T41n1822_p0518c20"
+      ],
+      "quote": "今詳光師所引",
+      "relation": "disagreement",
+      "term_ids": [
+        "vipaka"
+      ],
+      "quoted_author": "普光",
+      "interpretation": "法寶評議光師所引異熟業說明；保留批評與不同解釋。",
+      "adoption": "只示範異說關係；本次未裁決此爭論。"
+    },
+    {
+      "id": "dunlun-quotes-guang",
+      "source_id": "T1828",
+      "locators": [
+        "T42n1828_p0327b17",
+        "T42n1828_p0327b18"
+      ],
+      "quote": "光師釋俱舍云",
+      "relation": "quotation",
+      "quoted_author": "普光",
+      "term_ids": [],
+      "interpretation": "遁倫集錄光師釋俱舍的劫增減說；不可算成第二個獨立證人。",
+      "adoption": "來源關係示例。"
+    },
+    {
+      "id": "kuiji-attention",
+      "source_id": "T1829",
+      "locators": [
+        "T43n1829_p0001c27",
+        "T43n1829_p0001c28",
+        "T43n1829_p0001c29"
+      ],
+      "quote": "以作意、慧二法為性",
+      "relation": "direct_commentary",
+      "term_ids": [
+        "manaskara"
+      ],
+      "interpretation": "窺基本論略纂的局部解說，須按所釋上下文使用。",
+      "adoption": "本論註釋入口；尚未據此核定每一個作意 occurrence。"
+    }
+  ],
+  "issues": [
+    {
+      "id": "issue-animitta-samapatti",
+      "term_id": "animitta-samapatti",
+      "title": "無想定：ID 與外語欄位不一致",
+      "risk": "high",
+      "status": "open",
+      "interpretations": [
+        {
+          "id": "retain-chinese",
+          "label": "保留玄奘詞，外語對應待證",
+          "evidence_ids": []
+        },
+        {
+          "id": "revise-mapping",
+          "label": "依可定位原文另定詞形／義項",
+          "evidence_ids": []
+        }
+      ],
+      "decision": null
+    },
+    {
+      "id": "issue-dausthulya",
+      "term_id": "dausthulya",
+      "title": "麁性與麁重：候選詞及語境",
+      "risk": "high",
+      "status": "open",
+      "interpretations": [
+        {
+          "id": "retain-chinese",
+          "label": "保留玄奘詞，外語對應待證",
+          "evidence_ids": []
+        },
+        {
+          "id": "revise-mapping",
+          "label": "依可定位原文另定詞形／義項",
+          "evidence_ids": []
+        }
+      ],
+      "decision": null
+    },
+    {
+      "id": "issue-viveka",
+      "term_id": "viveka",
+      "title": "離欲：多個梵巴候選的適用範圍",
+      "risk": "high",
+      "status": "open",
+      "interpretations": [
+        {
+          "id": "retain-chinese",
+          "label": "保留玄奘詞，外語對應待證",
+          "evidence_ids": []
+        },
+        {
+          "id": "revise-mapping",
+          "label": "依可定位原文另定詞形／義項",
+          "evidence_ids": []
+        }
+      ],
+      "decision": null
+    },
+    {
+      "id": "issue-parikarman",
+      "term_id": "parikarman",
+      "title": "近分：跨傳統對應",
+      "risk": "high",
+      "status": "open",
+      "interpretations": [
+        {
+          "id": "retain-chinese",
+          "label": "保留玄奘詞，外語對應待證",
+          "evidence_ids": []
+        },
+        {
+          "id": "revise-mapping",
+          "label": "依可定位原文另定詞形／義項",
+          "evidence_ids": []
+        }
+      ],
+      "decision": null
+    },
+    {
+      "id": "issue-kasina-ayatana",
+      "term_id": "kasina-ayatana",
+      "title": "勝處與遍處：不同概念共用詞條",
+      "risk": "high",
+      "status": "open",
+      "interpretations": [
+        {
+          "id": "retain-chinese",
+          "label": "保留玄奘詞，外語對應待證",
+          "evidence_ids": []
+        },
+        {
+          "id": "revise-mapping",
+          "label": "依可定位原文另定詞形／義項",
+          "evidence_ids": []
+        }
+      ],
+      "decision": null
+    },
+    {
+      "id": "issue-upadi",
+      "term_id": "upadi",
+      "title": "執受：與一般執取分辨",
+      "risk": "high",
+      "status": "open",
+      "interpretations": [
+        {
+          "id": "retain-chinese",
+          "label": "保留玄奘詞，外語對應待證",
+          "evidence_ids": []
+        },
+        {
+          "id": "revise-mapping",
+          "label": "依可定位原文另定詞形／義項",
+          "evidence_ids": []
+        }
+      ],
+      "decision": null
+    }
+  ],
+  "catalog": [
+    {
+      "author": "圓測",
+      "title": "解深密經疏",
+      "work": "X0369",
+      "role": "相關唯識註釋",
+      "url": "https://cbetaonline.dila.edu.tw/X0369",
+      "status": "catalog_only"
+    },
+    {
+      "author": "窺基",
+      "title": "成唯識論述記",
+      "work": "T1830",
+      "role": "相關唯識論疏",
+      "url": "https://cbetaonline.dila.edu.tw/zh/T1830",
+      "status": "catalog_only"
+    },
+    {
+      "author": "慧沼",
+      "title": "成唯識論了義燈",
+      "work": "T1832",
+      "role": "後續傳承",
+      "url": "https://cbetaonline.dila.edu.tw/zh/T1832",
+      "status": "catalog_only"
+    },
+    {
+      "author": "智周",
+      "title": "成唯識論演祕",
+      "work": "T1833",
+      "role": "後續傳承",
+      "url": "https://cbetaonline.dila.edu.tw/zh/T1833",
+      "status": "catalog_only"
+    }
+  ]
+}

@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>&lt;project&gt; — Status Update</title>
+<style>
+:root{--bg:#f6f7f9;--panel:#fff;--ink:#1a1d21;--muted:#5c6470;--line:#e3e6ea;--accent:#0b6bcb;--accent-soft:#e8f1fb;--crit:#c62828;--high:#d84315;--med:#b8860b;--low:#607d8b;--ok:#2e7d32;--code:#f0f2f5}
+:root[data-theme=dark]{--bg:#14171b;--panel:#1d2126;--ink:#e6e9ed;--muted:#9aa4b0;--line:#2c323a;--accent:#5aa2e8;--accent-soft:#1c2a3a;--crit:#ef6a5f;--high:#f0885c;--med:#e0b84f;--low:#93a7b3;--ok:#7bc47f;--code:#12151a}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#14171b;--panel:#1d2126;--ink:#e6e9ed;--muted:#9aa4b0;--line:#2c323a;--accent:#5aa2e8;--accent-soft:#1c2a3a;--crit:#ef6a5f;--high:#f0885c;--med:#e0b84f;--low:#93a7b3;--ok:#7bc47f;--code:#12151a}}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang TC",sans-serif;overflow-x:hidden}main{max-width:1000px;margin:auto;padding:32px 38px 72px}.ps-fallback{display:flex;flex-wrap:wrap;gap:4px 14px;margin-bottom:20px;padding-bottom:10px;border-bottom:1px solid var(--line)}.ps-fallback a{color:var(--muted);text-decoration:none}@media(max-width:800px){main{padding:24px 16px}}h1{margin:0 0 6px}h2{margin-top:2em;border-bottom:2px solid var(--line)}code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--code);padding:.12em .4em;border-radius:5px;word-break:break-word}.meta{color:var(--muted)}.statgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px}.stat,.card,.next,details,.bluf{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px;margin:12px 0}.bluf{border-left:4px solid var(--accent)}.stat .n{font-size:1.7rem;font-weight:800}.progress{height:12px;background:var(--code);border-radius:10px;overflow:hidden;margin:8px 0}.progress span{display:block;height:100%;background:var(--accent)}.timeline{border-left:2px solid var(--line);padding-left:22px}.timeline li{margin:14px 0}.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px}table{width:100%;border-collapse:collapse}th,td{padding:9px 12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}.badge{display:inline-block;border-radius:99px;padding:.1em .55em;font-size:.75rem;font-weight:700}.crit{color:var(--crit)}.high{color:var(--high)}.med{color:var(--med)}.low{color:var(--low)}.ok{color:var(--ok)}
+</style>
+</head>
+<body>
+<!-- page-shell v2: collapsible numbered TOC (open by default) + Light/Dark theme switch (no stored choice: follow the OS). Canonical copy: repo-docs skill, templates/page-shell.html. Paste it unchanged right after <body>, or run scripts/page_shell.py FILE.html to insert or refresh it. -->
+<style>
+:root{--ps-w:272px;--ps-rail:52px;--ps-bar:52px;--ps-bg:#fff;--ps-ink:#1a1d21;--ps-muted:#5c6470;--ps-line:#e3e6ea;--ps-accent:#0b6bcb;--ps-hover:#eef3f9;color-scheme:light}
+:root[data-theme=dark]{--ps-bg:#1d2126;--ps-ink:#e6e9ed;--ps-muted:#9aa4b0;--ps-line:#2c323a;--ps-accent:#7ab6f0;--ps-hover:#262c34;color-scheme:dark}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--ps-bg:#1d2126;--ps-ink:#e6e9ed;--ps-muted:#9aa4b0;--ps-line:#2c323a;--ps-accent:#7ab6f0;--ps-hover:#262c34;color-scheme:dark}}
+.ps-side{display:none}.ps-js .ps-fallback{display:none}
+.ps-js{padding-left:var(--ps-w)}.ps-js[data-toc=closed]{padding-left:var(--ps-rail)}
+.ps-js .ps-side{display:flex;flex-direction:column;position:fixed;z-index:1000;top:0;bottom:0;left:0;width:var(--ps-w);background:var(--ps-bg);color:var(--ps-ink);border-right:1px solid var(--ps-line);font:14px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang TC",sans-serif;text-align:left}
+.ps-head{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:10px;border-bottom:1px solid var(--ps-line)}
+.ps-side button{display:inline-flex;align-items:center;gap:5px;min-height:32px;margin:0;padding:4px 9px;font:inherit;color:inherit;background:transparent;border:1px solid var(--ps-line);border-radius:7px;cursor:pointer}
+.ps-side button:focus-visible,.ps-toc a:focus-visible{outline:2px solid var(--ps-accent);outline-offset:1px}
+.ps-theme{display:flex;gap:3px}.ps-theme button{padding:4px 7px;font-size:13px}
+.ps-theme button[aria-pressed=true]{background:var(--ps-accent);border-color:var(--ps-accent);color:var(--ps-bg);font-weight:600}
+.ps-toc{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:8px 6px 24px}
+.ps-toc ol{list-style:none;margin:0;padding:0}.ps-toc ol ol{margin:0 0 4px 16px}
+.ps-toc a{display:flex;gap:7px;padding:4px 8px;border-radius:6px;color:var(--ps-ink);text-decoration:none}
+.ps-toc ol ol a{color:var(--ps-muted);font-size:13px}
+.ps-num{flex:none;color:var(--ps-accent);font-variant-numeric:tabular-nums}
+.ps-js[data-toc=closed] .ps-side{width:var(--ps-rail)}
+.ps-js[data-toc=closed] .ps-head,.ps-js[data-toc=closed] .ps-theme{flex-direction:column}
+.ps-js[data-toc=closed] .ps-head{border-bottom:0}
+.ps-js[data-toc=closed] .ps-label,.ps-js[data-toc=closed] .ps-toc{display:none}
+@media(hover:hover){.ps-side button:not([aria-pressed=true]):hover,.ps-toc a:hover{background:var(--ps-hover)}}
+@media(max-width:800px){
+.ps-js,.ps-js[data-toc]{padding-left:0;padding-top:var(--ps-bar);scroll-padding-top:calc(var(--ps-bar) + 8px)}
+.ps-js .ps-side,.ps-js[data-toc] .ps-side{right:0;bottom:auto;width:auto;border-right:0;border-bottom:1px solid var(--ps-line)}
+.ps-js .ps-head,.ps-js[data-toc] .ps-head{flex-direction:row;flex-wrap:nowrap;justify-content:space-between;height:var(--ps-bar);padding:0 12px;border-bottom:0}
+.ps-js[data-toc] .ps-theme{flex-direction:row}.ps-js[data-toc] .ps-label{display:inline}
+.ps-toc{max-height:calc(100vh - var(--ps-bar));max-height:calc(100dvh - var(--ps-bar));border-top:1px solid var(--ps-line)}
+}
+@media(max-width:420px){.ps-js[data-toc] .ps-theme .ps-label{display:none}}
+@media print{.ps-side{display:none!important}.ps-js{padding:0!important}}
+</style>
+<aside class="ps-side" id="ps-side" aria-label="頁面工具">
+<div class="ps-head">
+<button type="button" id="ps-toggle" aria-controls="ps-toc" aria-expanded="true" aria-label="目錄" title="收合 / 展開目錄"><span aria-hidden="true">☰</span><span class="ps-label">目錄</span></button>
+<div class="ps-theme" role="group" aria-label="主題">
+<button type="button" data-theme-choice="light" aria-pressed="false" aria-label="Light" title="Light"><span aria-hidden="true">☀</span><span class="ps-label">Light</span></button>
+<button type="button" data-theme-choice="dark" aria-pressed="false" aria-label="Dark" title="Dark"><span aria-hidden="true">☾</span><span class="ps-label">Dark</span></button>
+</div>
+</div>
+<nav class="ps-toc" id="ps-toc" aria-label="目錄"></nav>
+</aside>
+<script>
+(function(){
+var d=document,root=d.documentElement,side=d.getElementById('ps-side'),toggle=d.getElementById('ps-toggle'),toc=d.getElementById('ps-toc');
+if(!side||!toggle||!toc)return;
+var mobile=window.matchMedia('(max-width:800px)'),os=window.matchMedia('(prefers-color-scheme:dark)'),choices=side.querySelectorAll('[data-theme-choice]');
+function get(k){try{return window.localStorage.getItem(k)}catch(e){return null}}
+function put(k,v){try{window.localStorage.setItem(k,v)}catch(e){}}
+function pressed(t){for(var i=0;i<choices.length;i++)choices[i].setAttribute('aria-pressed',String(choices[i].getAttribute('data-theme-choice')===t))}
+function shown(){var t=root.getAttribute('data-theme');return t==='light'||t==='dark'?t:(os.matches?'dark':'light')}
+function theme(t){if(t==='light'||t==='dark')root.setAttribute('data-theme',t);else root.removeAttribute('data-theme');pressed(shown())}
+function open(o,save){root.setAttribute('data-toc',o?'open':'closed');toggle.setAttribute('aria-expanded',String(o));if(save&&!mobile.matches)put('page-shell-toc',o?'open':'closed')}
+function start(){open(!mobile.matches&&get('page-shell-toc')!=='closed')}
+theme(get('page-shell-theme'));
+if(os.addEventListener)os.addEventListener('change',function(){pressed(shown())});
+root.classList.add('ps-js');
+start();
+if(mobile.addEventListener)mobile.addEventListener('change',start);
+toggle.addEventListener('click',function(){open(toggle.getAttribute('aria-expanded')!=='true',true)});
+side.addEventListener('click',function(e){var b=e.target.closest('[data-theme-choice]');if(b){var t=b.getAttribute('data-theme-choice');theme(t);put('page-shell-theme',t)}});
+toc.addEventListener('click',function(e){var a=e.target.closest('a');if(!a)return;for(var t=d.getElementById(decodeURIComponent(a.hash.slice(1)));t;t=t.parentElement)if(t.tagName==='DETAILS')t.open=true;if(mobile.matches)open(false)});
+function build(){
+var heads=d.querySelectorAll('h2,h3'),list=d.createElement('ol'),item=null,sub=null,n=0,m=0;
+for(var i=0;i<heads.length;i++){
+var h=heads[i],text=h.textContent.replace(/\s+/g,' ').trim(),label=text.replace(/^(?:\d+(?:\.\d+)*[.)、:]?\s+|[①-⑳]\s*)/,'')||text;
+if(!label||side.contains(h))continue;
+if(!h.id){var base=label.toLowerCase().replace(/[^\p{L}\p{N}]+/gu,'-').replace(/^-+|-+$/g,'')||'section',id=base,k=2;while(d.getElementById(id))id=base+'-'+k++;h.id=id}
+var li=d.createElement('li'),a=d.createElement('a'),num=d.createElement('span');
+num.className='ps-num';a.href='#'+encodeURIComponent(h.id);a.appendChild(num);a.appendChild(d.createTextNode(label));li.appendChild(a);
+if(h.tagName==='H3'&&item){m++;num.textContent=n+'.'+m;if(!sub){sub=d.createElement('ol');item.appendChild(sub)}sub.appendChild(li)}
+else{n++;m=0;num.textContent=String(n);item=li;sub=null;list.appendChild(li)}
+}
+toc.appendChild(list);
+}
+if(d.readyState==='loading')d.addEventListener('DOMContentLoaded',build);else build();
+})();
+</script>
+<!-- /page-shell -->
+
+<main>
+<nav class="ps-fallback" aria-label="目錄">
+<strong>Status Update</strong>
+<a href="#overview">1. 進度總覽</a>
+<a href="#timeline">2. 工作時間軸</a>
+<a href="#status">3. 當前狀態</a>
+<a href="#unverified">未驗證</a>
+<a href="#findings">4. 待處理發現</a>
+<a href="#next">5. 下一步計畫</a>
+<a href="#details">6. 技術細節附錄</a>
+</nav>
+<h1>shengwen-di-html — Status Update</h1><p class="meta">2026-10-19T13:42:03-04:00 · shengwen-di-html · codex/terminology-context-evidence-cards · 6436f0f · Codex/model unavailable · Created by Codex</p><div class="bluf" id="bluf">🟡 黃：C／E／F／G goal 已啟動；沿用同一任務與 worktree。需要決定：無。H 維持暫緩。</div><h2 id="overview">1. 進度總覽</h2><div class="statgrid"><div class="stat">102 baseline tests</div><div class="stat">57 subtests</div></div><p>基線 100%</p><div class="progress"><span style="width:100%"></span></div><p>新功能 0%</p><div class="progress"><span style="width:0%"></span></div><h2 id="timeline">2. 工作時間軸</h2><ol><li>已完成：狀態核對與 baseline。</li><li>當前：證據、疑義與影響追蹤資料契約。</li><li>待做：發布整合、註疏介面、CLI、回歸及瀏覽器驗證。</li></ol><h2 id="status">3. 當前狀態</h2><div class="tablewrap"><table><tr><th>範圍</th><th>結果</th></tr><tr><td>affected baseline</td><td>102 tests＋57 subtests passed；0 failed</td></tr><tr><td>既存術語警訊</td><td>16 個仍待編輯判讀</td></tr></table></div><h3 id="unverified">未驗證</h3><ul><li>新閘門與追蹤：待 qtest 回歸。</li><li>真實付費 LLM、學術裁決與部署不在本次執行。</li></ul><h2 id="findings">4. 待處理發現</h2><div class="card">現有證據驗證只核結構，未核 snapshot 引文；尚無 issue 決策與逐段影響追蹤。</div><h2 id="next">5. 下一步計畫</h2><div class="next">C 高風險閘門，粗估 1–2 天；E 註疏對照，2–3 天；F 疑義清單，1–2 天；G 變動影響追蹤，2–3 天。共用同一套證據與 occurrence 索引，避免互相不一致。</div><h2 id="details">6. 技術細節附錄</h2><details><summary>Evidence</summary><pre>102 passed, 57 subtests passed in 0.55s</pre></details><details><summary>Scope</summary><p>新增來源 snapshot、疑義／裁決紀錄、來源更新差異與閱讀對照，並接入 runner 和 publisher。</p></details><details><summary>Suggested commit</summary><code>(feat) enforce evidence review and track source changes</code></details></main>
+</body>
+</html>

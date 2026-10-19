@@ -372,7 +372,8 @@
           }
         ],
         "pali": []
-      }
+      },
+      "review_required": true
     },
     {
       "id": "shanta",
@@ -494,7 +495,8 @@
             "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
           }
         ]
-      }
+      },
+      "review_required": true
     },
     {
       "id": "pratipassrabdhi",
@@ -784,7 +786,8 @@
             "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
           }
         ]
-      }
+      },
+      "review_required": true
     },
     {
       "id": "mulasamapatti",
@@ -874,7 +877,8 @@
             "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
           }
         ]
-      }
+      },
+      "review_required": true
     },
     {
       "id": "nirodha-samapatti",
@@ -2202,7 +2206,8 @@
             "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
           }
         ]
-      }
+      },
+      "review_required": true
     },
     {
       "id": "four-cultivations-of-samadhi",
@@ -3807,7 +3812,8 @@
             "note": "沿用既有候選詞；尚未核對支持此對應的文獻。"
           }
         ]
-      }
+      },
+      "review_required": true
     }
   ],
   "codex_contribution": "Added per-language evidence states and documented context exclusions; preserved all legacy candidate spellings and translation statuses."

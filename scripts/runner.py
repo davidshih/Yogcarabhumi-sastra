@@ -34,6 +34,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 import llm
 import audit
 import publisher
+import review_governance as governance  # Codex contribution: evidence-bound publication.
 import build_translation_html as bth
 import build_shengwen_di_html as bsh
 from make_translation_skeleton import extract_lines, read_segments, render as render_skeleton, line_key
@@ -747,7 +748,18 @@ def juan_paths(work: str, juan: int) -> dict[str, Path]:
 def ensure_data(work: str, juan: int) -> Path:
     path = juan_paths(work, juan)["data"]
     path.parent.mkdir(exist_ok=True)
-    bsh.fetch_json(f"{bsh.BASE_URL}/juans?work={work}&juan={juan}&toc=1&work_info=1", path)
+    cached = path.exists()
+    url = f"{bsh.BASE_URL}/juans?work={work}&juan={juan}&toc=1&work_info=1"
+    bsh.fetch_json(url, path)
+    metadata_path = path.with_suffix(".source-codex.json")
+    actual_hash = audit.sha256_bytes(path.read_bytes())
+    metadata = governance.read_json(metadata_path) if metadata_path.exists() else {}
+    if metadata.get("sha256") != actual_hash:
+        governance.write_json(metadata_path, {
+            "created_by": "Codex", "url": url, "sha256": actual_hash,
+            "fetched_at": None if cached else now_iso(), "observed_at": now_iso(),
+            "edition": "CBETA API; edition not supplied", "previous_sha256": metadata.get("sha256"),
+        })
     return path
 
 
@@ -910,6 +922,7 @@ def llm_call(job: dict, prompt: str, stage: str, *, context: dict | None = None,
                 "prompt_sha256": audit.sha256_text(prompt),
                 "source_sha256": context.get("source_hash"),
                 "glossary_sha256": context.get("glossary_hash"),
+                "governance_sha256": context.get("governance_sha256"),
                 "structured_contract_sha256": context.get("structured_contract_sha256"),
             },
             "policy_version": POLICY_VERSION,
@@ -1285,12 +1298,14 @@ def review_pass(job: dict, juan: int, md_path: Path, pass_name: str,
                 prog: dict, round_number: int) -> list[dict]:
     entries = bth.parse_entries(md_path.read_text(encoding="utf-8"))
     prepared = []
+    prior_attestations = json.loads(json.dumps(prog.get("review_attestations", {})))
     existing_attestations = prog.get("review_attestations", {})
     if isinstance(existing_attestations, dict):
         for idx in range(len(entries)):
             unit_attestations = existing_attestations.get(unit_id(job, juan, idx))
             if isinstance(unit_attestations, dict):
                 unit_attestations.pop(pass_name, None)
+    governance_state = governance.collect_state(ROOT, [md_path])
     for idx, entry in enumerate(entries):
         current_unit = unit_id(job, juan, idx)
         current_clause = clause_id(entry)
@@ -1313,7 +1328,9 @@ def review_pass(job: dict, juan: int, md_path: Path, pass_name: str,
                     "stage": "review_doctrine", "model": "gpt-5.6-sol", "effort": "xhigh",
                 },
             }
-        raw_evidence = job.get("review_evidence", {}).get(current_unit, [])
+        evidence_context = governance.entry_context(ROOT, md_path, entry, governance_state)
+        raw_evidence = [*job.get("review_evidence", {}).get(current_unit, []),
+                        *evidence_context["evidence"]]
         evidence = json.loads(json.dumps([
             {**item, "source_id": item["source_id"].strip()}
             for item in raw_evidence
@@ -1323,6 +1340,11 @@ def review_pass(job: dict, juan: int, md_path: Path, pass_name: str,
         ], ensure_ascii=False))
         allowed_reference_ids = {item["source_id"] for item in evidence}
         effort = stage_effort(pass_name, low_ratio=low_ratio)
+        dependency_hash = governance.digest({
+            "governance": evidence_context["sha256"], "evidence": evidence,
+            "prompt": (PROMPTS_DIR / f"{pass_name}.txt").read_text(encoding="utf-8"),
+            "policy": POLICY_PATH.read_text(encoding="utf-8"),
+        })
         prepared.append({
             "idx": idx,
             "unit_id": current_unit,
@@ -1334,6 +1356,8 @@ def review_pass(job: dict, juan: int, md_path: Path, pass_name: str,
             "low_ratio": low_ratio,
             "warning": warning,
             "review_evidence": evidence,
+            "governance_context": evidence_context,
+            "dependency_sha256": dependency_hash,
             "allowed_reference_ids": allowed_reference_ids,
             "structured_contract": structured_contract,
             "structured_contract_sha256": structured_contract_sha256(structured_contract),
@@ -1344,6 +1368,30 @@ def review_pass(job: dict, juan: int, md_path: Path, pass_name: str,
     verdicts = []
     glossary = load_glossary()
     for item in prepared:
+        # Codex contribution: reuse only current reviews with validated call artifacts.
+        cached = prior_attestations.get(item["unit_id"], {}).get(pass_name, {})
+        if cached.get("dependency_sha256") == item["dependency_sha256"]:
+            events = {event["event_id"]: event for event in audit_store(job).events()}
+            event = events.get(cached.get("review_event_id"), {})
+            try:
+                response = json.loads(audit.read_artifact(ROOT, event["artifacts"]["response"]))
+            except (OSError, ValueError, KeyError, TypeError):
+                response = {}
+            if (cached.get("verdict") == response.get("verdict") == "pass"
+                    and response.get("findings") == [] and event.get("status") == "ok"
+                    and event.get("stage") == response.get("stage") == pass_name
+                    and event.get("unit_id") == response.get("unit_id") == item["unit_id"]
+                    and event.get("model") == cached.get("model") == stage_model(job, pass_name)
+                    and event.get("effort") == cached.get("effort") == item["effort"]
+                    and event.get("hashes", {}).get("governance_sha256") == item["governance_context"]["sha256"]
+                    and event.get("hashes", {}).get("source_sha256") == response.get("source_hash") == item["source_hash"]
+                    and cached.get("structured_contract_sha256") == item["structured_contract_sha256"]
+                    and cached.get("source_quote") == item["source"]
+                    and cached.get("translation_quote") == item["translation"]):
+                prog.setdefault("review_attestations", {}).setdefault(item["unit_id"], {})[pass_name] = cached
+                verdicts.append({"round": round_number, "stage": pass_name, "unit_id": item["unit_id"],
+                                 "verdict": "pass", "finding_count": 0, "reused": True})
+                continue
         idx = item["idx"]
         current_unit = item["unit_id"]
         current_clause = item["clause_id"]
@@ -1360,6 +1408,7 @@ def review_pass(job: dict, juan: int, md_path: Path, pass_name: str,
             "review_evidence": (
                 item["review_evidence"] if pass_name == "review_parallel" else []
             ),
+            "terminology_decisions": item["governance_context"]["decisions"],
             "translation_ratio_warning": item["low_ratio"],
             "structured_contract": item["structured_contract"],
         }
@@ -1368,6 +1417,7 @@ def review_pass(job: dict, juan: int, md_path: Path, pass_name: str,
             "source_hash": current_hash,
             "glossary_hash": audit.sha256_text(glossary_subset),
             "structured_contract_sha256": item["structured_contract_sha256"],
+            "governance_sha256": item["governance_context"]["sha256"],
         }
         bound_prompt = prompt_text(
             pass_name,
@@ -1395,6 +1445,8 @@ def review_pass(job: dict, juan: int, md_path: Path, pass_name: str,
         if payload["verdict"] == "pass":
             prog.setdefault("review_attestations", {}).setdefault(current_unit, {})[pass_name] = {
                 "stage": pass_name,
+                "governance_bindings": item["governance_context"]["bindings"],
+                "dependency_sha256": item["dependency_sha256"],
                 "verdict": "pass",
                 "review_event_id": review_event_id,
                 "model": stage_model(job, pass_name),
@@ -1632,6 +1684,10 @@ def run_checks(job: dict, juan: int, md_path: Path, data_path: Path,
             issues.append(f"mandatory coverage ledger is unreadable: {err}")
         else:
             issues += check_coverage_ledger(ledger, source_lines, start, end, translation_text)
+    issues += governance.gate_issues(
+        ROOT, md_path, job["progress"][str(juan)].get("review_attestations", {}),
+        audit_store(job).events(),
+    )
     return issues
 
 
@@ -1669,7 +1725,9 @@ def create_volume_attestation(job: dict, juan: int, md_path: Path, data_path: Pa
     ledger_path = ROOT / prog["coverage_ledger"]["path"]
     store = audit_store(job)
     event_snapshot = store.artifact("audit_event_log", store.event_path.read_bytes())
+    governance_claims = store.artifact("governance_claims", json_text(prog.get("review_attestations", {})))
     sealed_paths = {
+        "governance_claims": ROOT / governance_claims["path"],
         "source_data": data_path,
         "translation": md_path,
         "coverage_ledger": ledger_path,
@@ -1682,6 +1740,14 @@ def create_volume_attestation(job: dict, juan: int, md_path: Path, data_path: Pa
         "work_search": ROOT / "docs" / job["work"] / "search.json",
         "root_index": ROOT / "docs" / "index.html",
     }
+    # Codex contribution: publish the provenance used by reader cards with the seal.
+    if (ROOT / governance.REGISTRY).exists():
+        sealed_paths["review_registry"] = ROOT / governance.REGISTRY
+        for source in governance.load_registry(ROOT)["sources"]:
+            sealed_paths[f"review_source:{source['id']}"] = governance.safe_path(ROOT, source["snapshot"])
+    metadata_path = data_path.with_suffix(".source-codex.json")
+    if metadata_path.exists():
+        sealed_paths["source_metadata"] = metadata_path
     translation_dir = ROOT / "docs" / job["work"] / "translations"
     for neighbor in (juan - 1, juan + 1):
         neighbor_path = translation_dir / f"{job['work']}-{neighbor:03d}-baihua.html"
@@ -1712,6 +1778,12 @@ def require_content_gate(job: dict, juan: int, md_path: Path) -> None:
     current_hash = audit.sha256_text(md_path.read_text(encoding="utf-8"))
     if not gate.get("passed") or gate.get("review_verdict") != "pass":
         raise RuntimeError(f"juan {juan}: blocking quality gate has not passed")
+    errors = governance.gate_issues(
+        ROOT, md_path, job.get("progress", {}).get(str(juan), {}).get("review_attestations", {}),
+        audit_store(job).events() if (ROOT / governance.GLOSSARY).exists() and md_path.resolve().is_relative_to(ROOT.resolve()) else [],
+    )
+    if errors:
+        raise RuntimeError("; ".join(errors))
     if gate.get("translation_sha256") != current_hash:
         raise RuntimeError(f"juan {juan}: translation changed after quality gate")
 
@@ -1765,7 +1837,7 @@ def run_juan(job: dict, juan: int) -> None:
             require_quality_gate(job, juan, paths["md"])
         except (OSError, RuntimeError):
             for key in ("quality_gate", "volume_attestation", "coverage_ledger",
-                        "review_attestations", "review_verdict", "repaired"):
+                        "review_verdict", "repaired"):
                 prog.pop(key, None)
             prog["step"] = "resume_rebuild"
             save_job(job)
@@ -1831,6 +1903,14 @@ def run_juan(job: dict, juan: int) -> None:
     if issues:
         raise RuntimeError(f"juan {juan} checks failed: " + "; ".join(issues[:10]))
 
+    # Codex contribution: preserve an inspectable impact report at each review boundary.
+    current_state = governance.collect_state(ROOT, [paths["md"]])
+    previous_state = prog.get("review_dependency_state", current_state)
+    units = {unit_id(job, juan, idx): f'{paths["md"].stem.removesuffix("-baihua")}:{bth.parse_range(entry.range_label)[0]}'
+             for idx, entry in enumerate(bth.parse_entries(paths["md"].read_text(encoding="utf-8")))}
+    prog["review_impact"] = governance.invalidate_reviews(
+        previous_state, current_state, prog.setdefault("review_attestations", {}), units)
+    prog["review_dependency_state"] = current_state
     prog["step"] = "review"
     prog["review_verdict"] = "not_run"
     save_job(job)

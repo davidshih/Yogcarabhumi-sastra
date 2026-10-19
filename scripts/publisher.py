@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import json
+import gzip
 import subprocess
 from pathlib import Path
 
@@ -53,6 +54,19 @@ def verify_attestation(root: Path, path: Path) -> dict:
         file_path = root / item["path"]
         if not file_path.is_file() or audit.sha256_bytes(file_path.read_bytes()) != item["sha256"]:
             raise PublishError(f"sealed file changed: {item['path']}")
+    # Codex contribution: a new seal cannot bypass live high-risk evidence checks.
+    import review_governance as governance
+    files = payload.get("files", {})
+    if (root / governance.GLOSSARY).exists() and "translation" in files:
+        try:
+            claims = json.loads(gzip.decompress((root / files["governance_claims"]["path"]).read_bytes()))
+            events = [json.loads(line) for line in
+                      gzip.decompress((root / files["audit_event_log_snapshot"]["path"]).read_bytes()).decode().splitlines() if line.strip()]
+            errors = governance.gate_issues(root, root / files["translation"]["path"], claims, events)
+        except (OSError, ValueError, KeyError, TypeError) as error:
+            raise PublishError(f"governance evidence is missing or invalid: {error}") from error
+        if errors:
+            raise PublishError("; ".join(errors))
     return payload
 
 

@@ -88,10 +88,13 @@ def _tip_lines(term: dict[str, Any]) -> list[str]:
 
 
 # Codex contribution: accessible cards preserve uncertainty for each language candidate.
-def render_term_cards(glossary: dict[str, Any]) -> str:
+def render_term_cards(glossary: dict[str, Any], root: Path | None = None) -> str:
     labels = {"chinese": "漢文術語", "sanskrit": "梵語", "pali": "巴利語"}
     states = {"attested": "有文獻依據", "inferred": "推定", "comparative": "跨傳統比較", "unresolved": "待考證"}
     templates = []
+    if root is not None:
+        from review_governance import render_context, load_registry, issue_list
+        registry, registry_issues = load_registry(root), issue_list(root)
     for term in glossary["terms"]:
         issues = validate_language_evidence(term, glossary.get("schema_version", 1) == 2)
         if issues:
@@ -119,6 +122,8 @@ def render_term_cards(glossary: dict[str, Any]) -> str:
                                   f'<span class="term-evidence-state">{states[record["status"]]}</span>'
                                   f'{note}{review}{evidence}</div>')
             sections.append(f'<section><h3>{label}</h3>' + (''.join(candidates) or '<p>未提供對應詞。</p>') + '</section>')
+        if root is not None:
+            sections.append(render_context(root, term["id"], registry, registry_issues))
         template_id = html.escape('term-card-' + term['id'], quote=True)
         templates.append(f'<template id="{template_id}"><h2 id="term-card-title">{html.escape(term["xuanzang"])}</h2>'
                          f'<p>{html.escape(term["plain"])}</p><p>中文譯法沿用狀態：{html.escape({"stable": "既有用語", "review": "待審"}.get(term.get("status"), "未標示"))}。'
@@ -416,7 +421,7 @@ def render(entries: list[Entry], source: Path, juan: int, title: str) -> str:
 {chr(10).join(pairs)}
     </main>
   </div>
-  {render_term_cards(glossary)}
+  {render_term_cards(glossary, GLOSSARY_PATH.parents[2])}
   <nav class="section-nav" aria-label="段落導航">
     <button type="button" id="prevSection" aria-label="上一段">↑</button>
     <button type="button" id="nextSection" aria-label="下一段">↓</button>

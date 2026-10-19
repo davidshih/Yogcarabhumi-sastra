@@ -1,1 +1,42 @@
-{"generated": "2026-07-05T16:35:35-04:00", "jobs": [{"id": "20260705-162642-dual-7ede", "work": "T1579", "juans": [1, 2, 3, 4, 5], "model": "dual", "state": "running", "created": "2026-07-05T16:26:42-04:00", "updated": "2026-07-05T16:35:35-04:00", "resume_at": null, "error": null, "push": true, "summary": false, "progress": {"1": {"step": "done", "section": 16, "sections_total": 16, "repaired": true}, "2": {"step": "commit", "section": 14, "sections_total": 19, "repaired": true}}}]}
+{
+  "schema": 1,
+  "updated": "2026-10-19T13:38:24-04:00",
+  "head": "017c6a8",
+  "items": [
+    {
+      "id": "dual-review-h1",
+      "title": "Run independent Codex and Opus pilot after usage recovers",
+      "owner": "you",
+      "section": "later",
+      "branch": "codex/terminology-context-evidence-cards",
+      "merge": false,
+      "cmd": "git show HEAD:HANDOFF.md",
+      "note": "H1 and H2 scope and acceptance are in HANDOFF.md. Do not start paid review until the user returns.",
+      "blocked_by": "User return and restored model usage",
+      "links": []
+    },
+    {
+      "id": "remaining-term-warnings",
+      "title": "Adjudicate the 16 retained terminology warnings",
+      "owner": "you",
+      "section": "later",
+      "branch": "codex/terminology-context-evidence-cards",
+      "merge": false,
+      "cmd": "uv run python scripts/check_translation_terms.py --translation translations/T1579-012-baihua.md",
+      "note": "See docs/reference/term-warning-audit-codex.md. No translation was changed.",
+      "links": []
+    }
+  ],
+  "acceptance": [],
+  "tests": [
+    {
+      "commit": "017c6a8",
+      "label": "Terminology A/B/D full verification",
+      "counts": {
+        "tests_passed": 120,
+        "subtests_passed": 66,
+        "failed": 0
+      }
+    }
+  ]
+}

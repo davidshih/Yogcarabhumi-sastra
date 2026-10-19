@@ -1,0 +1,482 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>卷十二譯文比較</title>
+<!-- ihr:css -->
+<style>
+/* interactive-html-report · report.css · tokens + components. Light on :root, dark under both media and data-theme. */
+:root{
+  --bg:#f3f5f8; --surface:#ffffff; --surface-2:#eaedf2; --fg:#0f1419; --fg-2:#4a5566; --fg-3:#7a8494;
+  --line:#d9dee6; --grid:#e6e9ee; --accent:#2a78d6; --accent-ink:#1c5cab; --accent-soft:#e3eefb;
+  --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100; --s5:#e87ba4; --s6:#008300; --s7:#4a3aa7; --s8:#e34948;
+  --good:#0ca30c; --warn:#fab219; --serious:#ec835a; --crit:#d03b3b;
+  --good-soft:rgba(12,163,12,.14); --warn-soft:rgba(250,178,25,.18); --crit-soft:rgba(208,59,59,.14); --serious-soft:rgba(236,131,90,.16);
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --sans:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif;
+  --shadow:0 1px 2px rgba(15,20,25,.06),0 6px 20px rgba(15,20,25,.05);
+  --sb:272px;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f1115; --surface:#171a20; --surface-2:#1f232b; --fg:#f1f3f6; --fg-2:#b6bcc8; --fg-3:#8a92a0;
+  --line:#2b303a; --grid:#262b34; --accent:#3987e5; --accent-ink:#8fbbf2; --accent-soft:#1a2a40;
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181; --s6:#008300; --s7:#9085e9; --s8:#e66767;
+  --good-soft:rgba(12,163,12,.22); --warn-soft:rgba(250,178,25,.22); --crit-soft:rgba(208,59,59,.24); --serious-soft:rgba(236,131,90,.22);
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.35); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1115; --surface:#171a20; --surface-2:#1f232b; --fg:#f1f3f6; --fg-2:#b6bcc8; --fg-3:#8a92a0;
+  --line:#2b303a; --grid:#262b34; --accent:#3987e5; --accent-ink:#8fbbf2; --accent-soft:#1a2a40;
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181; --s6:#008300; --s7:#9085e9; --s8:#e66767;
+  --good-soft:rgba(12,163,12,.22); --warn-soft:rgba(250,178,25,.22); --crit-soft:rgba(208,59,59,.24); --serious-soft:rgba(236,131,90,.22);
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.35); color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--fg);font-family:var(--sans);font-size:15px;line-height:1.65}
+a{color:var(--accent-ink)}
+h1,h2,h3,h4{text-wrap:balance;line-height:1.25;margin:0}
+h2{font-size:1.5rem;font-weight:700;letter-spacing:-.01em;padding-top:.5rem}
+h3{font-size:1.12rem;font-weight:600;margin-top:1.6rem}
+h4{font-size:.98rem;font-weight:600;margin-top:1rem}
+p{margin:.55rem 0}
+code{font-family:var(--mono);font-size:.86em;background:var(--surface-2);padding:.1em .35em;border-radius:4px}
+svg text{font-family:var(--sans)}
+/* ---- layout: sidebar + main ---- */
+.app{display:flex;min-height:100%}
+aside.sb{position:sticky;top:env(safe-area-inset-top,0px);align-self:flex-start;height:calc(100vh - env(safe-area-inset-top,0px));width:var(--sb);flex:0 0 var(--sb);overflow-y:auto;border-right:1px solid var(--line);background:var(--surface);padding:18px 12px 40px}
+.sb .brandrow{display:flex;align-items:flex-start;gap:6px}
+.sb .brand{flex:1;min-width:0;font-weight:700;font-size:.95rem;padding:6px 8px 10px;color:var(--fg)}
+.sb .brand small{display:block;font-weight:400;color:var(--fg-3);font-size:.75rem}
+.sb .legend{font-size:.72rem;color:var(--fg-3);padding:0 8px 10px;border-bottom:1px solid var(--line);margin-bottom:8px}
+.sb .search{display:flex;align-items:center;gap:6px;margin:0 4px 8px;background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:4px 8px}
+.sb .search input{all:unset;flex:1;min-width:0;font-size:.82rem;color:var(--fg);font-family:var(--sans)}
+.sb .search kbd{font-family:var(--mono);font-size:.62rem;color:var(--fg-3);border:1px solid var(--line);border-radius:4px;padding:0 4px}
+.tree{list-style:none;margin:0;padding:0}
+.tree li{margin:0} .tree li.hide{display:none}
+.tree .grp{display:flex;align-items:center;gap:4px}
+.tree .grp>button.tg{all:unset;cursor:pointer;width:22px;height:26px;display:grid;place-items:center;color:var(--fg-3);border-radius:4px}
+.tree .grp>button.tg:focus-visible,.tree a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.tree .grp>button.tg svg{transition:transform .15s}
+.tree li.open>.grp>button.tg svg{transform:rotate(90deg)}
+.tree a{flex:1;display:block;text-decoration:none;color:var(--fg-2);font-size:.86rem;padding:4px 8px;border-radius:6px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tree a.l1{font-weight:600;color:var(--fg)}
+.tree a:hover{background:var(--surface-2)}
+.tree a.active{background:var(--accent-soft);color:var(--accent-ink)}
+.tree ul{list-style:none;margin:0;padding:0 0 0 22px;display:none}
+.tree li.open>ul,.tree.filtering li>ul{display:block}
+.tree ul a{font-size:.8rem;padding:3px 8px}
+.tree .n{font-family:var(--mono);font-size:.7rem;color:var(--fg-3);margin-right:6px}
+main{flex:1;min-width:0;padding:28px clamp(16px,4vw,56px) 80px;max-width:1120px}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px}
+.ibtn{display:inline-flex;align-items:center;gap:6px;background:var(--surface);color:var(--fg-2);border:1px solid var(--line);border-radius:999px;padding:5px 12px;font-family:var(--sans);font-size:.8rem;cursor:pointer}
+.ibtn:hover{background:var(--surface-2);color:var(--fg)} .ibtn:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.ibtn svg{width:14px;height:14px}
+.themesw{display:inline-flex;gap:2px;padding:2px;border:1px solid var(--line);border-radius:999px;background:var(--surface)}
+.themesw button{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:999px;font-size:.78rem;color:var(--fg-2)}
+.themesw button:hover{color:var(--fg)} .themesw button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.themesw button[aria-pressed="true"]{background:var(--accent);color:#fff}
+.app.sb-collapsed aside.sb{display:none}
+#sbShow{display:none} .app.sb-collapsed ~ #sbShow{display:inline-flex;position:fixed;left:14px;top:calc(14px + env(safe-area-inset-top,0px));z-index:60}
+.drawer-btn{display:none;position:fixed;left:14px;bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:60;background:var(--accent);color:#fff;border:0;border-radius:999px;padding:10px 16px;font-weight:600;font-family:var(--sans);box-shadow:var(--shadow);cursor:pointer}
+/* ---- hero / sections ---- */
+.hero{padding-bottom:18px;border-bottom:1px solid var(--line);margin-bottom:26px}
+.eyebrow{font-family:var(--mono);font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;color:var(--fg-3)}
+.hero h1{font-size:clamp(1.7rem,3.2vw,2.5rem);font-weight:700;letter-spacing:-.02em;margin:.3rem 0 .6rem}
+.hero .lead{font-size:1.02rem;color:var(--fg-2);max-width:68ch}
+.hero .who{font-family:var(--mono);font-size:.74rem;color:var(--fg-3);margin:0 0 .6rem;overflow-wrap:anywhere}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin:18px 0 6px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px;min-width:0}
+.tile .v{font-size:1.6rem;font-weight:700;letter-spacing:-.02em;line-height:1.1}
+.tile .v.c{color:var(--crit)} .tile .v.w{color:var(--serious)} .tile .v.a{color:var(--accent-ink)} .tile .v.g{color:var(--good)}
+.tile .k{font-size:.78rem;color:var(--fg-2);margin-top:4px;line-height:1.35}
+.tile .src{font-size:.68rem;color:var(--fg-3);margin-top:6px;font-family:var(--mono)}
+section{scroll-margin-top:12px;margin-bottom:46px}
+.sec-kicker{font-family:var(--mono);font-size:.72rem;color:var(--fg-3);letter-spacing:.06em}
+.lede{font-size:1.02rem;color:var(--fg);max-width:70ch}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:14px 0;box-shadow:var(--shadow);min-width:0}
+.card h3{margin-top:0}
+.card .meta{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 10px}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px} .two>*{min-width:0}
+.list{margin:.3rem 0 .3rem 1.1rem;padding:0} .list li{margin:.3rem 0}
+.list.hit li::marker{color:var(--good)} .list.miss li::marker{color:var(--crit)}
+.callout{border:1px solid var(--line);border-left:4px solid var(--serious);background:var(--surface);border-radius:8px;padding:10px 14px;margin:14px 0;font-size:.92rem}
+.callout.good{border-left-color:var(--good)} .callout.crit{border-left-color:var(--crit)} .callout.info{border-left-color:var(--accent)}
+.steps{counter-reset:s;list-style:none;padding:0;margin:8px 0}
+.steps li{counter-increment:s;position:relative;padding:6px 0 6px 38px;border-bottom:1px dashed var(--grid)}
+.steps li::before{content:counter(s,decimal-leading-zero);position:absolute;left:0;top:6px;font-family:var(--mono);color:var(--accent-ink);font-size:.8rem}
+.chk{list-style:none;padding:0;margin:6px 0}
+.chk li{display:flex;gap:10px;align-items:flex-start;padding:5px 0;border-bottom:1px dashed var(--grid);font-size:.9rem}
+.chk input{margin-top:5px}
+.src-list{font-size:.82rem} .src-list li{margin:.25rem 0}
+/* ---- chips, status dots, tags, note markers ---- */
+.chip{display:inline-flex;align-items:center;gap:5px;font-size:.72rem;font-weight:500;padding:2px 8px;border-radius:999px;border:1px solid var(--line);background:var(--surface-2);color:var(--fg-2);white-space:nowrap}
+.chip.lic{border-color:var(--accent);color:var(--accent-ink);background:var(--accent-soft)}
+.chip.free{border-color:var(--good);color:var(--good);background:var(--good-soft)}
+.chip.paid{border-color:var(--serious);color:var(--serious);background:var(--serious-soft)}
+.chip.v{border-style:dashed}
+.st{display:inline-flex;align-items:center;gap:5px;font-size:.78rem;font-weight:500;white-space:nowrap}
+.st i{width:10px;height:10px;border-radius:50%;display:inline-block}
+.st.ok i{background:var(--good)} .st.part i{background:var(--warn)} .st.no i{background:var(--crit)} .st.na i{background:var(--fg-3)}
+.tg{display:inline-block;font-family:var(--mono);font-size:.62rem;line-height:1;letter-spacing:.04em;text-transform:uppercase;padding:3px 6px;border-radius:4px;margin-right:6px;vertical-align:middle;border:1px solid transparent;white-space:nowrap}
+.tg.must{background:var(--accent);color:#fff;border-color:var(--accent)}
+.tg.nice{background:transparent;color:var(--accent-ink);border-color:var(--accent)}
+.tg.crit{background:var(--crit);color:#fff;border-color:var(--crit)}
+.tg.med{background:transparent;color:var(--serious);border-color:var(--serious)}
+.tg.low{background:transparent;color:var(--fg-3);border-color:var(--fg-3)}
+.taglegend{display:flex;flex-wrap:wrap;gap:8px 14px;font-size:.78rem;color:var(--fg-2);margin:8px 0 2px}
+.nm{display:inline-block;margin-left:4px;color:var(--accent-ink);font-weight:700;cursor:help;border-bottom:1px dotted var(--accent-ink);font-family:var(--mono);font-size:.8rem}
+.nm:focus-visible{outline:2px solid var(--accent)}
+.tag-v{font-family:var(--mono);font-size:.68rem;color:var(--fg-3)}
+.lvl{font-family:var(--mono);font-size:.68rem;color:var(--fg-3);border:1px solid var(--line);border-radius:4px;padding:0 5px;margin-right:6px}
+/* ---- tables ---- */
+.tbl{width:100%;border-collapse:collapse;font-size:.85rem;margin:10px 0}
+.tbl th,.tbl td{text-align:left;vertical-align:top;padding:7px 9px;border-bottom:1px solid var(--line)}
+.tbl th{font-size:.74rem;text-transform:uppercase;letter-spacing:.05em;color:var(--fg-3);font-weight:600;background:var(--surface-2)}
+.tbl td.num{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.tbl.compact td,.tbl.compact th{padding:6px 8px;white-space:nowrap}
+.tbl.compact td:first-child{white-space:normal;min-width:160px}
+.tblwrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+.tblwrap .tbl{margin:0;min-width:720px}
+/* ---- details (L3 folds) ---- */
+details{border-top:1px dashed var(--line);margin-top:10px;padding-top:8px}
+details summary{cursor:pointer;font-size:.85rem;color:var(--accent-ink);font-weight:500;list-style:none;display:flex;align-items:center;gap:6px}
+details summary::-webkit-details-marker{display:none}
+details summary::before{content:"";width:0;height:0;border-left:6px solid currentColor;border-top:4px solid transparent;border-bottom:4px solid transparent;transition:transform .15s}
+details[open] summary::before{transform:rotate(90deg)}
+details .body{font-size:.88rem;color:var(--fg-2);margin-top:6px}
+details.quiet{border-top:0;margin-top:4px;padding-top:0}
+details.quiet summary{color:var(--fg-3);font-size:.74rem;font-weight:400}
+details.quiet summary::before{border-left-color:var(--fg-3)}
+details.quiet .body{font-size:.82rem}
+/* ---- figures / charts ---- */
+.fig{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px 10px;margin:16px 0;min-width:0}
+.fig .ft{font-weight:600;font-size:.98rem;margin-bottom:2px}
+.fig .fs{font-size:.8rem;color:var(--fg-3);margin-bottom:8px}
+.fig .fn{font-size:.78rem;color:var(--fg-3);margin-top:8px;border-top:1px solid var(--grid);padding-top:6px}
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch} .scroll svg{display:block}
+.legend{display:flex;flex-wrap:wrap;gap:10px 16px;font-size:.8rem;color:var(--fg-2);margin-top:6px}
+.legend span{display:inline-flex;align-items:center;gap:6px} .legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
+.donuts{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+.donut{display:grid;grid-template-columns:160px 1fr;gap:12px;align-items:center;min-width:0}
+.donut .lg{font-size:.82rem} .donut .lg div{display:flex;align-items:center;gap:8px;padding:3px 0}
+.donut .lg i{width:12px;height:12px;border-radius:3px;flex:0 0 auto} .donut .lg b{font-family:var(--mono);font-weight:500;margin-left:auto;font-variant-numeric:tabular-nums}
+.hm{display:grid;gap:3px;font-size:.78rem;min-width:860px}
+.hm .h{font-size:.68rem;color:var(--fg-3);text-align:center;padding:4px 2px;line-height:1.2;align-self:end}
+.hm .r{color:var(--fg-2);padding:4px 6px;display:flex;align-items:center;line-height:1.25}
+.hm .c{height:38px;border-radius:5px;display:grid;place-items:center;cursor:pointer;font-size:.9rem;border:1px solid transparent}
+.hm .c:hover,.hm .c:focus-visible{border-color:var(--fg);outline:none}
+.hm .c.ok{background:var(--good-soft);color:var(--good)} .hm .c.part{background:var(--warn-soft);color:#9a6a00} .hm .c.no{background:var(--crit-soft);color:var(--crit)} .hm .c.na{background:var(--surface-2);color:var(--fg-3)}
+:root[data-theme="dark"] .hm .c.part{color:var(--warn)} @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .hm .c.part{color:var(--warn)}}
+.hmnote{margin-top:10px;background:var(--surface-2);border-radius:8px;padding:10px 12px;font-size:.86rem;min-height:54px} .hmnote b{color:var(--fg)}
+.tip{position:fixed;z-index:50;pointer-events:none;background:var(--fg);color:var(--bg);font-size:.78rem;padding:6px 9px;border-radius:6px;max-width:300px;line-height:1.35;display:none}
+/* graph highlight (architecture / flow) */
+.gr{display:grid;grid-template-columns:1fr 300px;gap:14px;align-items:start}
+.gr .panel{background:var(--surface-2);border-radius:10px;padding:12px 14px;font-size:.86rem;min-height:120px}
+.gr .panel b{display:block;margin-bottom:4px} .gr .panel .m{font-family:var(--mono);font-size:.7rem;color:var(--fg-3)}
+.zn{cursor:pointer} .zn rect{transition:opacity .15s,stroke-width .15s} .zn.dim{opacity:.25} .ze.dim{opacity:.08} .zn.hl rect{stroke-width:2.5} .ze.hl{stroke-opacity:.9}
+/* venn */
+.vregion{cursor:pointer} .vlabel rect{fill:transparent} .vlabel.active rect{fill:var(--accent);fill-opacity:.12;stroke:var(--accent)}
+.venn-list{font-size:.84rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:8px 14px;margin-top:8px}
+.venn-list div{background:var(--surface-2);border-radius:8px;padding:8px 10px;cursor:pointer;border:1px solid transparent}
+.venn-list div b{display:block;font-size:.78rem;color:var(--fg-3);font-family:var(--mono);margin-bottom:2px}
+.venn-list div:hover{border-color:var(--line)} .venn-list div.active{border-color:var(--accent);background:var(--accent-soft)}
+/* sequence animation */
+.seq{display:grid;grid-template-columns:1fr 280px;gap:14px;align-items:start}
+.seq .ctl{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:8px}
+.seq .ctl .sc{border:1px solid var(--line);background:var(--surface);color:var(--fg-2);border-radius:999px;padding:5px 11px;font-size:.8rem;cursor:pointer;font-family:var(--sans)}
+.seq .ctl .sc.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.seq .ctl .pb{border:1px solid var(--line);background:var(--surface-2);color:var(--fg);border-radius:8px;padding:5px 10px;font-size:.8rem;cursor:pointer;font-family:var(--sans)}
+.seq input[type=range]{width:100%;accent-color:var(--accent)}
+.seq .steps2{list-style:none;margin:0;padding:0;font-size:.84rem}
+.seq .steps2 li{padding:6px 8px;border-left:3px solid var(--line);margin:3px 0;color:var(--fg-3);border-radius:0 6px 6px 0}
+.seq .steps2 li.done{color:var(--fg-2);border-left-color:var(--fg-3)} .seq .steps2 li.cur{color:var(--fg);border-left-color:var(--accent);background:var(--accent-soft)}
+.seq .steps2 li .t{font-family:var(--mono);font-size:.7rem;color:var(--fg-3);margin-right:6px}
+.seq .outcome{margin-top:8px;padding:8px 10px;border-radius:8px;font-size:.86rem;background:var(--surface-2);min-height:40px}
+.seq .outcome.good{background:var(--good-soft)} .seq .outcome.crit{background:var(--crit-soft)} .seq .outcome.warn{background:var(--warn-soft)}
+.seq .payload{font-family:var(--mono);font-size:.7rem;color:var(--fg-2);background:var(--surface-2);border-radius:8px;padding:8px 10px;margin-top:8px;white-space:pre-wrap;display:none} .seq .payload.show{display:block}
+/* vendor / item cards */
+.vgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;margin:12px 0}
+.vc{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;min-width:0;font-size:.86rem}
+.vc h4{margin:0 0 6px;font-size:1rem}
+.vc .row{display:grid;grid-template-columns:62px 1fr;gap:6px;padding:4px 0;border-top:1px dashed var(--grid)} .vc .row:first-of-type{border-top:0}
+.vc .row .k{font-family:var(--mono);font-size:.68rem;color:var(--fg-3);padding-top:3px} .vc .mech{display:flex;flex-wrap:wrap;gap:4px}
+/* ---- mobile ---- */
+@media (max-width:860px){
+  aside.sb{position:fixed;left:0;top:0;height:100%;transform:translateX(-100%);transition:transform .2s;z-index:70;padding-top:calc(18px + env(safe-area-inset-top,0px))}
+  aside.sb.open{transform:none;box-shadow:0 0 0 100vw rgba(0,0,0,.35)}
+  .drawer-btn{display:block} #sbShow{display:none!important}
+  main{padding:18px 16px 90px}
+  .gr,.seq{grid-template-columns:1fr} .donut{grid-template-columns:130px 1fr}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<!-- /ihr:css -->
+<style>.prose{white-space:pre-wrap;line-height:1.9}select,textarea,button{font:inherit}select,textarea{background:var(--panel);color:var(--ink);max-width:100%;padding:.5rem}textarea{display:block;width:100%;box-sizing:border-box}.reason-label{display:block;margin:1rem 0}pre{white-space:pre-wrap;overflow-wrap:anywhere}.explanation[hidden]{display:none}.sample{margin:1.5rem 0}.two>div{min-width:0}button{cursor:pointer}</style></head>
+<body>
+<!-- Page source for build.py. Keep both ihr markers, the ids ps-toc / sbHide / tree and the data-theme-choice buttons:
+     they are the page-shell contract check_report.py looks for (exactly light + dark; no stored choice follows the OS),
+     and page_shell.py skips a page that has #ps-toc.
+     Research section ids: question options recommendation local-fit unverified sources.
+     Audit: scope findings ok unverified next sources. Outside a repo, drop the header line and keep any ids. -->
+<div class="app">
+<aside class="sb" id="ps-toc" aria-label="目錄">
+  <div class="brandrow"><div class="brand">卷十二譯文比較<small>scope · as-of 2026-10-19</small></div><button type="button" class="ibtn" id="sbHide" aria-controls="ps-toc" aria-expanded="true" aria-label="收起側欄" title="收起側欄"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M10 3L5 8l5 5"/></svg></button></div>
+  <label class="search"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5L14 14"/></svg><input id="sbSearch" type="search" placeholder="搜尋章節…" aria-label="搜尋章節"><kbd>⌘K</kbd></label>
+  <div class="legend">側欄三層：章節 › 小節 › 頁內「證據與來源」摺疊。點 ▸ 展開。</div>
+  <ul class="tree" id="tree"><li><a href="#question">01 讀法</a></li><li><a href="#options">02 樣本</a></li><li><a href="#recommendation">03 判讀</a></li><li><a href="#local-fit">04 採用界線</a></li><li><a href="#unverified">05 未驗證</a></li><li><a href="#sources">06 來源</a></li></ul>
+</aside>
+<main id="main">
+<div class="topbar"><span class="eyebrow">v1 · 2026-10-19</span><div class="themesw" role="group" aria-label="主題"><button type="button" data-theme-choice="light" aria-pressed="false" title="淺色">☀<span>淺色</span></button><button type="button" data-theme-choice="dark" aria-pressed="false" title="深色">☾<span>深色</span></button></div></div>
+<header class="hero">
+  <div class="eyebrow">research · scope · constraints · source window</div>
+  <h1>卷十二譯文比較</h1>
+  <p class="who">research · 2026-10-19 14:28 EDT · shengwen-di-html · codex/terminology-context-evidence-cards · 2bd018b · Codex/model unavailable · Created by Codex</p>
+  <p class="lead" id="bluf"><b>🟡 黃</b> 先比較原文與版本 X／Y，再選偏好。尚未有人類評分，不預設 B 勝出；正式譯文未改。</p>
+  <div class="tiles"><div class="tile"><div class="v c">3</div><div class="k">短樣本，含 1 個相同文本對照</div><div class="src">2026-10-19 · 本地卷 12</div></div><div class="tile"><div class="v a">0</div><div class="k">已取得人類評分</div><div class="src">建立時，非即時人數</div></div></div></header>
+
+<section id="question"><div class="sec-kicker">01 · 怎麼比較</div><h2>怎麼比較</h2><p class="lede">每段選可讀性與忠實度較好的版本。允許平手與無法判斷；不要因為多了註解就給高分。</p><p>L1：先看原文與 X／Y。L2：選偏好、寫理由。L3：揭示 A／B 與註疏依據。A 是既有譯文逐字摘錄，B 是 Codex 本次試稿；作者、模型、時間與提示未控制，不能將差異全歸因於證據。</p><p>版本順序於本機首次開頁隨機分配並保存。這是遮蔽標籤的閱讀比較，不是嚴格雙盲研究。選擇只留在本機瀏覽器，不會自動傳給助手。</p></section>
+<section id="options"><div class="sec-kicker">02 · 三個比較樣本</div><h2>三個比較樣本</h2><p class="lede">先做選擇，再揭示來源與修改理由。</p><article class="card sample" data-id="practice"><h3>修習作意的四件事</h3><p>T30n1579_p0335a18-p0335a24 · 僅比較下列節選</p><details open><summary>原文</summary><p class="prose">復次，云何修習所緣諸相作意？謂即於彼彼
+諸相作意思惟。以思惟故、能作四事。謂即
+修習如是作意；又能遠彼所治煩惱；又能
+練此作意及餘、令後所生轉更明盛；又即
+修習此作意時，厭壞所緣，捨諸煩惱，任持
+斷滅，令諸煩惱遠離相續。是故修習如是
+所緣諸相作意。</p></details><div class="two"><div><h4>版本 X</h4><p class="prose variant-x"></p></div><div><h4>版本 Y</h4><p class="prose variant-y"></p></div></div><label>可讀性 <select data-field="clarity" aria-label="修習作意的四件事 可讀性"><option value="">尚未選擇</option><option value="x">X 較好</option><option value="y">Y 較好</option><option value="tie">平手</option><option value="unsure">無法判斷</option></select></label> <label>忠實度 <select data-field="fidelity" aria-label="修習作意的四件事 忠實度"><option value="">尚未選擇</option><option value="x">X 較好</option><option value="y">Y 較好</option><option value="tie">平手</option><option value="unsure">無法判斷</option></select></label> <label class="reason-label">理由或疑點<textarea data-field="reason" rows="2" placeholder="哪一句更清楚？是否加入了原文沒有的意思？"></textarea></label><button type="button" class="reveal">揭示版本與依據</button><div class="explanation" hidden><p class="mapping"></p><p>將四事分開；以「保持煩惱已斷的狀態」試譯任持斷滅。《略纂》將末組四句配為加行、無間、解脫、勝進四道。四道名只放解說，不冒充本論正文。</p><p class="callout">〔〕是根據解脫道語境作的解釋性補義；「厭壞」試譯為厭離可能仍不夠精確，保留待判讀。註疏配四道不能單憑它證成每個白話措辭。</p><details><summary>證據與來源：窺基</summary><blockquote>又即修習此作意時，厭壞所緣，是加行道；捨諸煩惱，是無間道；任持斷滅，是解脫道；令諸煩惱遠離相續，是勝進道。</blockquote><p>T43n1829_p0074b15、T43n1829_p0074b16、T43n1829_p0074b17</p><a href="https://cbetaonline.dila.edu.tw/zh/T43n1829_p0074b15">CBETA 定位</a></details><details><summary>證據與來源：遁倫引窺基</summary><blockquote>餘令轉明盛；四、厭所緣令煩惱不續。基云：又即修習此作意時厭壞所緣是加行道，捨諸煩惱是無間道，任持斷滅是解脫道，令諸煩惱遠離相續是勝進道也。四因緣入等至中，</blockquote><p>T42n1828_p0387b18、T42n1828_p0387b19、T42n1828_p0387b20、T42n1828_p0387b21</p><a href="https://cbetaonline.dila.edu.tw/zh/T42n1828_p0387b18">CBETA 定位</a></details></div></article><article class="card sample" data-id="taste"><h3>所愛味與能愛味</h3><p>T30n1579_p0335c06-p0335c22 · 僅比較下列節選</p><details open><summary>原文</summary><p class="prose">復次，云何愛味相應靜慮等定？謂有鈍根，或
+貪行故，或煩惱多故。彼唯得聞初靜慮等所
+有功德，廣說如前愛上靜慮。於上出離不
+了知故，便生愛味，戀著堅住。其所愛味，當
+言已出；其能愛味，當言正入。</p></details><div class="two"><div><h4>版本 X</h4><p class="prose variant-x"></p></div><div><h4>版本 Y</h4><p class="prose variant-y"></p></div></div><label>可讀性 <select data-field="clarity" aria-label="所愛味與能愛味 可讀性"><option value="">尚未選擇</option><option value="x">X 較好</option><option value="y">Y 較好</option><option value="tie">平手</option><option value="unsure">無法判斷</option></select></label> <label>忠實度 <select data-field="fidelity" aria-label="所愛味與能愛味 忠實度"><option value="">尚未選擇</option><option value="x">X 較好</option><option value="y">Y 較好</option><option value="tie">平手</option><option value="unsure">無法判斷</option></select></label> <label class="reason-label">理由或疑點<textarea data-field="reason" rows="2" placeholder="哪一句更清楚？是否加入了原文沒有的意思？"></textarea></label><button type="button" class="reveal">揭示版本與依據</button><div class="explanation" hidden><p class="mapping"></p><p>用窺基對本句的解說補出所愛味是淨定、能愛味是染污定，並區分已過去與現在。〔〕標出註疏補義；愛味不是舌根嚐味。</p><p class="callout">括號補義須保留來源。這是採用窺基解讀的試稿，不表示所有部派都採相同說法。遁倫此處明引「基云」，不能算第二個獨立證人。</p><details><summary>證據與來源：窺基</summary><blockquote>了相亦非通聞慧。如《唯識疏》解。　「其所愛味，當言已出；其能愛味，當言正入」者，所愛味定是淨定，已入過去，出於現在；其能愛味染污定，心在現在故，當言正入。此唯愛數，深取</blockquote><p>T43n1829_p0074c10、T43n1829_p0074c11、T43n1829_p0074c12、T43n1829_p0074c13</p><a href="https://cbetaonline.dila.edu.tw/zh/T43n1829_p0074c10">CBETA 定位</a></details><details><summary>證據與來源：遁倫引窺基</summary><blockquote>淨定之中起此愛味故。今說言所愛味淨定已出，能愛之心當言正入，基云：淨定已入過去出於現在，味定在現在故當言正入，清淨</blockquote><p>T42n1828_p0388a01、T42n1828_p0388a02、T42n1828_p0388a03</p><a href="https://cbetaonline.dila.edu.tw/zh/T42n1828_p0388a01">CBETA 定位</a></details></div></article><article class="card sample" data-id="nonperception"><h3>無想三摩鉢底</h3><p>T30n1579_p0340b28-p0340c07 · 僅比較下列節選</p><details open><summary>原文</summary><p class="prose">復次，云何無想三摩鉢底？謂已離遍淨欲，未離上欲，求出離想作意為先，諸心心法滅。</p></details><div class="two"><div><h4>版本 X</h4><p class="prose variant-x"></p></div><div><h4>版本 Y</h4><p class="prose variant-y"></p></div></div><label>可讀性 <select data-field="clarity" aria-label="無想三摩鉢底：證據不足對照 可讀性"><option value="">尚未選擇</option><option value="x">X 較好</option><option value="y">Y 較好</option><option value="tie">平手</option><option value="unsure">無法判斷</option></select></label> <label>忠實度 <select data-field="fidelity" aria-label="無想三摩鉢底：證據不足對照 忠實度"><option value="">尚未選擇</option><option value="x">X 較好</option><option value="y">Y 較好</option><option value="tie">平手</option><option value="unsure">無法判斷</option></select></label> <label class="reason-label">理由或疑點<textarea data-field="reason" rows="2" placeholder="哪一句更清楚？是否加入了原文沒有的意思？"></textarea></label><button type="button" class="reveal">揭示版本與依據</button><div class="explanation" hidden><p class="mapping"></p><p>A 與 B 刻意相同。此次證據包未補足此句的梵巴對應與專門註解，故保留原譯，不因新流程而硬改。</p><p class="callout">既有 glossary 的 animitta-samapatti ID 與無想定用語衝突仍待考證。此頁不輸出已核定梵語／巴利語，也不藉中文註疏推定原語。</p></div></article><button type="button" id="summary-button">顯示可複製的評分摘要（揭示 A／B）</button><pre id="results" aria-live="polite"></pre></section>
+<section id="recommendation"><div class="sec-kicker">03 · 暫不宣布勝負</div><h2>暫不宣布勝負</h2><p class="lede">尚未有你的評分。可讀性改善與義理正確必須分開判斷。</p><p>第一段測四事與斷惑語意；第二段測註疏是否能釐清指涉；第三段兩版相同，觀察是否能接受證據不足時不改。這三段是目的性抽樣，不能估計全卷或全論平均效果。</p></section>
+<section id="local-fit"><div class="sec-kicker">04 · 證據的採用界線</div><h2>證據的採用界線</h2><p class="lede">窺基《略纂》直接解釋本句，優先於泛用術語定義。</p><p>遁倫所錄「基云」屬同一解釋傳承，不重複計票。普光《俱舍論記》、法寶《俱舍論疏》保留為跨文本參照；本次未找到足以直接支持這三句改寫的已核對引文，故不硬塞進 B。神泰、圓測、慧沼、智周等仍在既有註疏索引，未作本次改譯的證據。</p><p>梵語／巴利語對應未補到定位原文，繼續待考；尤其無想與無相不能因詞條 ID 混用。</p></section>
+<section id="unverified"><div class="sec-kicker">05 · 尚未驗證</div><h2>尚未驗證</h2><p class="lede">B 未通過獨立學術審查，不供正式發布；同一助手撰寫與說明可能有偏差。</p><ul><li>尚未取得讀者評分。</li><li>不是 Codex／Opus reviewer 比較；H 仍未啟動。</li><li>沒有固定同模型同提示的重新生成對照，不能宣稱證據造成品質提升。</li><li>CBETA 線上頁本次工具無法開啟；使用先前下載的官方 XML 並保存 hash、行號與短引文。</li></ul></section>
+<section id="sources"><div class="sec-kicker">06 · 重現與原始資料</div><h2>重現與原始資料</h2><p class="lede">A、B、原文、證據與 hash 均封存在同名 JSON，方便下一次照同一份材料比較。</p><p><code>docs/reports/20261019-translation-ab-pilot-codex.json</code></p><p>原稿：<code>translations/T1579-012-baihua.md</code>，基準 commit <code>2bd018b</code>。本頁 Created by Codex；A 保留原作者歸屬，未宣稱由 Codex 原創。</p></section></main>
+</div>
+<button type="button" class="ibtn" id="sbShow" aria-controls="ps-toc" aria-expanded="false" aria-label="展開側欄">☰ 目錄</button>
+<button type="button" class="drawer-btn" id="drawerBtn" aria-controls="ps-toc" aria-expanded="false">目錄</button>
+<div class="tip" id="tip" role="tooltip"></div>
+<!-- ihr:js -->
+<script>
+/* interactive-html-report · report.js · no dependencies. Load after the DOM, then call Report.init() and the chart builders. */
+(function(global){
+'use strict';
+var $=function(s,r){return (r||document).querySelector(s)};
+var $$=function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))};
+var css=function(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim()};
+function svgEl(n,a){var e=document.createElementNS('http://www.w3.org/2000/svg',n);for(var k in a)e.setAttribute(k,a[k]);return e}
+function txt(x,y,s,a){var t=svgEl('text',Object.assign({x:x,y:y,'font-size':12,fill:'var(--fg-2)'},a||{}));t.textContent=s;return t}
+function store(k,v){try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(e){return null}}
+function colOf(c){if(!c)return css('--fg-3');if(c==='grey'||c==='g')return css('--fg-3');if(['good','warn','crit','serious','accent'].indexOf(c)>=0)return css('--'+c);return css('--'+c)}
+var tip=null;
+function ensureTip(){if(!tip){tip=$('#tip');if(!tip){tip=document.createElement('div');tip.className='tip';tip.id='tip';document.body.appendChild(tip)}}return tip}
+function showTip(e,html){ensureTip();tip.innerHTML=html;tip.style.display='block';moveTip(e)}
+function moveTip(e){var x=e.clientX+14,y=e.clientY+14,w=tip.offsetWidth,h=tip.offsetHeight;if(x+w>innerWidth-8)x=e.clientX-w-10;if(y+h>innerHeight-8)y=e.clientY-h-10;tip.style.left=x+'px';tip.style.top=y+'px'}
+function hideTip(){if(tip)tip.style.display='none'}
+function hoverTip(el,html){el.addEventListener('mouseenter',function(e){showTip(e,typeof html==='function'?html():html)});el.addEventListener('mousemove',moveTip);el.addEventListener('mouseleave',hideTip)}
+
+/* ================= init: sidebar (search + collapse + drawer), theme, tooltips, checklists =================
+   The sidebar is aside#ps-toc and the theme switch is three [data-theme-choice] buttons: the repo-docs page-shell contract that check_report.py looks for. */
+function init(){
+  ensureTip();
+  /* sidebar tree */
+  var tree=$('#tree'),main=$('#main'),groups=[];
+  if(tree&&main){tree.textContent='';
+    $$('section',main).forEach(function(sec){var h2=$('h2',sec);if(!h2||!sec.id)return;
+      var kick=$('.sec-kicker',sec);var num=kick?kick.textContent.split('·')[0].trim():'';
+      var li=document.createElement('li');var grp=document.createElement('div');grp.className='grp';
+      var tg=document.createElement('button');tg.className='tg';tg.setAttribute('aria-label','展開');tg.innerHTML='<svg width="10" height="10" viewBox="0 0 10 10"><path d="M3 1l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>';
+      var a=document.createElement('a');a.href='#'+sec.id;a.className='l1';a.innerHTML='<span class="n">'+num+'</span>'+h2.textContent;
+      grp.appendChild(tg);grp.appendChild(a);li.appendChild(grp);
+      var ul=document.createElement('ul');var seen={};
+      $$('h3[id], .card[id]>h3',sec).forEach(function(k){var id=k.id||(k.closest('.card')&&k.closest('.card').id);if(!id||seen[id])return;seen[id]=1;var l=document.createElement('li');var b=document.createElement('a');b.href='#'+id;b.textContent=k.textContent;l.appendChild(b);ul.appendChild(l)});
+      if(ul.children.length)li.appendChild(ul);else tg.style.visibility='hidden';
+      tree.appendChild(li);groups.push({li:li,sec:sec});tg.addEventListener('click',function(){li.classList.toggle('open')})});
+    var links=$$('a',tree);
+    function setActive(id){links.forEach(function(l){l.classList.toggle('active',l.getAttribute('href')==='#'+id)});groups.forEach(function(g){if(g.sec.id===id)g.li.classList.add('open')})}
+    if('IntersectionObserver' in window){var io=new IntersectionObserver(function(es){es.forEach(function(en){if(en.isIntersecting)setActive(en.target.id)})},{rootMargin:'-10% 0px -70% 0px',threshold:0});groups.forEach(function(g){io.observe(g.sec)})}
+    if(groups[0])groups[0].li.classList.add('open');
+    /* search */
+    var q=$('#sbSearch');if(q){var run=function(){var v=q.value.trim().toLowerCase();tree.classList.toggle('filtering',!!v);$$('li',tree).forEach(function(li){li.classList.remove('hide')});if(!v)return;
+        groups.forEach(function(g){var any=false;$$('ul li',g.li).forEach(function(li){var hit=li.textContent.toLowerCase().indexOf(v)>=0;li.classList.toggle('hide',!hit);any=any||hit});var self=$('a.l1',g.li).textContent.toLowerCase().indexOf(v)>=0;g.li.classList.toggle('hide',!(any||self))})};
+      q.addEventListener('input',run);document.addEventListener('keydown',function(e){if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='k'){e.preventDefault();q.focus();q.select()}if(e.key==='Escape'&&document.activeElement===q){q.value='';run();q.blur()}})}
+  }
+  /* collapse + drawer */
+  var app=$('.app'),sb=$('#ps-toc'),hide=$('#sbHide'),show=$('#sbShow'),drawer=$('#drawerBtn'),phone=function(){return innerWidth<=860};
+  function expanded(){if(!app||!sb)return;var o=phone()?sb.classList.contains('open'):!app.classList.contains('sb-collapsed');[hide,show,drawer].forEach(function(b){if(b)b.setAttribute('aria-expanded',String(o))})}
+  function setCollapsed(c){app.classList.toggle('sb-collapsed',c);store('page-shell-toc',c?'closed':'open');expanded()}
+  if(app&&hide&&show){if(store('page-shell-toc')==='closed'&&!phone())setCollapsed(true);hide.addEventListener('click',function(){if(phone()){sb.classList.remove('open');expanded()}else setCollapsed(true)});show.addEventListener('click',function(){setCollapsed(false)})}
+  if(drawer&&sb){drawer.addEventListener('click',function(){sb.classList.toggle('open');expanded()});if(tree)tree.addEventListener('click',function(e){if(e.target.closest('a')&&phone()){sb.classList.remove('open');expanded()}})}
+  expanded();addEventListener('resize',expanded);
+  /* theme: Light / Dark buttons; nothing stored = no data-theme, so the OS scheme decides. Same storage key as the repo-docs page shell */
+  var choices=$$('[data-theme-choice]'),os=matchMedia('(prefers-color-scheme: dark)');if(choices.length){
+    var shown=function(){var m=document.documentElement.getAttribute('data-theme');return m==='light'||m==='dark'?m:(os.matches?'dark':'light')};
+    var mark=function(){var m=shown();choices.forEach(function(b){b.setAttribute('aria-pressed',String(b.getAttribute('data-theme-choice')===m))})};
+    var apply=function(m){if(m==='light'||m==='dark')document.documentElement.setAttribute('data-theme',m);else document.documentElement.removeAttribute('data-theme');mark()};
+    apply(store('page-shell-theme'));if(os.addEventListener)os.addEventListener('change',mark);
+    choices.forEach(function(b){b.addEventListener('click',function(){var m=b.getAttribute('data-theme-choice');apply(m);store('page-shell-theme',m)})})}
+  /* data-tip tooltips (asterisk markers etc.) */
+  var pinned=null;
+  document.addEventListener('mouseover',function(e){var t=e.target.closest&&e.target.closest('[data-tip]');if(t&&!pinned)showTip(e,t.getAttribute('data-tip'))});
+  document.addEventListener('mousemove',function(e){var t=e.target.closest&&e.target.closest('[data-tip]');if(t&&!pinned)moveTip(e)});
+  document.addEventListener('mouseout',function(e){var t=e.target.closest&&e.target.closest('[data-tip]');if(t&&!pinned)hideTip()});
+  document.addEventListener('click',function(e){var t=e.target.closest&&e.target.closest('[data-tip]');if(t){if(pinned===t){pinned=null;hideTip()}else{pinned=t;showTip(e,t.getAttribute('data-tip'))}e.preventDefault()}else if(pinned){pinned=null;hideTip()}});
+  document.addEventListener('focusin',function(e){var t=e.target.closest&&e.target.closest('[data-tip]');if(t){var r=t.getBoundingClientRect();showTip({clientX:r.left,clientY:r.bottom},t.getAttribute('data-tip'))}});
+  document.addEventListener('focusout',function(e){if(e.target.closest&&e.target.closest('[data-tip]')&&!pinned)hideTip()});
+  /* checklist persistence */
+  $$('.chk input[type=checkbox]').forEach(function(b){var k='chk.'+b.id;if(store(k)==='1')b.checked=true;b.addEventListener('change',function(){store(k,b.checked?'1':'0')})});
+}
+
+/* ================= heatmap(hostSel, noteSel, tools, rows) · rows=[[label,[[state,reason],...]],...] state ok|part|no|na ================= */
+function heatmap(hostSel,noteSel,tools,rows,opt){opt=opt||{};var host=$(hostSel),note=$(noteSel);if(!host)return;
+  var S=opt.states||{ok:'偵測 + 封鎖',part:'部分 / 僅告警 / 有條件',no:'看不到',na:'不適用'};var glyph={ok:'●',part:'◐',no:'○',na:'–'};
+  host.style.gridTemplateColumns=(opt.labelW||'260px')+' repeat('+tools.length+',1fr)';
+  var h0=document.createElement('div');h0.className='h';host.appendChild(h0);
+  tools.forEach(function(t){var h=document.createElement('div');h.className='h';h.textContent=t;host.appendChild(h)});
+  rows.forEach(function(r,ri){var lab=document.createElement('div');lab.className='r';lab.textContent=(ri+1)+'. '+r[0];host.appendChild(lab);
+    r[1].forEach(function(c,ci){var d=document.createElement('div');d.className='c '+c[0];d.tabIndex=0;d.textContent=glyph[c[0]];d.setAttribute('role','button');d.setAttribute('aria-label',r[0]+' × '+tools[ci]+'：'+S[c[0]]);
+      var show=function(){if(note)note.innerHTML='<b>'+(ri+1)+'. '+r[0]+'</b> × '+tools[ci]+' → <b>'+S[c[0]]+'</b>'+(c[1]?'<br>'+c[1]:'')};
+      d.addEventListener('click',show);d.addEventListener('focus',show);host.appendChild(d)})})}
+
+/* ================= donut(hostSel, data=[{l,v,c,u}], 'title|subtitle') ================= */
+function donut(hostSel,data,title){var host=$(hostSel);if(!host)return;var R=72,r=46,cx=80,cy=80;var tot=data.reduce(function(a,d){return a+d.v},0);
+  var svg=svgEl('svg',{viewBox:'0 0 160 160',width:'160',height:'160',role:'img','aria-label':title});var a0=-Math.PI/2;
+  data.forEach(function(d){var a1=a0+d.v/tot*2*Math.PI;var lg=(a1-a0)>Math.PI?1:0;var p=function(a,rad){return [cx+rad*Math.cos(a),cy+rad*Math.sin(a)]};var p1=p(a0,R),p2=p(a1,R),p3=p(a1,r),p4=p(a0,r);
+    var path=svgEl('path',{d:'M'+p1+' A'+R+','+R+' 0 '+lg+' 1 '+p2+' L'+p3+' A'+r+','+r+' 0 '+lg+' 0 '+p4+'Z',fill:colOf(d.c),stroke:'var(--surface)','stroke-width':2});
+    hoverTip(path,'<b>'+d.l+'</b> · '+d.v+(d.u||'')+' ('+Math.round(d.v/tot*100)+'%)');svg.appendChild(path);
+    if(d.v/tot>=.1){var m=(a0+a1)/2,q=p(m,(R+r)/2);svg.appendChild(txt(q[0],q[1]+4,Math.round(d.v/tot*100)+'%',{'text-anchor':'middle',fill:'#fff','font-size':11,'font-weight':600}))}a0=a1});
+  var t=title.split('|');svg.appendChild(txt(cx,cy-2,t[0],{'text-anchor':'middle',fill:'var(--fg)','font-size':11,'font-weight':600}));svg.appendChild(txt(cx,cy+12,t[1]||'',{'text-anchor':'middle',fill:'var(--fg-3)','font-size':10}));
+  var lg=document.createElement('div');lg.className='lg';data.forEach(function(d){var row=document.createElement('div');row.innerHTML='<i style="background:'+colOf(d.c)+'"></i><span>'+d.l+'</span><b>'+d.v+(d.u||'')+'</b>';lg.appendChild(row)});
+  host.classList.add('donut');host.appendChild(svg);host.appendChild(lg)}
+
+/* ================= hbars(hostSel, rows=[{l,v,c,t}], {lw,bw,max,fmt,title}) · single measure, direct labels ================= */
+function hbars(hostSel,rows,opt){var host=$(hostSel);if(!host)return;opt=opt||{};var LW=opt.lw||190,BW=opt.bw||300,RH=26,W=LW+BW+90,H=rows.length*RH+16;var max=opt.max||Math.max.apply(null,rows.map(function(r){return r.v}));
+  var svg=svgEl('svg',{viewBox:'0 0 '+W+' '+H,width:'100%',style:'max-width:'+W+'px;height:auto',role:'img','aria-label':opt.title||''});
+  rows.forEach(function(r,i){var y=8+i*RH,w=r.v/max*BW;svg.appendChild(txt(LW-8,y+16,r.l,{'text-anchor':'end',fill:'var(--fg)','font-size':12}));
+    var rect=svgEl('rect',{x:LW,y:y+4,width:Math.max(w,2),height:RH-10,rx:3,fill:colOf(r.c||'s1')});hoverTip(rect,'<b>'+r.l+'</b><br>'+(r.t||'')+(opt.fmt?opt.fmt(r.v):r.v));svg.appendChild(rect);
+    svg.appendChild(txt(LW+w+6,y+16,opt.fmt?opt.fmt(r.v):String(r.v),{fill:'var(--fg-2)','font-size':11,'font-family':'ui-monospace, Menlo, monospace'}))});
+  svg.appendChild(svgEl('line',{x1:LW,x2:LW,y1:4,y2:H-4,stroke:'var(--line)'}));host.appendChild(svg)}
+
+/* ================= sankey(hostSel, nodes=[{id,col,l,c}], links=[[src,tgt,weight,reason]], {W,H,colX,heads}) ================= */
+function sankey(hostSel,nodes,links,opt){var box=$(hostSel);if(!box)return;opt=opt||{};var W=opt.W||1000,H=opt.H||560,colX=opt.colX||[20,430,920],NW=14,PAD=10;var ncol=colX.length;
+  var byId={};nodes.forEach(function(n){byId[n.id]=n;n.in=0;n.out=0});links.forEach(function(l){byId[l[0]].out+=l[2];byId[l[1]].in+=l[2]});nodes.forEach(function(n){n.v=Math.max(n.in,n.out)});
+  var tot=[],cnt=[];for(var i=0;i<ncol;i++){tot[i]=0;cnt[i]=0}nodes.forEach(function(n){tot[n.col]+=n.v;cnt[n.col]++});
+  var innerH=H-40;var scale=Math.min.apply(null,tot.map(function(t,i){return t?(innerH-PAD*(cnt[i]-1))/t:1e9}));
+  for(var c=0;c<ncol;c++){(function(c){var ns=nodes.filter(function(n){return n.col===c});var th=ns.reduce(function(a,n){return a+n.v*scale},0)+PAD*(ns.length-1);var y=20+(innerH-th)/2;ns.forEach(function(n){n.y0=y;n.h=n.v*scale;n.y1=y+n.h;y+=n.h+PAD;n.so=0;n.ti=0})})(c)}
+  var svg=svgEl('svg',{viewBox:'0 0 '+W+' '+H,width:'100%',style:'min-width:'+(opt.minW||900)+'px;height:auto',role:'img','aria-label':opt.title||'sankey'});var g=svgEl('g');svg.appendChild(g);
+  links.sort(function(a,b){return byId[a[0]].y0-byId[b[0]].y0||byId[a[1]].y0-byId[b[1]].y0});
+  links.forEach(function(l){var s=byId[l[0]],t=byId[l[1]],w=l[2]*scale;var y0=s.y0+s.so+w/2,y1=t.y0+t.ti+w/2;s.so+=w;t.ti+=w;var x0=colX[s.col]+NW,x1=colX[t.col],mx=(x0+x1)/2;
+    var p=svgEl('path',{d:'M'+x0+','+y0+' C'+mx+','+y0+' '+mx+','+y1+' '+x1+','+y1,fill:'none',stroke:colOf(s.c),'stroke-width':w,'stroke-opacity':.38});
+    p.addEventListener('mouseenter',function(e){p.setAttribute('stroke-opacity',.8);showTip(e,'<b>'+s.l+' → '+t.l+'</b><br>評分 '+l[2]+(opt.maxScore?' / '+opt.maxScore:'')+(l[3]?'<br>'+l[3]:''))});p.addEventListener('mousemove',moveTip);p.addEventListener('mouseleave',function(){p.setAttribute('stroke-opacity',.38);hideTip()});g.appendChild(p)});
+  nodes.forEach(function(n){var x=colX[n.col];svg.appendChild(svgEl('rect',{x:x,y:n.y0,width:NW,height:Math.max(n.h,2),rx:2,fill:colOf(n.c)}));var last=n.col===ncol-1;
+    svg.appendChild(txt(last?x-6:x+NW+6,n.y0+n.h/2+4,n.l,{'text-anchor':last?'end':'start',fill:'var(--fg)','font-size':12,'font-weight':n.c==='g'?600:500}))});
+  (opt.heads||[]).forEach(function(h,i){var last=i===ncol-1;svg.appendChild(txt(last?colX[i]+NW:colX[i],12,h,{'text-anchor':last?'end':'start',fill:'var(--fg-3)','font-size':11,'font-weight':600,'letter-spacing':'.05em'}))});
+  box.appendChild(svg)}
+
+/* ================= graph(hostSel, panelSel, nodes=[{id,c,t,s,m,d}], edges=[[from,to]], {colX,colW,heads,colors}) · click = highlight upstream+downstream ================= */
+function graph(hostSel,panelSel,N,E,opt){var host=$(hostSel),panel=$(panelSel);if(!host)return;opt=opt||{};var colX=opt.colX||[20,400,700],colW=opt.colW||[320,230,240],H=46,GAP=10,top=28,colors=opt.colors||['s1','s2','s3'];
+  var byId={};N.forEach(function(n){byId[n.id]=n});var cols=colX.map(function(){return []});N.forEach(function(n){cols[n.c].push(n)});
+  var maxN=Math.max.apply(null,cols.map(function(c){return c.length}));var totalH=maxN*(H+GAP)-GAP;
+  cols.forEach(function(ns,ci){if(ns.length===maxN)ns.forEach(function(n,i){n.y=top+i*(H+GAP)});else ns.forEach(function(n,i){n.y=top+totalH*(i+.5)/ns.length-H/2})});N.forEach(function(n){n.x=colX[n.c];n.w=colW[n.c]});
+  var svg=svgEl('svg',{viewBox:'0 0 '+(colX[colX.length-1]+colW[colW.length-1]+20)+' '+(top+totalH+24),width:'100%',style:'min-width:'+(opt.minW||860)+'px;height:auto',role:'img','aria-label':opt.title||'graph'});
+  (opt.heads||[]).forEach(function(h,i){svg.appendChild(txt(colX[i],16,h,{fill:'var(--fg-3)','font-size':11,'font-weight':600,'letter-spacing':'.05em'}))});
+  var edgeEls={},nodeEls={};
+  E.forEach(function(e){var s=byId[e[0]],t=byId[e[1]];var x0=s.x+s.w,y0=s.y+H/2,x1=t.x,y1=t.y+H/2,mx=(x0+x1)/2;var p=svgEl('path',{d:'M'+x0+','+y0+' C'+mx+','+y0+' '+mx+','+y1+' '+x1+','+y1,fill:'none',stroke:'var(--fg-3)','stroke-width':2,'stroke-opacity':.35,'class':'ze'});svg.appendChild(p);edgeEls[e[0]+'>'+e[1]]=p});
+  N.forEach(function(n){var g=svgEl('g',{'class':'zn',tabindex:0,role:'button','aria-label':n.t});var fill=colOf(n.color||colors[n.c]);
+    g.appendChild(svgEl('rect',{x:n.x,y:n.y,width:n.w,height:H,rx:8,fill:fill,'fill-opacity':.12,stroke:fill,'stroke-width':1.5,'stroke-dasharray':n.m==='poll'?'5 4':'none'}));
+    g.appendChild(txt(n.x+12,n.y+19,n.t,{fill:'var(--fg)','font-size':13,'font-weight':600}));if(n.s)g.appendChild(txt(n.x+12,n.y+36,n.s,{fill:'var(--fg-2)','font-size':10.5}));
+    if(n.m)g.appendChild(txt(n.x+n.w-10,n.y+15,n.m,{'text-anchor':'end',fill:fill,'font-size':10,'font-weight':600,'font-family':'ui-monospace, Menlo, monospace'}));
+    svg.appendChild(g);nodeEls[n.id]=g;var act=function(){select(n.id)};g.addEventListener('click',act);g.addEventListener('keydown',function(ev){if(ev.key==='Enter'||ev.key===' '){ev.preventDefault();act()}})});
+  host.appendChild(svg);var active=null;
+  function reach(id){var set={};set[id]=1;var q=[id];while(q.length){var c=q.shift();E.forEach(function(e){if(e[0]===c&&!set[e[1]]){set[e[1]]=1;q.push(e[1])}})}q=[id];var up={};up[id]=1;while(q.length){var c2=q.shift();E.forEach(function(e){if(e[1]===c2&&!up[e[0]]){up[e[0]]=1;q.push(e[0])}})}for(var k in up)set[k]=1;return set}
+  function select(id){if(active===id){active=null;N.forEach(function(n){nodeEls[n.id].classList.remove('dim','hl')});E.forEach(function(e){edgeEls[e[0]+'>'+e[1]].classList.remove('dim','hl')});if(panel)panel.innerHTML='<b>點一個方塊</b>再點一次取消反亮。';return}
+    active=id;var set=reach(id);N.forEach(function(n){var g=nodeEls[n.id];g.classList.toggle('dim',!set[n.id]);g.classList.toggle('hl',n.id===id)});E.forEach(function(e){var p=edgeEls[e[0]+'>'+e[1]];var on=set[e[0]]&&set[e[1]];p.classList.toggle('dim',!on);p.classList.toggle('hl',on)});
+    var n=byId[id];var ins=E.filter(function(e){return e[1]===id}).map(function(e){return byId[e[0]].t}),outs=E.filter(function(e){return e[0]===id}).map(function(e){return byId[e[1]].t});
+    if(panel)panel.innerHTML='<span class="m">'+(n.m?n.m.toUpperCase()+' · ':'')+((opt.heads||[])[n.c]||'')+'</span><b>'+n.t+'</b>'+(n.d||'')+(ins.length?'<div style="margin-top:6px"><span class="m">來自</span> '+ins.join('、')+'</div>':'')+(outs.length?'<div><span class="m">流向</span> '+outs.join('、')+'</div>':'')+'<div style="margin-top:6px" class="m">反亮：上游與下游所有相連節點（'+(Object.keys(set).length-1)+' 個）</div>'}}
+
+/* ================= venn(hostSel, listSel, {circles:{A:{x,y,c,t,sub,tx,ty},B:{},C:{}}, R, labels:[[region,x,y,[lines]]], outside:'text'}) · regions A B C AB AC BC ABC none ================= */
+function venn(hostSel,listSel,opt){var host=$(hostSel);if(!host)return;var W=opt.W||760,Hh=opt.H||520,R=opt.R||150,C=opt.circles;var keys=['A','B','C'];
+  var svg=svgEl('svg',{viewBox:'0 0 '+W+' '+Hh,width:'100%',style:'min-width:640px;max-width:900px;height:auto',role:'img','aria-label':opt.title||'venn'});var defs=svgEl('defs');svg.appendChild(defs);var uid='v'+Math.random().toString(36).slice(2,7);
+  keys.forEach(function(k){var cp=svgEl('clipPath',{id:uid+'clip'+k});cp.appendChild(svgEl('circle',{cx:C[k].x,cy:C[k].y,r:R}));defs.appendChild(cp)});
+  function mask(id,excl){var m=svgEl('mask',{id:id});m.appendChild(svgEl('rect',{x:0,y:0,width:W,height:Hh,fill:'#fff'}));excl.forEach(function(k){m.appendChild(svgEl('circle',{cx:C[k].x,cy:C[k].y,r:R,fill:'#000'}))});defs.appendChild(m)}
+  var regions=[{id:'A',inc:['A'],exc:['B','C']},{id:'B',inc:['B'],exc:['A','C']},{id:'C',inc:['C'],exc:['A','B']},{id:'AB',inc:['A','B'],exc:['C']},{id:'AC',inc:['A','C'],exc:['B']},{id:'BC',inc:['B','C'],exc:['A']},{id:'ABC',inc:['A','B','C'],exc:[]},{id:'none',inc:[],exc:['A','B','C']}];
+  var overlays={};regions.forEach(function(r){mask(uid+'m'+r.id,r.exc);var el=svgEl('rect',{x:20,y:20,width:W-40,height:Hh-40,rx:14,fill:'var(--accent)','fill-opacity':.28,mask:'url(#'+uid+'m'+r.id+')'});var wrap=el;r.inc.forEach(function(k){var g=svgEl('g',{'clip-path':'url(#'+uid+'clip'+k+')'});g.appendChild(wrap);wrap=g});wrap.style.display='none';svg.appendChild(wrap);overlays[r.id]=wrap});
+  svg.appendChild(svgEl('rect',{x:20,y:20,width:W-40,height:Hh-40,rx:14,fill:'none',stroke:'var(--fg-3)','stroke-dasharray':'5 5'}));
+  var circles={};keys.forEach(function(k){var c=C[k];var ci=svgEl('circle',{cx:c.x,cy:c.y,r:R,fill:colOf(c.c),'fill-opacity':.14,stroke:colOf(c.c),'stroke-width':1.5});svg.appendChild(ci);circles[k]=ci;
+    var g=svgEl('g',{'class':'vregion',tabindex:0,role:'button'});g.appendChild(txt(c.tx,c.ty,c.t,{'text-anchor':'middle',fill:'var(--fg)','font-size':14,'font-weight':700}));if(c.sub)g.appendChild(txt(c.tx,c.ty+16,c.sub,{'text-anchor':'middle',fill:'var(--fg-3)','font-size':11}));svg.appendChild(g);g.addEventListener('click',function(){select(k)})});
+  var labelEls={};(opt.labels||[]).forEach(function(L){var g=svgEl('g',{'class':'vlabel vregion',tabindex:0,role:'button'});var w=150,h=L[3].length*14+8;g.appendChild(svgEl('rect',{x:L[1]-w/2,y:L[2]-14,width:w,height:h,rx:6,stroke:'none'}));L[3].forEach(function(s,i){g.appendChild(txt(L[1],L[2]+i*14,s,{'text-anchor':'middle',fill:'var(--fg)','font-size':10.5,'font-weight':i===0?600:400}))});svg.appendChild(g);labelEls[L[0]]=g;g.addEventListener('click',function(){select(L[0])});g.addEventListener('keydown',function(ev){if(ev.key==='Enter'||ev.key===' '){ev.preventDefault();select(L[0])}})});
+  if(opt.outside){var og=svgEl('g',{'class':'vregion',tabindex:0,role:'button'});og.appendChild(txt(40,40,opt.outside,{fill:'var(--fg-3)','font-size':10.5}));svg.appendChild(og);og.addEventListener('click',function(){select('none')})}
+  host.appendChild(svg);var listEls=listSel?$$(listSel+' > div'):[];var order=['A','B','C','AB','AC','BC','ABC','none'];
+  listEls.forEach(function(d,i){d.tabIndex=0;d.setAttribute('role','button');d.addEventListener('click',function(){select(order[i])});d.addEventListener('keydown',function(ev){if(ev.key==='Enter'||ev.key===' '){ev.preventDefault();select(order[i])}})});
+  var active=null;function select(id){if(active===id)id=null;active=id;regions.forEach(function(r){overlays[r.id].style.display=(r.id===id)?'':'none'});for(var k in labelEls)labelEls[k].classList.toggle('active',k===id);listEls.forEach(function(d,i){d.classList.toggle('active',order[i]===id)});
+    var r=regions.filter(function(x){return x.id===id})[0];for(var c in circles){var on=r?r.inc.indexOf(c)>=0:true;circles[c].setAttribute('fill-opacity',on?.14:.05);circles[c].setAttribute('stroke-width',r&&on?3:1.5)}}}
+
+/* ================= sequence(cfg) · animated lane diagram with scenarios, play/scrub, budget bar =================
+cfg={host,sc,range,play,reset,clock,steps,out,payload (selectors), lanes:{U:{x,name:'...'},...}, order:['U','CS',...], budget:{start:900,ms:1000,lane:'W'},
+     scenarios:[{id,n,rt,ev:function(){return [{id,t0,t1,from,to,y,label,c}|{id,t0,t1,self,y,label,c}]},out:{cls,t}}], payloadText:'...', payloadAt:900} */
+function sequence(cfg){var host=$(cfg.host);if(!host)return;var X={},NAMES={};Object.keys(cfg.lanes).forEach(function(k){X[k]=cfg.lanes[k].x;NAMES[k]=cfg.lanes[k].name});var B=cfg.budget||null;
+  var cur=cfg.scenarios[0],EV=cur.ev(),TOTAL=0,t=0,playing=false,raf=null,last=0,W=cfg.W||800,H=cfg.H||400;var reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var svg=svgEl('svg',{viewBox:'0 0 '+W+' '+H,width:'100%',style:'min-width:640px;height:auto',role:'img','aria-label':cfg.title||'sequence'});var defs=svgEl('defs');svg.appendChild(defs);var uid='q'+Math.random().toString(36).slice(2,6);
+  ['s1','good','crit','warn','grey'].forEach(function(c){var m=svgEl('marker',{id:uid+c,viewBox:'0 0 10 10',refX:9,refY:5,markerWidth:6,markerHeight:6,orient:'auto-start-reverse'});m.appendChild(svgEl('path',{d:'M0 0L10 5L0 10z',fill:cl(c)}));defs.appendChild(m)});
+  function cl(c){return c==='grey'?css('--fg-3'):c==='warn'?css('--serious'):colOf(c)}
+  var sg=svgEl('g');svg.appendChild(sg);Object.keys(X).forEach(function(k){var x=X[k];sg.appendChild(svgEl('rect',{x:x-85,y:12,width:170,height:44,rx:8,fill:'var(--surface-2)',stroke:'var(--line)'}));var lines=NAMES[k].split('\n');lines.forEach(function(l,i){sg.appendChild(txt(x,30+i*15-(lines.length-1)*4,l,{'text-anchor':'middle',fill:i===0?'var(--fg)':'var(--fg-3)','font-size':i===0?12.5:10,'font-weight':i===0?600:400}))});sg.appendChild(svgEl('line',{x1:x,x2:x,y1:56,y2:H-48,stroke:'var(--line)','stroke-dasharray':'4 4'}))});
+  var budget,budgetTxt;if(B){var bx=X[B.lane]-110;sg.appendChild(txt(bx-10,H-21,B.label||('預算 '+B.ms+' ms'),{'text-anchor':'end','font-size':10.5,fill:'var(--fg-3)'}));sg.appendChild(svgEl('rect',{x:bx,y:H-30,width:220,height:10,rx:5,fill:'var(--surface-2)',stroke:'var(--line)'}));budget=svgEl('rect',{x:bx,y:H-30,width:0,height:10,rx:5,fill:'var(--accent)'});sg.appendChild(budget);budgetTxt=txt(bx+230,H-21,'',{'font-size':10.5,fill:'var(--fg-2)','font-family':'ui-monospace, Menlo, monospace'});sg.appendChild(budgetTxt)}
+  var dynG=svgEl('g');svg.appendChild(dynG);var packet=svgEl('circle',{r:7,fill:'var(--accent)',stroke:'var(--surface)','stroke-width':2,style:'display:none'});svg.appendChild(packet);host.appendChild(svg);
+  var scHost=$(cfg.sc),range=$(cfg.range),playBtn=$(cfg.play),resetBtn=$(cfg.reset),clock=$(cfg.clock),stepsEl=$(cfg.steps),outEl=$(cfg.out),payEl=$(cfg.payload);if(payEl)payEl.textContent=cfg.payloadText||'';
+  cfg.scenarios.forEach(function(s){var b=document.createElement('button');b.className='sc'+(s===cur?' on':'');b.textContent=s.n;b.addEventListener('click',function(){setSc(s)});scHost.appendChild(b)});
+  function setSc(s){cur=s;EV=s.ev();TOTAL=Math.max.apply(null,EV.map(function(e){return e.t1}))+300;range.max=TOTAL;stop();t=0;Array.prototype.forEach.call(scHost.children,function(b,i){b.classList.toggle('on',cfg.scenarios[i]===s)});stepsEl.innerHTML='';EV.forEach(function(e){var li=document.createElement('li');li.innerHTML='<span class="t">'+e.t0+' ms</span>'+e.label;stepsEl.appendChild(li)});draw()}
+  function draw(){dynG.innerHTML='';var pk=null;EV.forEach(function(e){if(t<e.t0)return;var prog=Math.min(1,(t-e.t0)/(e.t1-e.t0)),col=cl(e.c);
+      if(e.self){var x=X[e.self];dynG.appendChild(svgEl('path',{d:'M'+x+','+(e.y-12)+' h40 v24 h-40',fill:'none',stroke:col,'stroke-width':1.5,'marker-end':'url(#'+uid+e.c+')',opacity:prog>=1?1:.5}));dynG.appendChild(txt(x+48,e.y+4,e.label,{'font-size':11,fill:'var(--fg)'}));if(prog<1)pk={x:x+40,y:e.y-12+24*prog}}
+      else{var x0=X[e.from],x1=X[e.to],xe=x0+(x1-x0)*prog;dynG.appendChild(svgEl('line',{x1:x0,y1:e.y,x2:xe,y2:e.y,stroke:col,'stroke-width':1.75,'stroke-dasharray':e.dash?'5 4':'none','marker-end':prog>=1?'url(#'+uid+e.c+')':'none'}));dynG.appendChild(txt((x0+x1)/2,e.y-7,e.label,{'text-anchor':'middle','font-size':11,fill:prog>=1?'var(--fg)':'var(--fg-3)','font-weight':prog>=1?500:400}));if(prog<1)pk={x:xe,y:e.y,c:col}}});
+    if(pk){packet.style.display='';packet.setAttribute('cx',pk.x);packet.setAttribute('cy',pk.y);packet.setAttribute('fill',pk.c||'var(--accent)')}else packet.style.display='none';
+    if(B){var el=Math.max(0,t-B.start),frac=Math.min(1,el/B.ms);budget.setAttribute('width',220*frac);budget.setAttribute('fill',frac>=1?'var(--crit)':'var(--accent)');budgetTxt.textContent=t<B.start?'':(Math.min(el,cur.rt)|0)+' ms'+(frac>=1&&cur.rt>=B.ms?' 逾時':'')+(cur.rt<B.ms&&el>=cur.rt?' 已回':'')}
+    Array.prototype.forEach.call(stepsEl.children,function(li,i){var e=EV[i];li.className=t>=e.t1?'done':(t>=e.t0?'cur':'')});if(payEl)payEl.classList.toggle('show',t>=(cfg.payloadAt||0));range.value=t;if(clock)clock.textContent=(t|0)+' ms';
+    if(t>=TOTAL-1){outEl.className='outcome '+cur.out.cls;outEl.textContent=cur.out.t}else{outEl.className='outcome';outEl.textContent=(B&&t>=B.start)?('計時中：'+(cur.rt<B.ms?'預計 '+cur.rt+' ms 回覆':'需要 '+cur.rt+' ms，超過預算')):'…'}}
+  function frame(now){if(!playing)return;var dt=now-last;last=now;t=Math.min(TOTAL,t+dt/(cfg.speed||1.5));draw();if(t>=TOTAL){stop();return}raf=requestAnimationFrame(frame)}
+  function play(){if(t>=TOTAL)t=0;if(reduced){var nxt=EV.map(function(e){return e.t1}).filter(function(v){return v>t});t=nxt.length?Math.min.apply(null,nxt):TOTAL;draw();return}playing=true;playBtn.textContent='❚❚ 暫停';last=performance.now();raf=requestAnimationFrame(frame)}
+  function stop(){playing=false;playBtn.textContent='▶ 播放';if(raf)cancelAnimationFrame(raf)}
+  playBtn.addEventListener('click',function(){playing?stop():play()});resetBtn.addEventListener('click',function(){stop();t=0;draw()});range.addEventListener('input',function(){stop();t=Number(range.value);draw()});setSc(cfg.scenarios[0])}
+
+/* ================= timeline(hostSel, events=[[date,label,color]], {from,to}) ================= */
+function timeline(hostSel,ev,opt){var host=$(hostSel);if(!host)return;opt=opt||{};var t0=Date.parse(opt.from),t1=Date.parse(opt.to);var W=opt.W||1180,H=300,L=40,R=W-40,Y=150;var X=function(d){return L+(Date.parse(d)-t0)/(t1-t0)*(R-L)};
+  var svg=svgEl('svg',{viewBox:'0 0 '+W+' '+H,width:'100%',style:'min-width:'+(opt.minW||1100)+'px;height:auto',role:'img','aria-label':opt.title||'timeline'});svg.appendChild(svgEl('line',{x1:L,x2:R,y1:Y,y2:Y,stroke:'var(--fg-3)','stroke-width':1.5}));
+  var m=new Date(t0);while(m.getTime()<t1){var x=X(m.toISOString().slice(0,10));svg.appendChild(svgEl('line',{x1:x,x2:x,y1:Y-5,y2:Y+5,stroke:'var(--fg-3)'}));svg.appendChild(txt(x,Y+20,(m.getUTCMonth()+1)+'月'+(m.getUTCMonth()===0?' '+m.getUTCFullYear():''),{'text-anchor':'middle','font-size':10,fill:'var(--fg-3)'}));m=new Date(Date.UTC(m.getUTCFullYear(),m.getUTCMonth()+1,1))}
+  var lastUp=-999,lastDn=-999,upRow=0,dnRow=0;ev.forEach(function(e,i){var x=X(e[0]),up=i%2===0,row;if(up){row=(x-lastUp<120)?(upRow+1)%3:0;upRow=row;lastUp=x}else{row=(x-lastDn<120)?(dnRow+1)%3:0;dnRow=row;lastDn=x}var ly=up?Y-28-row*34:Y+44+row*34,col=colOf(e[2]);
+    svg.appendChild(svgEl('line',{x1:x,x2:x,y1:up?ly+4:Y,y2:up?Y:ly-14,stroke:col,'stroke-width':1}));svg.appendChild(svgEl('circle',{cx:x,cy:Y,r:4.5,fill:col,stroke:'var(--surface)','stroke-width':1.5}));
+    svg.appendChild(txt(x,ly-2,e[0].slice(2),{'text-anchor':'middle','font-size':9.5,fill:'var(--fg-3)','font-family':'ui-monospace, Menlo, monospace'}));svg.appendChild(txt(x,ly+11,e[1],{'text-anchor':'middle','font-size':10.5,fill:'var(--fg)','font-weight':500}))});host.appendChild(svg)}
+
+global.Report={init:init,heatmap:heatmap,donut:donut,hbars:hbars,sankey:sankey,graph:graph,venn:venn,sequence:sequence,timeline:timeline,showTip:showTip,hideTip:hideTip,svgEl:svgEl,txt:txt,css:css,store:store};
+})(window);
+</script>
+<!-- /ihr:js -->
+<script>
+// Created by Codex: locally persisted masked-label comparison; no remote collection.
+Report.init();
+const samples = [{"id": "practice", "title": "修習作意的四件事", "a": "又，什麼是修習所緣諸相作意？就是對於那些種種相，以作意來思惟。由於思惟的緣故，能成辦四件事：就是修習這樣的作意；又能使所應對治的煩惱遠離；又能鍛鍊這個作意以及其餘作意，使後來所生起的更加明白盛大；又在修習這個作意時，對所緣生起厭壞，捨離諸煩惱，任持斷滅，使諸煩惱遠離相續。因此，修習這樣的所緣諸相作意。", "b": "再來，什麼叫作修習以各種相為所緣的作意？就是對那些相作意思惟。這樣思惟，能成辦四件事：\n\n一、修習這樣的作意。\n二、遠離它所對治的煩惱。\n三、鍛鍊這個作意以及其他作意，使後來生起的作意更加明盛。\n四、修習這個作意時，厭離所緣，捨離煩惱，保持〔煩惱已斷的狀態〕，使煩惱不再相續。\n\n因此，要修習這種以各種相為所緣的作意。"}, {"id": "taste", "title": "所愛味與能愛味", "a": "又，什麼是愛味相應靜慮等定？就是有鈍根者，或者因為是貪行，或者因為煩惱多。他只聽聞初靜慮等所有功德，如前面愛上靜慮中廣說。因為不了知向上的出離，便生起愛味，戀著而堅住。其中所愛味的，應當說是已出；能愛味的，應當說是正入。", "b": "再來，什麼叫作與愛味相應的靜慮等定？有些人根性遲鈍，或偏重貪欲，或煩惱較多，只聽到初靜慮等定的功德；詳細情形如前面「愛上靜慮」所說。由於不明白進一步出離的方法，便貪戀定中的滋味，牢牢執著。\n\n所貪戀的〔清淨定〕，應說已經退出；正在進入的，則是能生起貪戀的〔染污定〕。"}, {"id": "nonperception", "title": "無想三摩鉢底：證據不足對照", "a": "復次，什麼是無想三摩鉢底？就是已離遍淨欲，未離上欲，以求出離想作意為先，諸心心法滅。", "b": "復次，什麼是無想三摩鉢底？就是已離遍淨欲，未離上欲，以求出離想作意為先，諸心心法滅。"}];
+const key = 'cbeta-ab-20261019-v1';
+let state = {}; try { state = JSON.parse(localStorage.getItem(key) || '{}'); } catch (_) {}
+const save = () => { try { localStorage.setItem(key, JSON.stringify(state)); } catch (_) {} };
+for (const sample of samples) {
+  const card = document.querySelector('[data-id="' + sample.id + '"]');
+  const item = state[sample.id] || (state[sample.id] = {x: Math.random() < .5 ? 'a' : 'b'});
+  const y = item.x === 'a' ? 'b' : 'a';
+  card.querySelector('.variant-x').textContent = sample[item.x];
+  card.querySelector('.variant-y').textContent = sample[y];
+  card.querySelector('.mapping').textContent = 'X = ' + item.x.toUpperCase() + '；Y = ' + y.toUpperCase() + '。A：既有譯文；B：本次試稿。';
+  card.querySelectorAll('[data-field]').forEach(input => {
+    input.value = item[input.dataset.field] || '';
+    input.addEventListener('input', () => { item[input.dataset.field] = input.value; save(); });
+  });
+  card.querySelector('.reveal').addEventListener('click', () => {
+    card.querySelector('.explanation').hidden = false; item.revealed = true; save();
+  });
+  if (item.revealed) card.querySelector('.explanation').hidden = false;
+}
+save();
+document.getElementById('summary-button').addEventListener('click', () => {
+  const rows = samples.map(sample => {
+    const item = state[sample.id];
+    const label = value => value === 'x' ? item.x.toUpperCase() : value === 'y' ? (item.x === 'a' ? 'B' : 'A') : ({tie:'平手',unsure:'無法判斷'}[value] || '尚未選擇');
+    return sample.title + '\n可讀性：' + label(item.clarity) + '；忠實度：' + label(item.fidelity) + '\n理由：' + (item.reason || '未填') + '\n先前是否揭示：' + (item.revealed ? '是' : '否');
+  });
+  document.getElementById('results').textContent = rows.join('\n\n');
+});
+</script></body></html>

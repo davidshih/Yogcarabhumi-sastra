@@ -1,0 +1,115 @@
+{
+  "created_by": "Codex",
+  "created_at": "2026-10-19T14:28:34.712574-04:00",
+  "base_commit": "2bd018b",
+  "source_file": "translations/T1579-012-baihua.md",
+  "source_sha256": "8f4778ff30ea1a860e610c0e17c261add7fcf275048a7d8968343e45ae131fa5",
+  "method": "Historical baseline versus same-assistant evidence-assisted revision; exploratory reader preference pilot, not a controlled causal test. No independent review or paid model call.",
+  "samples": [
+    {
+      "id": "practice",
+      "title": "修習作意的四件事",
+      "entry": 1,
+      "a": "又，什麼是修習所緣諸相作意？就是對於那些種種相，以作意來思惟。由於思惟的緣故，能成辦四件事：就是修習這樣的作意；又能使所應對治的煩惱遠離；又能鍛鍊這個作意以及其餘作意，使後來所生起的更加明白盛大；又在修習這個作意時，對所緣生起厭壞，捨離諸煩惱，任持斷滅，使諸煩惱遠離相續。因此，修習這樣的所緣諸相作意。",
+      "source": "復次，云何修習所緣諸相作意？謂即於彼彼\n諸相作意思惟。以思惟故、能作四事。謂即\n修習如是作意；又能遠彼所治煩惱；又能\n練此作意及餘、令後所生轉更明盛；又即\n修習此作意時，厭壞所緣，捨諸煩惱，任持\n斷滅，令諸煩惱遠離相續。是故修習如是\n所緣諸相作意。",
+      "b": "再來，什麼叫作修習以各種相為所緣的作意？就是對那些相作意思惟。這樣思惟，能成辦四件事：\n\n一、修習這樣的作意。\n二、遠離它所對治的煩惱。\n三、鍛鍊這個作意以及其他作意，使後來生起的作意更加明盛。\n四、修習這個作意時，厭離所緣，捨離煩惱，保持〔煩惱已斷的狀態〕，使煩惱不再相續。\n\n因此，要修習這種以各種相為所緣的作意。",
+      "rationale": "將四事分開；以「保持煩惱已斷的狀態」試譯任持斷滅。《略纂》將末組四句配為加行、無間、解脫、勝進四道。四道名只放解說，不冒充本論正文。",
+      "caution": "〔〕是根據解脫道語境作的解釋性補義；「厭壞」試譯為厭離可能仍不夠精確，保留待判讀。註疏配四道不能單憑它證成每個白話措辭。",
+      "evidence": [
+        "kuiji-four",
+        "dunlun-four"
+      ],
+      "range": "T30n1579_p0335a18-p0335a24",
+      "a_sha256": "d292d4b2e9ca7fa8e784bf2430ae29270c283ab8a3deddad06c2076cffd773c4"
+    },
+    {
+      "id": "taste",
+      "title": "所愛味與能愛味",
+      "entry": 4,
+      "a": "又，什麼是愛味相應靜慮等定？就是有鈍根者，或者因為是貪行，或者因為煩惱多。他只聽聞初靜慮等所有功德，如前面愛上靜慮中廣說。因為不了知向上的出離，便生起愛味，戀著而堅住。其中所愛味的，應當說是已出；能愛味的，應當說是正入。",
+      "source": "復次，云何愛味相應靜慮等定？謂有鈍根，或\n貪行故，或煩惱多故。彼唯得聞初靜慮等所\n有功德，廣說如前愛上靜慮。於上出離不\n了知故，便生愛味，戀著堅住。其所愛味，當\n言已出；其能愛味，當言正入。",
+      "b": "再來，什麼叫作與愛味相應的靜慮等定？有些人根性遲鈍，或偏重貪欲，或煩惱較多，只聽到初靜慮等定的功德；詳細情形如前面「愛上靜慮」所說。由於不明白進一步出離的方法，便貪戀定中的滋味，牢牢執著。\n\n所貪戀的〔清淨定〕，應說已經退出；正在進入的，則是能生起貪戀的〔染污定〕。",
+      "rationale": "用窺基對本句的解說補出所愛味是淨定、能愛味是染污定，並區分已過去與現在。〔〕標出註疏補義；愛味不是舌根嚐味。",
+      "caution": "括號補義須保留來源。這是採用窺基解讀的試稿，不表示所有部派都採相同說法。遁倫此處明引「基云」，不能算第二個獨立證人。",
+      "evidence": [
+        "kuiji-taste",
+        "dunlun-taste"
+      ],
+      "range": "T30n1579_p0335c06-p0335c22",
+      "a_sha256": "bb37e0e79421b77948df9c7d19882f431a456237ca219ee81389f738c050add2"
+    },
+    {
+      "id": "nonperception",
+      "title": "無想三摩鉢底：證據不足對照",
+      "entry": 19,
+      "a": "復次，什麼是無想三摩鉢底？就是已離遍淨欲，未離上欲，以求出離想作意為先，諸心心法滅。",
+      "source": "復次，云何無想三摩鉢底？謂已離遍淨欲，未離上欲，求出離想作意為先，諸心心法滅。",
+      "b": "復次，什麼是無想三摩鉢底？就是已離遍淨欲，未離上欲，以求出離想作意為先，諸心心法滅。",
+      "rationale": "A 與 B 刻意相同。此次證據包未補足此句的梵巴對應與專門註解，故保留原譯，不因新流程而硬改。",
+      "caution": "既有 glossary 的 animitta-samapatti ID 與無想定用語衝突仍待考證。此頁不輸出已核定梵語／巴利語，也不藉中文註疏推定原語。",
+      "evidence": [],
+      "range": "T30n1579_p0340b28-p0340c07",
+      "a_sha256": "279f75f4ff1d20ce7e6ddc7fe45ed8ba8d91f4b474ec79a3690f4f7f55405154"
+    }
+  ],
+  "evidence": [
+    {
+      "id": "kuiji-four",
+      "work": "T1829",
+      "author": "窺基",
+      "quoted_author": null,
+      "url": "https://cbetaonline.dila.edu.tw/zh/T43n1829_p0074b15",
+      "upstream_url": "https://raw.githubusercontent.com/cbeta-org/xml-p5/master/T/T43/T43n1829.xml",
+      "upstream_sha256": "677e1a70fa8c62f020982547aa0d0160d5eea1c276a79f1608803301014e1203",
+      "lines": {
+        "T43n1829_p0074b15": "又即修習此作意時，厭壞所緣，是加行道；捨",
+        "T43n1829_p0074b16": "諸煩惱，是無間道；任持斷滅，是解脫道；令諸",
+        "T43n1829_p0074b17": "煩惱遠離相續，是勝進道。"
+      }
+    },
+    {
+      "id": "kuiji-taste",
+      "work": "T1829",
+      "author": "窺基",
+      "quoted_author": null,
+      "url": "https://cbetaonline.dila.edu.tw/zh/T43n1829_p0074c10",
+      "upstream_url": "https://raw.githubusercontent.com/cbeta-org/xml-p5/master/T/T43/T43n1829.xml",
+      "upstream_sha256": "677e1a70fa8c62f020982547aa0d0160d5eea1c276a79f1608803301014e1203",
+      "lines": {
+        "T43n1829_p0074c10": "了相亦非通聞慧。如《唯識疏》解。　「其所愛味，",
+        "T43n1829_p0074c11": "當言已出；其能愛味，當言正入」者，所愛味定",
+        "T43n1829_p0074c12": "是淨定，已入過去，出於現在；其能愛味染污",
+        "T43n1829_p0074c13": "定，心在現在故，當言正入。此唯愛數，深取"
+      }
+    },
+    {
+      "id": "dunlun-four",
+      "work": "T1828",
+      "author": "遁倫",
+      "quoted_author": "窺基",
+      "url": "https://cbetaonline.dila.edu.tw/zh/T42n1828_p0387b18",
+      "upstream_url": "https://raw.githubusercontent.com/cbeta-org/xml-p5/master/T/T42/T42n1828.xml",
+      "upstream_sha256": "f2ff63819b0bf8fb87884c6df241d068d8b23b21204a979f95e1394081119069",
+      "lines": {
+        "T42n1828_p0387b18": "餘令轉明盛；四、厭所緣令煩惱不續。基云：又",
+        "T42n1828_p0387b19": "即修習此作意時厭壞所緣是加行道，捨諸",
+        "T42n1828_p0387b20": "煩惱是無間道，任持斷滅是解脫道，令諸煩",
+        "T42n1828_p0387b21": "惱遠離相續是勝進道也。四因緣入等至中，"
+      }
+    },
+    {
+      "id": "dunlun-taste",
+      "work": "T1828",
+      "author": "遁倫",
+      "quoted_author": "窺基",
+      "url": "https://cbetaonline.dila.edu.tw/zh/T42n1828_p0388a01",
+      "upstream_url": "https://raw.githubusercontent.com/cbeta-org/xml-p5/master/T/T42/T42n1828.xml",
+      "upstream_sha256": "f2ff63819b0bf8fb87884c6df241d068d8b23b21204a979f95e1394081119069",
+      "lines": {
+        "T42n1828_p0388a01": "淨定之中起此愛味故。今說言所愛味淨定",
+        "T42n1828_p0388a02": "已出，能愛之心當言正入，基云：淨定已入過",
+        "T42n1828_p0388a03": "去出於現在，味定在現在故當言正入，清淨"
+      }
+    }
+  ]
+}

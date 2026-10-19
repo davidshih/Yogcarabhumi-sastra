@@ -1,7 +1,7 @@
 {
   "schema": 1,
-  "updated": "2026-10-19T13:59:30-04:00",
-  "head": "9ad182b",
+  "updated": "2026-10-19T14:29:48-04:00",
+  "head": "74a15a2",
   "items": [
     {
       "id": "dual-review-h1",
@@ -47,6 +47,17 @@
       "cmd": "uv run python scripts/review_governance.py snapshot --output /tmp/current-review.json",
       "note": "Inspect source_mismatch in the snapshot. Do not rewrite canonical text to silence the gate.",
       "links": []
+    },
+    {
+      "id": "translation-ab-reader-ratings",
+      "title": "Review three masked volume 12 translation pairs",
+      "owner": "you",
+      "section": "next",
+      "branch": "codex/terminology-context-evidence-cards",
+      "merge": false,
+      "cmd": "open docs/reports/20261019-research-translation-ab-codex.html",
+      "note": "Choose clarity and fidelity preferences, then paste the local summary. No production replacement or causal claim.",
+      "links": []
     }
   ],
   "acceptance": [],
@@ -63,6 +74,15 @@
     {
       "commit": "9ad182b",
       "label": "C/E/F/G full verification; affected baseline 102 tests and 57 subtests",
+      "counts": {
+        "tests_passed": 134,
+        "subtests_passed": 68,
+        "failed": 0
+      }
+    },
+    {
+      "commit": "74a15a2",
+      "label": "A/B document pilot; Chromium interaction checks and full regression",
       "counts": {
         "tests_passed": 134,
         "subtests_passed": 68,

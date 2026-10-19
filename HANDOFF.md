@@ -1,7 +1,7 @@
 # Handoff
 
 Created by Codex.
-Updated: 2026-10-19T13:59:30-04:00
+Updated: 2026-10-19T14:29:48-04:00
 
 ## Current state
 - Worktree: shengwen-di-terminology.
@@ -18,6 +18,7 @@ Updated: 2026-10-19T13:59:30-04:00
 - No translation or production page was changed. No paid model call ran.
 
 ## Commits
+- 74a15a2 adds a three-excerpt volume 12 translation comparison pilot.
 - 017c6a8 implements A, B, and D and records the warning audit.
 - 9ad182b implements C, E, F, G and records verification and source excerpts.
 - No PR or merge was performed. This branch remains stacked on the unmerged pipeline.
@@ -74,7 +75,21 @@ Updated: 2026-10-19T13:59:30-04:00
 - Five short commentary quotations were verified. Other catalog leads still need located excerpts.
 - Existing language candidates remain unresolved. Do not treat UI cards as approval.
 
+## Translation A/B pilot
+- The user chose existing translation A versus evidence-assisted revision B.
+- Three volume 12 excerpts are frozen in docs/reports/20261019-translation-ab-pilot-codex.json.
+- Read docs/reports/20261019-research-translation-ab-codex.html to compare masked X/Y labels.
+- A matches the existing text. B is a same-assistant draft. The third pair is identical on purpose.
+- Kuiji and Dunlun excerpts include line IDs and upstream XML hashes.
+- Dunlun quotes Kuiji here. Do not count them as independent corroboration.
+- No human ratings or independent scholarly review have been received.
+- Browser preferences stay local. Ask the user to paste the generated summary to discuss results.
+- This exploratory comparison does not establish a causal benefit from evidence or pipeline changes.
+- Chromium passed at 400px and 1280px: masking, persistence, reveal, summary, themes, and no overflow.
+- Full suite remains 134 tests and 68 subtests passed. Production translations are unchanged.
+
 ## Next
+- Await the user's A/B ratings. Do not replace the production translation with the B draft.
 - Read docs/reports/20261019-audit-review-governance-codex.html for the issue and commentary view.
 - Read docs/reference/review-governance-codex.md for CLI usage and schema limits.
 - Run: uv run python scripts/review_governance.py list

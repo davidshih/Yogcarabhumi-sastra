@@ -2297,6 +2297,11 @@ def cmd_enqueue(args) -> None:
 
 AUDIT_JOB_ID_RE = re.compile(r"^[0-9]{8}-[0-9]{6}-audit-[0-9a-f]{4}$")
 AUDIT_JOB_MODELS = ("auto", "opus", "echo") + llm.AUDIT_FAKE_MODELS
+DEFAULT_FIX_ROUNDS = 1  # a job written before --fix-rounds existed has this many
+
+
+def job_fix_rounds(job: dict) -> int:
+    return job.get("fix_rounds", DEFAULT_FIX_ROUNDS)
 # No review_parallel: the command has no channel for parallel-source evidence.
 AUDIT_REVIEW_PASSES = ("review_terms", "review_doctrine")
 TERM_CHECK_STAGE = "term_check"
@@ -2549,7 +2554,7 @@ def blocking_line(finding: dict) -> str:
 
 def review_audit_candidate(job: dict, juan: int, prog: dict, candidate: Path, data_path: Path,
                            start: str, end: str) -> None:
-    """K5 steps 5 to 8: review, one fix round, and the gate. Returns only when the candidate passed."""
+    """K5 steps 5 to 8: review, the fix rounds of the job, and the gate. Returns only when the candidate passed."""
     # Step 8 is gate_audit_candidate, below.
     entries = bth.parse_entries(candidate.read_text(encoding="utf-8"))
     contracts = prog.setdefault("clause_contracts", {})
@@ -2569,12 +2574,15 @@ def review_audit_candidate(job: dict, juan: int, prog: dict, candidate: Path, da
     save_job(job)
 
     first = audit_findings(job, juan, prog, candidate, 1)
-    remaining: list[dict] = []
-    if first:
-        fix_findings(job, juan, candidate, first, prog)
-        # One fix round. Only the rewritten units are reviewed again; the glossary check reads the whole file.
-        remaining = audit_findings(job, juan, prog, candidate, 2,
-                                   only_units={finding["unit_id"] for finding in first})
+    remaining = first
+    for fix_round in range(1, job_fix_rounds(job) + 1):
+        if not remaining:
+            break
+        fix_findings(job, juan, candidate, remaining, prog)
+        # Each fix round takes what the last review left. Only the rewritten units are reviewed again;
+        # the glossary check reads the whole file.
+        remaining = audit_findings(job, juan, prog, candidate, fix_round + 1,
+                                   only_units={finding["unit_id"] for finding in remaining})
     if remaining:
         prog["findings"] = {"round1": len(first), "remaining": len(remaining)}
         prog["review_verdict"] = "fail"
@@ -2593,7 +2601,7 @@ def gate_audit_candidate(job: dict, juan: int, prog: dict, candidate: Path, data
     reuse rule asks again each unit whose prompt, built from the pinned inputs, is not the one that was
     answered. Nothing changed: no model is called.
     """
-    remaining = audit_findings(job, juan, prog, candidate, 3)
+    remaining = audit_findings(job, juan, prog, candidate, job_fix_rounds(job) + 2)  # after the last fix review
     # Nothing new in round 1: the findings that an earlier attempt fixed stay in the count.
     prog["findings"] = {"round1": round1 or prog.get("findings", {}).get("round1", 0),
                         "remaining": len(remaining)}
@@ -2999,6 +3007,9 @@ def audit_job_problem(job: object, job_id: str) -> str | None:
         return f"juans outside 1-{total}: {outside}"
     if job.get("model") not in AUDIT_JOB_MODELS:
         return f"model {job.get('model')!r} is not one of {', '.join(AUDIT_JOB_MODELS)}"
+    fix_rounds = job_fix_rounds(job)
+    if type(fix_rounds) is not int or fix_rounds < 1:
+        return f"fix_rounds must be a positive integer: {fix_rounds!r}"
     for field in ("progress", "volumes"):
         value = job.get(field, {})
         if not isinstance(value, dict) or any(not isinstance(item, dict) for item in value.values()):
@@ -3008,14 +3019,14 @@ def audit_job_problem(job: object, job_id: str) -> str | None:
     return None
 
 
-def new_audit_job(work: str, juans_spec: str, model: str) -> dict:
+def new_audit_job(work: str, juans_spec: str, model: str, fix_rounds: int = DEFAULT_FIX_ROUNDS) -> dict:
     try:
         juans = parse_juans(juans_spec)
     except ValueError:
         raise SystemExit(f"invalid --juans: {juans_spec}")
     job = {
         "id": f"{datetime.now():%Y%m%d-%H%M%S}-audit-{uuid.uuid4().hex[:4]}",
-        "kind": AUDIT_JOB_KIND, "work": work, "juans": juans, "model": model,
+        "kind": AUDIT_JOB_KIND, "work": work, "juans": juans, "model": model, "fix_rounds": fix_rounds,
         "state": "queued", "created": now_iso(), "updated": now_iso(),
         "pid": None, "resume_at": None, "error": None,
         "progress": {},
@@ -3057,8 +3068,12 @@ def cmd_audit(args) -> int:
             job = load_audit_job(args.resume)
             if args.model is not None and args.model != job["model"]:
                 raise SystemExit(f"job {job['id']} runs with --model {job['model']}; a resume cannot change it")
+            if args.fix_rounds is not None and args.fix_rounds != job_fix_rounds(job):
+                raise SystemExit(f"job {job['id']} runs with {job_fix_rounds(job)} fix rounds; "
+                                 "a resume cannot change it")
         else:
-            job = new_audit_job(args.work, args.juans, args.model or "auto")
+            job = new_audit_job(args.work, args.juans, args.model or "auto",
+                                DEFAULT_FIX_ROUNDS if args.fix_rounds is None else args.fix_rounds)
             JOBS_DIR.mkdir(parents=True, exist_ok=True)
         unchanged = json.dumps(job, ensure_ascii=False, sort_keys=True)
         print(f"audit job {job['id']}: {job['work']} juans {sorted(job['juans'])} via {job['model']}", flush=True)
@@ -3112,6 +3127,9 @@ def main() -> int:
     aud.add_argument("--model", choices=AUDIT_JOB_MODELS,
                      help="auto (default) uses the pinned models; opus sends every review and the fixer to "
                           "Claude Opus 5.5 at the same efforts; the echo backends run offline for free")
+    aud.add_argument("--fix-rounds", type=int, metavar="N",
+                     help="fix rounds per juan before the verdict (default 1); each round fixes and reviews again "
+                          "only the units that the last review named")
     args = parser.parse_args()
     if args.cmd == "enqueue":
         cmd_enqueue(args)

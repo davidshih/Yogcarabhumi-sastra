@@ -1,5 +1,28 @@
 # HANDOFF — yogacara (佛典白話翻譯)
 
+## Audit of juan 67–72 with Opus 5.5 — Claude contribution (2026-10-22)
+
+Updated 2026-10-22 by claude-code (claude-opus-5-5). Branch `claude/audit-t1579-067-072`.
+
+- The owner lifted the hold and asked for Opus 5.5 at high / xhigh in place of gpt-5.6-sol. Juan 72 first.
+- `e3da779`: `audit --model opus` sends `review_terms`, `review_doctrine` and `fix` to `claude-opus-5-5` through
+  `claude -p --safe-mode --tools ""` (subscription login, API env scrubbed). The efforts stay as in `STAGE_SPECS`.
+  The JSON envelope gives token usage and the list-price cost of every call to the audit events.
+- `e5ea2f4`: the first real run (job `20261022-071703-audit-666c`) failed on section 1. Attempt 1 left out
+  `reference_ids`; attempt 2 wrote one `}` too many. `llm.py` now passes the stage schema to `--json-schema`.
+  The API refuses `oneOf` at the top level of that schema, so `llm.py` drops it; `validate_review_contract` still
+  checks the verdict against the findings.
+- Run `20261022-072452-audit-8998` (juan 72): 35 calls, 35 of 35 contracts valid, 48 min, list price USD 10.63
+  (the subscription pays). Round 1: 157 findings in all 7 sections. The fixer rewrote all 7 sections: the
+  translation / source ratio went from 0.30 to 1.68. Round 2: 57 findings remain (`review_terms` 40,
+  `review_doctrine` 12, glossary check 5; severity high 3, med 29, low 20). Verdict `fail`. The live md, page and
+  search indexes did not change. The rewritten text is in `audits/20261022-072452-audit-8998/candidate/`.
+- Why it fails: the gate needs zero findings of any severity, and the audit has one fix round. 40 of the 57 are
+  about `term_occurrences` bookkeeping, not the reader's text.
+- Offline dry run first (`--model echo`, scratch copy): all 6 juans fail on 38 glossary-check findings alone.
+- Tests: 275 before, 289 after (`tests/test_opus_audit_backend.py`, 14 new). All pass.
+- Status report: `plans/20261022-audit-t1579-067-072-opus-claude/`.
+
 ## Current state
 - Two pipelines live side by side since the merge of `codex/batch1-69` (thread merge-audit-pipeline, 2026-10-13). `scripts/runner.py` is the production runner; the merge did not change one byte of it, of `docs/`, of `translations/` or of `data/`. `scripts/audited.py` is the runner of the branch: JSON contracts bound to `unit_id` / `source_hash` / `clause_id`, an audit store (`audits/<job>/events.jsonl`, `artifacts/sha256/`), evidence-bound reviews, a coverage ledger, a quality gate and a volume attestation. Its jobs are in `jobs/audited/`, its prompts in `prompts/audited/`, its status in `locks/audited-status.json`. Both runners take `locks/runner.pid`, so only one of them runs at a time. T1579 only.
 - `python3 scripts/audited.py audit --juans 67-72` (or `--resume <job id>`) audits a published juan with the review chain only. It never translates again, never commits and never pushes. A section that no review and no glossary check names stays byte for byte, with its paragraph ids; a named section goes to the fixer once and is reviewed again. A juan that passes is installed, its page and the search indexes are rebuilt, and it is sealed (`audits/<job>/T1579-NNN-attestation-*.json`). A juan that does not pass keeps its md, its page and the search indexes; its report is `audits/<job>/T1579-NNN-audit-report.json`. Exit 0 only when every juan is sealed.
@@ -69,7 +92,13 @@
 - `works.json` metadata has drifted: T1558 still says `pipeline_ready: false` with 30/30 juans done; T1579 `scope: 聲聞地`, but translations cover 1–12 and 51–80 too. Not changed.
 
 ## Todo
-- **ON HOLD (owner, 2026-10-21): do not start the audit until the owner says go.** No audit ran; no Codex quota was spent. Audit T1579 juan 67–72 with `scripts/audited.py audit` (owner decision 2026-10-13: review chain only, these six juans only). Owner decision 2026-10-21 on the place: the audit runs in this repo, and `audits/` / `artifacts/` stay in this repo's PR; after the merge, copy the changed `translations/`, `docs/` and `data/` into `dharma-site` `sources/treatises/` as a writer-zone commit, so the live site gets the audited text. Reason: the monorepo contract (`cc_import_tree` in `dharma-site` `plans/20261012-repo-consolidation-claude/contract-checks.sh`) limits the treatise writer zone to `data/ translations/ docs/` and rejects `audits/` and `artifacts/`. Side effect the owner accepted: the old Pages site then moves past the import version. Setup is ready (2026-10-21): worktree `~/projects/translation/yogacara-audit-t1579`, branch `claude/audit-t1579-067-072` at `b305890` (the commit that `dharma-site` M2 imported), codex-cli 0.159.0 present, baseline `python3 -B -m unittest discover -s tests` 275 OK. First command when the hold lifts: `python3 scripts/audited.py audit --juans 72`; report the Codex quota it used; then the other five juans. Deliver `audits/`, `artifacts/`, the rewritten md and pages and the reports as one PR. A juan that fails is reported and its text stays.
+- **Owner decision needed (2026-10-22): juan 72 failed with 57 findings after its one fix round** (see the top
+  section). Options: (a) allow a second fix round and run juan 72 again (about 25 min, about USD 6 list price);
+  (b) let only high / crit findings block and keep med / low as warnings (a change of the audit contract);
+  (c) stop the audit and re-translate 67–72. Juans 67–71 have not run: at the juan 72 rate (6.9 min and
+  USD 1.52 per section) their 76 sections take about 8.7 h and USD 115 list price. Command:
+  `python3 scripts/audited.py audit --juans 67-71 --model opus` (run it in tmux). Earlier plan, kept for its
+  decisions: audit T1579 juan 67–72 with `scripts/audited.py audit` (owner decision 2026-10-13: review chain only, these six juans only). Owner decision 2026-10-21 on the place: the audit runs in this repo, and `audits/` / `artifacts/` stay in this repo's PR; after the merge, copy the changed `translations/`, `docs/` and `data/` into `dharma-site` `sources/treatises/` as a writer-zone commit, so the live site gets the audited text. Reason: the monorepo contract (`cc_import_tree` in `dharma-site` `plans/20261012-repo-consolidation-claude/contract-checks.sh`) limits the treatise writer zone to `data/ translations/ docs/` and rejects `audits/` and `artifacts/`. Side effect the owner accepted: the old Pages site then moves past the import version. Setup is ready (2026-10-21): worktree `~/projects/translation/yogacara-audit-t1579`, branch `claude/audit-t1579-067-072` at `b305890` (the commit that `dharma-site` M2 imported), codex-cli 0.159.0 present, baseline `python3 -B -m unittest discover -s tests` 275 OK. First command when the hold lifts: `python3 scripts/audited.py audit --juans 72`; report the Codex quota it used; then the other five juans. Deliver `audits/`, `artifacts/`, the rewritten md and pages and the reports as one PR. A juan that fails is reported and its text stays.
 - Two older defects on `main` that the security review of this thread named: `scripts/build_shengwen_di_html.py` `fetch_json` retries without TLS verification after a certificate error (CWE-295), and the site search writes `search.json` text into the page with `innerHTML` (CWE-79). Not fixed in this thread.
 - iPhone app: done. The 佛典 tab of the 追更簿 app (`~/projects/manga-tracker`, PR #5 then PR #6 `5a794a7` on main) reads `docs/app/library.json`; the user checked it on the iPhone on 2026-10-06. Keep the manifest shape (version 1) stable or update `Sutra.swift` there in the same change.
 - T1821 juan 1–2: finish the doctrinal and parallel-source reviews. How to re-run only the reviews is unverified; enqueueing again goes through the reprocess-approval flow (`awaiting_approval`).

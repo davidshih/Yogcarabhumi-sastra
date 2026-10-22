@@ -12,6 +12,9 @@ Billing guarantee (correctness requirement, not style):
              endpoint via ANTHROPIC_BASE_URL/ANTHROPIC_AUTH_TOKEN.
 - gpt-5.6-terra, gpt-5.6-sol -> the explicit Codex model ids of scripts/audited.py:
              the same ChatGPT login, and the reasoning effort is always explicit.
+- claude-opus-5-5 -> the explicit Claude model id of `audited.py audit --model opus`: the
+             same Claude Code subscription as `claude`, the effort always explicit, user
+             customizations off (--safe-mode), no tools, and a JSON envelope with token usage.
 """
 
 from __future__ import annotations
@@ -29,6 +32,7 @@ from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 MODELS = ("claude", "codex", "glm")  # production queues; scripts/runner.py derives QUEUES from it
 AUDIT_MODELS = ("gpt-5.6-terra", "gpt-5.6-sol")  # explicit Codex model ids that scripts/audited.py uses
+CLAUDE_AUDIT_MODELS = ("claude-opus-5-5",)  # explicit Claude model ids that scripts/audited.py uses
 FAKE_MODELS = ("echo", "echo-limit-once")
 # Offline backends of the legacy audit only. They are not in FAKE_MODELS, so they are never a production queue.
 AUDIT_FAKE_MODELS = ("echo-finding", "echo-finding-stubborn", "echo-finding-merge")
@@ -160,6 +164,8 @@ def _env(model: str) -> dict[str, str]:
         env["ANTHROPIC_BASE_URL"] = ZAI_BASE_URL
         env["ANTHROPIC_AUTH_TOKEN"] = _zai_key()
         env["ANTHROPIC_MODEL"] = ZAI_MODEL
+    if model in CLAUDE_AUDIT_MODELS:
+        env["CLAUDE_CODE_MAX_OUTPUT_TOKENS"] = "128000"  # room for xhigh thinking plus the JSON answer
     return env
 
 
@@ -370,6 +376,48 @@ def classify_combined_output(exit_code: int, stdout: str, stderr: str,
     return LLMResult(ok=True, text=stdout.strip())
 
 
+def _claude_usage(envelope: dict) -> dict | None:
+    """The token usage of a `claude -p --output-format json` answer, in the keys that audited.py records."""
+    usage = envelope.get("usage")
+    if not isinstance(usage, dict):
+        return None
+    fresh = usage.get("input_tokens") or 0
+    read = usage.get("cache_read_input_tokens") or 0
+    written = usage.get("cache_creation_input_tokens") or 0
+    output = usage.get("output_tokens") or 0
+    details = usage.get("output_tokens_details") or {}
+    return {
+        "input_tokens": fresh + read + written,
+        "cached_input_tokens": read,
+        "cache_write_input_tokens": written,
+        "output_tokens": output,
+        "reasoning_tokens": details.get("thinking_tokens"),
+        "total_tokens": fresh + read + written + output,
+        "cost_usd": envelope.get("total_cost_usd"),
+    }
+
+
+def classify_claude_json(exit_code: int, stdout: str, stderr: str,
+                         naive_tz: dt.tzinfo | None = None) -> LLMResult:
+    """Classify a `claude -p --output-format json` call. The envelope keeps the answer apart from errors.
+
+    Only an error envelope can mean a usage limit: an answer that talks about a quota is still an answer.
+    Output that is not an envelope is classified as plain claude CLI output.
+    """
+    try:
+        envelope = json.loads(stdout)
+    except ValueError:
+        envelope = None
+    if not isinstance(envelope, dict) or envelope.get("type") != "result":
+        return classify_combined_output(exit_code, stdout, stderr, naive_tz)
+    answer = envelope.get("result") if isinstance(envelope.get("result"), str) else ""
+    if envelope.get("is_error") or exit_code != 0:
+        return classify_combined_output(exit_code or 1, answer, stderr, naive_tz)
+    if not answer.strip():
+        return LLMResult(ok=False, error="empty output", usage=_claude_usage(envelope))
+    return LLMResult(ok=True, text=answer.strip(), usage=_claude_usage(envelope))
+
+
 def _first_quote(text: str) -> str:
     """The first 4 characters of the first non-blank line: a literal quote for a fake finding."""
     return next((line.strip() for line in text.splitlines() if line.strip()), "")[:4]
@@ -503,6 +551,8 @@ def _with_call_metadata(result: LLMResult, model: str, effort: str | None,
         "usage": "provider did not expose token usage",
         "events": "provider did not expose a safe event stream",
     }
+    if result.usage is not None:
+        del result.metadata_availability["usage"]
     if effort is None:
         result.metadata_availability["effort"] = "reasoning effort was not configured"
     return result
@@ -539,6 +589,12 @@ def run_llm(model: str, prompt: str, timeout: int = TIMEOUT,
         cmd = ["codex", "exec", "-s", "read-only", "--skip-git-repo-check",
                "--ephemeral", "--color", "never", "--model", model,
                "-c", f'model_reasoning_effort="{effort}"', "-o", str(out_file), "-"]
+    elif model in CLAUDE_AUDIT_MODELS:
+        if not effort:
+            raise LLMError(f"{model}: reasoning effort must be explicit")
+        cmd = ["claude", "-p", "--safe-mode", "--model", model, "--effort", effort, "--tools", "",
+               "--strict-mcp-config", "--mcp-config", '{"mcpServers": {}}', "--no-session-persistence",
+               "--output-format", "json"]
     else:
         raise LLMError(f"unknown model: {model}")
     try:
@@ -556,6 +612,8 @@ def run_llm(model: str, prompt: str, timeout: int = TIMEOUT,
             proc.returncode, answer, f"{proc.stdout}\n{proc.stderr}", None,
             echoed_prompt=prompt,
         )
+    elif model in CLAUDE_AUDIT_MODELS:
+        result = classify_claude_json(proc.returncode, proc.stdout, proc.stderr)
     else:
         # The claude CLI prints the answer and its limit message on stdout: they cannot be told apart.
         result = classify_combined_output(

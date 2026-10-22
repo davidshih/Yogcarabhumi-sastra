@@ -93,6 +93,7 @@ STAGE_SPECS = {
     "fix": StageSpec("gpt-5.6-sol", "high", "translation"),
     "repair": StageSpec("gpt-5.6-sol", "high", "translation"),
 }
+OPUS_MODEL = llm.CLAUDE_AUDIT_MODELS[0]  # `audit --model opus` (owner decision 2026-10-22: Opus 5.5 replaces gpt-5.6-sol)
 DUAL_STAGES = ("draft_codex", "draft_glm")
 QUEUES = ("auto", "dual", "mix") + llm.FAKE_MODELS + ("dual-echo",)
 ENQUEUE_MODES = ("auto", "dual") + llm.FAKE_MODELS + ("dual-echo",)
@@ -123,6 +124,8 @@ def stage_model(job: dict, stage: str) -> str:
         return job["model"]  # an offline backend of the legacy audit answers every stage itself
     if job["model"] in llm.FAKE_MODELS or job["model"] == "dual-echo":
         return "echo"
+    if job["model"] == "opus":
+        return OPUS_MODEL  # an audit job only: the review chain and the fixer, at the efforts of STAGE_SPECS
     return STAGE_SPECS[stage].model
 
 
@@ -1506,7 +1509,7 @@ def review_pass(job: dict, juan: int, md_path: Path, pass_name: str,
                 "translation_ratio": round(ratio, 4),
                 "warning": "translation_ratio_below_one_third",
                 "routing": {
-                    "stage": "review_doctrine", "model": "gpt-5.6-sol", "effort": "xhigh",
+                    "stage": "review_doctrine", "model": stage_model(job, "review_doctrine"), "effort": "xhigh",
                 },
             }
         raw_evidence = job.get("review_evidence", {}).get(current_unit, [])
@@ -2293,7 +2296,7 @@ def cmd_enqueue(args) -> None:
 # ---------- legacy audit: review a published translation without translating it again ----------
 
 AUDIT_JOB_ID_RE = re.compile(r"^[0-9]{8}-[0-9]{6}-audit-[0-9a-f]{4}$")
-AUDIT_JOB_MODELS = ("auto", "echo") + llm.AUDIT_FAKE_MODELS
+AUDIT_JOB_MODELS = ("auto", "opus", "echo") + llm.AUDIT_FAKE_MODELS
 # No review_parallel: the command has no channel for parallel-source evidence.
 AUDIT_REVIEW_PASSES = ("review_terms", "review_doctrine")
 TERM_CHECK_STAGE = "term_check"
@@ -3107,7 +3110,8 @@ def main() -> int:
     target.add_argument("--resume", metavar="JOB_ID", help="continue the audit job with this id")
     aud.add_argument("--work", default=SUPPORTED_WORK, help="only T1579 is supported")
     aud.add_argument("--model", choices=AUDIT_JOB_MODELS,
-                     help="auto (default) uses the pinned models; the echo backends run offline for free")
+                     help="auto (default) uses the pinned models; opus sends every review and the fixer to "
+                          "Claude Opus 5.5 at the same efforts; the echo backends run offline for free")
     args = parser.parse_args()
     if args.cmd == "enqueue":
         cmd_enqueue(args)

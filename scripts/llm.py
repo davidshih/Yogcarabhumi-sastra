@@ -397,6 +397,26 @@ def _claude_usage(envelope: dict) -> dict | None:
     }
 
 
+SCHEMA_PROMPT_MARK = "輸出 JSON Schema：\n"  # audited.py writes the output schema of a stage after this line
+
+
+def _schema_from_prompt(prompt: str) -> dict | None:
+    """The output schema of a structured audited.py prompt, for `claude -p --json-schema`.
+
+    The CLI sends the schema as a tool input schema, and the API refuses oneOf, allOf or anyOf at its top
+    level. There they only tie the review verdict to the findings, and audited.py checks that again.
+    """
+    if SCHEMA_PROMPT_MARK not in prompt:
+        return None
+    try:
+        schema = json.loads(prompt.split(SCHEMA_PROMPT_MARK, 1)[1].split("\n\n", 1)[0])
+    except ValueError:
+        return None
+    if not isinstance(schema, dict):
+        return None
+    return {key: value for key, value in schema.items() if key not in ("oneOf", "allOf", "anyOf")}
+
+
 def classify_claude_json(exit_code: int, stdout: str, stderr: str,
                          naive_tz: dt.tzinfo | None = None) -> LLMResult:
     """Classify a `claude -p --output-format json` call. The envelope keeps the answer apart from errors.
@@ -413,6 +433,8 @@ def classify_claude_json(exit_code: int, stdout: str, stderr: str,
     answer = envelope.get("result") if isinstance(envelope.get("result"), str) else ""
     if envelope.get("is_error") or exit_code != 0:
         return classify_combined_output(exit_code or 1, answer, stderr, naive_tz)
+    if isinstance(envelope.get("structured_output"), dict):  # the answer that the CLI checked against --json-schema
+        answer = json.dumps(envelope["structured_output"], ensure_ascii=False)
     if not answer.strip():
         return LLMResult(ok=False, error="empty output", usage=_claude_usage(envelope))
     return LLMResult(ok=True, text=answer.strip(), usage=_claude_usage(envelope))
@@ -595,6 +617,9 @@ def run_llm(model: str, prompt: str, timeout: int = TIMEOUT,
         cmd = ["claude", "-p", "--safe-mode", "--model", model, "--effort", effort, "--tools", "",
                "--strict-mcp-config", "--mcp-config", '{"mcpServers": {}}', "--no-session-persistence",
                "--output-format", "json"]
+        schema = _schema_from_prompt(prompt)
+        if schema is not None:
+            cmd += ["--json-schema", json.dumps(schema, ensure_ascii=False)]
     else:
         raise LLMError(f"unknown model: {model}")
     try:

@@ -96,6 +96,38 @@ class OpusCommandTest(unittest.TestCase):
         with self.assertRaises(llm.LLMError):
             llm.run_llm(OPUS, "prompt")
 
+    def test_a_prompt_without_a_schema_sends_no_json_schema(self):
+        _, calls = self.run_opus(envelope("OK"))
+        self.assertNotIn("--json-schema", calls[0][0])
+
+    def test_the_schema_of_a_structured_prompt_is_enforced_without_top_level_combinators(self):
+        schema = {"type": "object", "required": ["verdict"], "properties": {"verdict": {"enum": ["pass"]}},
+                  "oneOf": [{"properties": {"verdict": {"const": "pass"}}}]}
+        prompt = ("政策\n\n---\n\n任務\n\n輸入 JSON：\n{}\n\n輸出 JSON Schema：\n"
+                  + json.dumps(schema, ensure_ascii=False, indent=2) + "\n\n每個 finding 必須綁定 clause_id。\n")
+        answer = {"verdict": "pass", "note": "引號 \" 與換行\n都要原樣保留"}
+        stdout = json.dumps({**json.loads(envelope("ignored text")), "structured_output": answer})
+
+        def fake_run(command, **kwargs):
+            calls.append(command)
+            return SimpleNamespace(returncode=0, stdout=stdout, stderr="")
+
+        calls = []
+        with tempfile.TemporaryDirectory() as tmp, \
+             patch.object(llm, "SCRATCH", Path(tmp)), patch.object(llm.subprocess, "run", fake_run):
+            result = llm.run_llm(OPUS, prompt, effort="high")
+        sent = json.loads(calls[0][calls[0].index("--json-schema") + 1])
+        self.assertEqual({key: value for key, value in schema.items() if key != "oneOf"}, sent)
+        self.assertTrue(result.ok)
+        self.assertEqual(answer, json.loads(result.text))
+
+    def test_structured_output_retries_used_up_is_an_error_not_a_limit(self):
+        stdout = json.dumps({"type": "result", "subtype": "error_max_structured_output_retries",
+                             "is_error": True, "result": "", "usage": {}})
+        result, _ = self.run_opus(stdout, returncode=1)
+        self.assertFalse(result.ok)
+        self.assertFalse(result.limit)
+
 
 class OpusAuditJobTest(unittest.TestCase):
     def test_opus_is_an_audit_job_model(self):

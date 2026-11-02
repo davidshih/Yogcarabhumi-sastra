@@ -230,6 +230,33 @@ REVIEW_EVIDENCE_FIELDS = ("source_quote", "translation_quote", "reference_ids")
 REVIEW_FINDING_FIELDS = (
     "clause_id", "severity", "category", "claim", "evidence", "required_change",
 )
+# The categories of a review_terms finding. Owner decision 2026-11-01 (option b): a finding on the reader's text
+# blocks the verdict of an audit; a finding on a term_occurrences binding or on the glossary itself is a warning
+# for the glossary backlog.
+TERM_TEXT_CATEGORIES = ("first_occurrence_format", "plain_wording", "term_rendering")
+TERM_BACKLOG_CATEGORIES = ("term_binding", "glossary_provenance")
+REVIEW_TERMS_CATEGORIES = TERM_TEXT_CATEGORIES + TERM_BACKLOG_CATEGORIES
+# The reviewer reads this in the schema (the prompt embeds it, and `claude -p --json-schema` sends it). It lives here,
+# not in prompts/audited/review_terms.txt: the merge acceptance locks the prompt files byte for byte.
+TERM_CATEGORY_GUIDE = (
+    "要改譯文正文或〔〕內容才能解決的，用前三個：first_occurrence_format（首次出現沒有照「玄奘原詞〔白話解釋〕」格式，"
+    "或〔〕只重複原詞）、plain_wording（〔〕的白話用字偏離 glossary plain，又沒有在 notes 說明理由）、"
+    "term_rendering（術語譯錯、漏譯、混用，或加入原文沒有的術語）。不必改譯文正文或〔〕就能解決的，用後兩個："
+    "term_binding（term_occurrences 的綁定、primary term_id、surface、列舉粒度）、glossary_provenance（glossary "
+    "條目本身的 status、evidence、id 拼法、條目重疊）。同一個問題既要改譯文又要改綁定時，拆成兩個 finding，"
+    "各用自己的 category。"
+)
+
+
+def finding_blocks(finding: dict, stage: str | None = None) -> bool:
+    """Option b of the audit gate: does this finding block the verdict?
+
+    Only a review_terms finding with a backlog category is a warning. Every other finding blocks: review_doctrine,
+    the glossary check, and a category that is not one of the five (a model that ignored the schema).
+    `stage` names the review of a raw answer, which has no review_stage field.
+    """
+    stage = stage or finding.get("review_stage")
+    return not (stage == "review_terms" and finding.get("category") in TERM_BACKLOG_CATEGORIES)
 
 
 def normalized_reference_ids(values: set[str]) -> set[str]:
@@ -283,7 +310,8 @@ def review_schema(stage: str | None = None, unit_id_value: str | None = None,
     finding_properties = {
         "clause_id": bound_string(clause_id_value),
         "severity": {"enum": ["crit", "high", "med", "low"]},
-        "category": nonblank_string(),
+        "category": ({"enum": list(REVIEW_TERMS_CATEGORIES), "description": TERM_CATEGORY_GUIDE}
+                     if stage == "review_terms" else nonblank_string()),
         "claim": nonblank_string(),
         "evidence": {
             "type": "object",
@@ -1471,13 +1499,16 @@ def review_is_reusable(attestation: object, events: dict[str, dict], *, stage: s
 
 def review_pass(job: dict, juan: int, md_path: Path, pass_name: str,
                 prog: dict, round_number: int, *, only_units: set[str] | None = None,
-                reuse_attestations: bool = False, apply_proposed_terms: bool = True) -> list[dict]:
+                reuse_attestations: bool = False, apply_proposed_terms: bool = True,
+                blocks=None) -> list[dict]:
     """Run one review pass over the sections of a translation and return its findings.
 
     only_units: review these units only; the attestations of every other unit stay as they are.
     reuse_attestations: skip a unit whose passing review answered the prompt that would be sent now.
     apply_proposed_terms: when false, a proposed term is kept in prog["proposed_terms"] and the glossary
     file is not changed.
+    blocks: the gate of an audit (finding_blocks). A review whose findings are all warnings passes: it gets an
+    attestation, and its warnings replace the unit's entry in prog["glossary_backlog"]. None: any finding fails.
     """
     entries = bth.parse_entries(md_path.read_text(encoding="utf-8"))
     selected = [idx for idx in range(len(entries))
@@ -1605,7 +1636,21 @@ def review_pass(job: dict, juan: int, md_path: Path, pass_name: str,
             "round": round_number, "stage": pass_name, "unit_id": current_unit,
             "verdict": payload["verdict"], "finding_count": len(section_findings),
         })
-        if payload["verdict"] == "pass":
+        passed = payload["verdict"] == "pass"
+        term_warnings = []
+        if blocks is not None:
+            term_warnings = [{**finding, "unit_id": current_unit, "review_stage": pass_name, "section_index": idx}
+                             for finding in section_findings if not blocks(finding, pass_name)]
+            passed = passed or (payload["verdict"] == "changes_required"
+                                and len(term_warnings) == len(section_findings))
+            backlog = prog.setdefault("glossary_backlog", {})
+            unit_backlog = backlog.setdefault(current_unit, {})
+            unit_backlog.pop(pass_name, None)
+            if term_warnings:
+                unit_backlog[pass_name] = term_warnings
+            if not unit_backlog:
+                backlog.pop(current_unit)
+        if passed:
             prog.setdefault("review_attestations", {}).setdefault(current_unit, {})[pass_name] = {
                 "stage": pass_name,
                 "verdict": "pass",
@@ -1617,6 +1662,7 @@ def review_pass(job: dict, juan: int, md_path: Path, pass_name: str,
                 "structured_contract_sha256": item["structured_contract_sha256"],
                 "source_quote": item["source"],
                 "translation_quote": item["translation"],
+                **({"warnings": len(term_warnings)} if term_warnings else {}),
             }
         if pass_name == "review_terms" and payload.get("proposed_terms"):
             if apply_proposed_terms:
@@ -1704,7 +1750,10 @@ def run_review_chain(job: dict, juan: int, md_path: Path, prog: dict) -> None:
 
 
 def write_coverage_ledger(job: dict, juan: int, md_path: Path, data_path: Path,
-                          start: str, end: str, *, exact_once: bool = True) -> Path:
+                          start: str, end: str, *, exact_once: bool = True,
+                          allow_warnings: bool = False) -> Path:
+    """allow_warnings: the gate of an audit (option b). A review answer whose findings are all warnings by
+    finding_blocks covers its clause like a passing one. The check reads the stored answer, not the job file."""
     prog = job["progress"].setdefault(str(juan), {})
     translation_text = md_path.read_text(encoding="utf-8")
     entries = bth.parse_entries(translation_text)
@@ -1748,12 +1797,19 @@ def write_coverage_ledger(job: dict, juan: int, md_path: Path, data_path: Path,
                 response = json.loads(audit.read_artifact(ROOT, response_ref).decode("utf-8"))
             except (AttributeError, KeyError, OSError, ValueError, TypeError):
                 response = {}
+            answered = response.get("findings")
+            warnings_only = (
+                allow_warnings
+                and response.get("verdict") == "changes_required"
+                and isinstance(answered, list) and bool(answered)
+                and all(isinstance(finding, dict) and not finding_blocks(finding, review_stage)
+                        for finding in answered)
+            )
             response_valid = (
                 response.get("stage") == review_stage
                 and response.get("unit_id") == current_unit
                 and response.get("source_hash") == source_hash(entry.source)
-                and response.get("verdict") == "pass"
-                and response.get("findings") == []
+                and ((response.get("verdict") == "pass" and answered == []) or warnings_only)
             )
             valid_attestation = (
                 attestation.get("verdict") == "pass"
@@ -1790,6 +1846,7 @@ def write_coverage_ledger(job: dict, juan: int, md_path: Path, data_path: Path,
                 "review_event_id": attestation["review_event_id"],
                 "source_quote": attestation["source_quote"],
                 "translation_quote": attestation["translation_quote"],
+                **({"warnings": len(answered)} if warnings_only else {}),
             })
         valid = contract_valid and len(review_evidence) == 2
         clauses.append({
@@ -2426,6 +2483,13 @@ def write_audit_report(job: dict, juan: int, prog: dict, blocking: list[str]) ->
         "rewritten_units": prog.get("rewritten_units", []) if passed else [],
         "warnings": prog.get("audit_warnings", []),
         "blocking": blocking,
+        # Option b: the review_terms warnings of the last review of each unit, for the glossary maintainers.
+        "glossary_backlog": [
+            {key: value for key, value in finding.items() if key != "section_index"}
+            for unit in sorted(prog.get("glossary_backlog", {}))
+            for stage in AUDIT_REVIEW_PASSES
+            for finding in prog["glossary_backlog"][unit].get(stage, [])
+        ],
         "findings": prog.get("findings", {"round1": 0, "remaining": 0}),
         "proposed_terms": prog.get("proposed_terms", []),
         "attestation": prog.get("volume_attestation", {}).get("path") if install == "sealed" else None,
@@ -2536,14 +2600,17 @@ def term_check_findings(job: dict, juan: int, md_path: Path) -> list[dict]:
 
 def audit_findings(job: dict, juan: int, prog: dict, candidate: Path, round_number: int,
                    only_units: set[str] | None = None) -> list[dict]:
-    """The two evidence reviews and the mechanical glossary check of one round."""
+    """The blocking findings of the two evidence reviews and the mechanical glossary check of one round.
+
+    The warnings (option b) stay in prog["glossary_backlog"]: they are not fixed and do not block.
+    """
     findings: list[dict] = []
     for pass_name in AUDIT_REVIEW_PASSES:
         findings += review_pass(
             job, juan, candidate, pass_name, prog, round_number, only_units=only_units,
-            reuse_attestations=only_units is None, apply_proposed_terms=False,
+            reuse_attestations=only_units is None, apply_proposed_terms=False, blocks=finding_blocks,
         )
-    return findings + term_check_findings(job, juan, candidate)
+    return [finding for finding in findings if finding_blocks(finding)] + term_check_findings(job, juan, candidate)
 
 
 def blocking_line(finding: dict) -> str:
@@ -2627,7 +2694,7 @@ def gate_audit_candidate(job: dict, juan: int, prog: dict, candidate: Path, data
         save_job(job)
         raise AuditBlocked(lost)
 
-    write_coverage_ledger(job, juan, candidate, data_path, start, end, exact_once=False)
+    write_coverage_ledger(job, juan, candidate, data_path, start, end, exact_once=False, allow_warnings=True)
     issues = run_checks(job, juan, candidate, data_path, start, end, exact_once=False)
     record_quality_gate(job, juan, candidate, issues, audit_kind="legacy_review")
     if issues:

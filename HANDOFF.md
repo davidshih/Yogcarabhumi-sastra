@@ -1,5 +1,29 @@
 # HANDOFF — yogacara (佛典白話翻譯)
 
+## Juan 72 published without a seal (2026-11-04)
+
+Updated 2026-11-04 by claude-code (claude-opus-5-5). Branch `claude/audit-t1579-067-072`.
+
+- Owner decision 2026-11-04: publish the juan 72 rewrite of job `20261104-193950-audit-744f` as it is, and fix
+  the 22 findings later.
+- `plans/20261104-juan72-publish-unsealed-claude/publish_unsealed.py` takes the steps of the audit's pass path
+  except the reviews and the seal: the live md must be the audit's base text, `assign_paragraph_ids`, no id lost,
+  `run_content_checks` (line ranges and the glossary check: 0 issues), then the md, its page (legacy term style)
+  and the search indexes.
+- Changed: `translations/T1579-072-baihua.md`, `docs/T1579/translations/T1579-072-baihua.html`,
+  `docs/T1579/search.json`. The other search indexes did not change. Paragraph ids: the 28 old ids stay, 51 new
+  (79). All 81 pages: 11,607 paragraphs, every id present and unique. All relative links resolve.
+- Browser check (local `http.server`): 7 sections, 79 paragraphs with unique ids, 125 term tips, no console error,
+  the 3 old ids tested scroll to their paragraph.
+- Juan 72 has no attestation. Its open findings are in
+  `plans/20261104-juan72-publish-unsealed-claude/juan72-open-findings-claude.md`: 22 blocking (D1–D9, T1–T13) and
+  N1. N1: the fixer's working notes are on the page (note text 297 characters before, 4,939 after), with words
+  like glossary, plain, `term_id`, clause and pipeline.
+- Tests: the publication made 2 tests of `tests/test_legacy_audit_acceptance.py` fail. They use juan 72 as the
+  fixture with 9 glossary issues ("facts measured on main, commit dd46ba8"), and the published text has none.
+  `build_template` now copies the dd46ba8 md and page of juan 72 from `tests/fixtures/dd46ba8/` over the live
+  ones and rebuilds the search indexes of the tree. No assertion changed. 317 OK.
+
 ## Juan 72 again after the glossary fix (2026-11-04)
 
 Updated 2026-11-04 by claude-code (claude-opus-5-5). Branch `claude/audit-t1579-067-072`.
@@ -170,17 +194,15 @@ Updated 2026-10-22 by claude-code (claude-opus-5-5). Branch `claude/audit-t1579-
 - `works.json` metadata has drifted: T1558 still says `pipeline_ready: false` with 30/30 juans done; T1579 `scope: 聲聞地`, but translations cover 1–12 and 51–80 too. Not changed.
 
 ## Todo
-- **Owner decision needed (2026-11-04): juan 72 fails after the glossary fix too** (22 blocking, med 8 and low 14;
-  see the top section). The glossary fix and the rerun are done. Each next step needs the owner's go:
-  (a) a new job with more fix rounds, for example
-  `python3 scripts/audited.py audit --juans 72 --model opus --fix-rounds 3` (about 90 min, USD 21 list price; the
-  trend 26 → 22 says it probably does not reach 0); (b) change the gate again, for example low findings become
-  warnings (with this run that leaves 8 med: `review_doctrine` 3, `review_terms` 5, so juan 72 still fails);
-  (c) the owner reads the 22 findings and `audits/20261104-193950-audit-744f/candidate/T1579-072-baihua.md` and
-  decides by hand (publish without a seal was option c of 2026-10-22). Juans 67–71 have not run and wait for this
-  decision: at the two-round rate (11.5 min and USD 2.58 per section) their 76 sections take about 14.6 h and
-  USD 196 list price. Command: `python3 scripts/audited.py audit --juans 67-71 --model opus --fix-rounds 2`.
-  Before a run: heartbeat the headless CLI (skill `headless-claude`) and run it in tmux. Options a, c and d of 2026-10-22
+- **Juan 72: fix the open findings later** (owner, 2026-11-04). Juan 72 is published without a seal. The list is
+  `plans/20261104-juan72-publish-unsealed-claude/juan72-open-findings-claude.md`: 22 blocking findings and N1
+  (pipeline language in the page notes). A new audit of the published text:
+  `python3 scripts/audited.py audit --juans 72 --model opus --fix-rounds 2` (about 70 min, USD 16 list price).
+- **Juans 67–71 need the owner's go.** They have not run: at the two-round rate (11.5 min and USD 2.58 per
+  section) their 76 sections take about 14.6 h and USD 196 list price. Command:
+  `python3 scripts/audited.py audit --juans 67-71 --model opus --fix-rounds 2`. Before a run: heartbeat the
+  headless CLI (skill `headless-claude`) and run it in tmux. Under the zero-finding gate they probably fail like
+  juan 72 (22 left after 2 rounds); the owner may want the same publish-as-is rule for them. Options a, c and d of 2026-10-22
   were: fix the glossary first, publish the rewrite by hand without a seal, re-translate 67–72. Earlier plan, kept for its decisions: audit T1579 juan 67–72 with `scripts/audited.py audit` (owner decision 2026-10-13: review chain only, these six juans only). Owner decision 2026-10-21 on the place: the audit runs in this repo, and `audits/` / `artifacts/` stay in this repo's PR; after the merge, copy the changed `translations/`, `docs/` and `data/` into `dharma-site` `sources/treatises/` as a writer-zone commit, so the live site gets the audited text. Reason: the monorepo contract (`cc_import_tree` in `dharma-site` `plans/20261012-repo-consolidation-claude/contract-checks.sh`) limits the treatise writer zone to `data/ translations/ docs/` and rejects `audits/` and `artifacts/`. Side effect the owner accepted: the old Pages site then moves past the import version. Setup is ready (2026-10-21): worktree `~/projects/translation/yogacara-audit-t1579`, branch `claude/audit-t1579-067-072` at `b305890` (the commit that `dharma-site` M2 imported), codex-cli 0.159.0 present, baseline `python3 -B -m unittest discover -s tests` 275 OK. First command when the hold lifts: `python3 scripts/audited.py audit --juans 72`; report the Codex quota it used; then the other five juans. Deliver `audits/`, `artifacts/`, the rewritten md and pages and the reports as one PR. A juan that fails is reported and its text stays.
 - Two older defects on `main` that the security review of this thread named: `scripts/build_shengwen_di_html.py` `fetch_json` retries without TLS verification after a certificate error (CWE-295), and the site search writes `search.json` text into the page with `innerHTML` (CWE-79). Not fixed in this thread.
 - iPhone app: done. The 佛典 tab of the 追更簿 app (`~/projects/manga-tracker`, PR #5 then PR #6 `5a794a7` on main) reads `docs/app/library.json`; the user checked it on the iPhone on 2026-10-06. Keep the manifest shape (version 1) stable or update `Sutra.swift` there in the same change.

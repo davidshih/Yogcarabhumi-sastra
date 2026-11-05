@@ -12,6 +12,9 @@ Fixture juans (facts measured on main, commit dd46ba8):
   juan 67  23 sections, one shared boundary line, 5 glossary issues (one of the six juans the owner wants audited)
   juan 72   7 sections, one shared boundary line, 9 glossary issues
   juan 76  15 sections, one shared boundary line, no glossary issue; section 2 has 1 paragraph
+
+The md and the page of juan 72 come from tests/fixtures/dd46ba8/: the owner published the audit rewrite of juan 72
+on 2026-11-04, and the live text no longer has these facts.
 """
 import fcntl
 import hashlib
@@ -135,6 +138,15 @@ def build_template(dest: Path) -> None:
         target = dest / "docs" / search.parent.name
         target.mkdir(parents=True, exist_ok=True)
         shutil.copy2(search, target / "search.json")
+    frozen = REPO / "tests" / "fixtures" / "dd46ba8"  # files whose live version lost the facts of the docstring
+    for path in sorted(frozen.rglob("*")):
+        if path.is_file():
+            shutil.copy2(path, dest / path.relative_to(frozen))
+    # The search indexes must be the ones of the md in the tree: a passed audit rebuilds them.
+    done = run_python(dest, "-c", "import sys; sys.path.insert(0, 'scripts'); import build_search_index; "
+                                  "raise SystemExit(build_search_index.main())")
+    if done.returncode != 0:
+        raise RuntimeError(f"search index rebuild failed:\n{done.stdout}\n{done.stderr}")
 
 
 def run_python(tree: Path, *args: str, timeout: int = 180) -> subprocess.CompletedProcess:

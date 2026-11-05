@@ -1,0 +1,680 @@
+{
+  "attestation": null,
+  "blocking": [
+    "T1579-072-001 review_terms: 「貪瞋癡」是本卷首次出現的煩惱術語（三種根本煩惱），譯文只拆寫為「貪、瞋、癡」，沒有按「玄奘原詞〔白話解釋〕」格式加注；同句的「纏」有〔〕，貪、瞋、癡卻沒有，一般讀者無從理解。",
+    "T1579-072-001 review_terms: 原文術語寫作「決擇」，譯文的〔〕卻寫成「抉擇」，同一段裡「決擇」和「抉擇」兩種字形並用，讀者可能誤以為是兩個不同概念。",
+    "T1579-072-001 review_terms: 「菩提」在譯文中先出現在「迴向菩提〔…趣求菩提覺悟〕」以及發心的〔〕裡，都沒有單獨解釋；要到最後「趣證菩提」才首次加上〔覺悟〕，首次解釋的位置太晚。",
+    "T1579-072-002 review_terms: 「增上慧」在 term_occurrences 已經綁成術語 zeng_shang_hui，但譯文第一次出現時沒有照「玄奘原詞〔白話解釋〕」的格式附上解釋。後面毘鉢舍那的〔〕裡雖然提到「增上慧」，只是重複原詞，不算解釋。如果本卷前文沒有出現過這個詞，就不合首次格式。",
+    "T1579-072-003 review_terms: 原文「說之為假」的「假」對應同一段問答中的「假有」（答案是「當言俱有」，也就是實有、假有兩種都有）。譯文寫成「假說」，切斷了和「假有」這個術語的對應，現代讀者還可能把它讀成「假設、假說（hypothesis）」。",
+    "T1579-072-004 review_terms: 「麁重〔粗重性〕」首次出現時，〔〕只是把原詞換成通行字再加上「性」，等於重複原詞，沒有給一般讀者真正的白話解釋。這裡的麁重與輕安成對，指身心沉重、不堪任運修行的狀態，「粗重性」反而容易被讀成「粗糙」。譯者在 notes 裡用「沒有給一般讀者真正的白話解釋」為理由擴寫了輕安的〔〕，卻沒有同樣處理麁重，前後標準不一致。",
+    "T1579-072-005 review_terms: 戲論首次出現的〔〕用「所戲論」來解釋「戲論」，是循環解釋，一般讀者仍然看不懂戲論本身的白話意思。",
+    "T1579-072-006 review_terms: 四依（法依、義依、了義經依、智依）是專門術語，本段首次出現時沒有依「玄奘原詞〔白話解釋〕」格式附上白話。一般讀者無法從「法依」「義依」看出意思。",
+    "T1579-072-006 review_terms: 「同分」「彼同分」在問句中首次出現時沒有〔〕，白話說明延後到答句才附上，不符合首次出現格式。",
+    "T1579-072-006 review_terms: 「空、無願、無相」在問句中首次出現時沒有〔〕，白話說明延後到答句才附上，不符合首次出現格式。",
+    "T1579-072-007 review_terms: 「初靜慮〔靜慮定〕」的〔〕只是把原詞加上「定」字，沒有給一般讀者真正的白話解釋，等於只重複原詞，不符合首次出現格式。",
+    "T1579-072-007 review_terms: 「神通〔超越常人的能力〕」偏離 glossary abhijna 的 plain「五種神通」，notes 卻沒有說明偏離理由。",
+    "T1579-072-007 review_terms: 〔〕內寫入「味境」，把原文沒有的術語帶進譯文；而「味境」正是 taste-object 的 translation_pattern，依 pattern 自動比對時會誤判成 taste-object 的 occurrence。這種較長的辨析也應放在 notes。",
+    "T1579-072-001 review_doctrine: 「廣決擇文，更不復現」是在說文本本身的狀態：詳細的分判文字在這裡沒有出現。這句話可能是論主自己說的，也可能是譯場或傳本留下的說明，本次資料無法判定。但 notes 直接寫「這是論文本身對文本狀態的聲明」，structured_contract 的 speakers 也只把全段歸給論主，沒有另外處理這一句。這等於在沒有證據的情況下認定了說話者，而且和同一條 note 後面「不作推斷」的立場互相矛盾。正文的直譯「這裡不再出現」本身沒有問題。",
+    "T1579-072-001 review_doctrine: 「或怖退轉」列在王難、賊難、鬼難、活命、利養恭敬等世俗動機之中，原文沒有說明退轉是從什麼退失。譯文的〔從修行的道路上退失〕把它限定為修道上的退轉，這是原文沒有的解釋。何況「害怕修道退失」很難算是不清淨的動機，這樣解釋可能讓讀者誤解這一項為什麼被歸入不清淨發心。",
+    "T1579-072-002 review_doctrine: 原文「依於自義及與他義」是說九種正行本身以自義與他義為所依。譯文加上「而說的」，就把它改成「這種分類是依自他利益來說的」這樣一句關於言說的話。這改變了命題的主詞與層次，原文沒有這個言說框架。",
+    "T1579-072-002 review_doctrine: 第二種無堪任性的原文把「相續已熟」與「於此無間造作積集能障正加行業」直接並列，沒有轉折詞。譯文加了「卻」，等於斷定兩個條件之間有轉折。這和 notes 對第三種「照原文並列、不加讓步語氣」的處理原則不一致，也在正文裡預設了原文沒有說明的邏輯關係。",
+    "T1579-072-002 review_doctrine: 原文「無匱」只是正面描述「沒有匱乏」。譯文作「不再匱乏」，「再」字預設此人原本處於匱乏，原文沒有這一層，屬於帶預設的增義。",
+    "T1579-072-003 review_doctrine: 原文只並列「言說隨眠」「言說隨覺」兩個因緣，沒有說兩者構成「潛伏／現行」的對照。譯文的〔〕把這組對照寫成原文的結構，還把「隨覺」解成「言說隨之覺起、現行」，等於讓「言說」本身當作現起的主語。「隨覺」的字面是隨著言說而覺了，也就是認知跟隨言說，並不是言說本身現行。這組現行對照是譯者補入的義理，和 note 自己說的「原文對這兩項沒有進一步解釋」不一致。",
+    "T1579-072-004 review_doctrine: 原文「誹謗蘊中，善、無記法不清淨過」的意思是：如果說取（欲貪）與蘊不異，就等於把蘊中的善法、無記法也判為不清淨，這種判定本身就是誹謗，所以構成不清淨的過失。譯文寫成「會有誹謗……蘊中善法、無記法的過失，使它們成為不清淨」，變成「誹謗」讓善法、無記法變得不清淨，弄錯了因果方向。原文的「不清淨」是誹謗的內容，也就是誤加在善法、無記法上的判定，不是誹謗造成的結果。此外，原文的「誹謗……不清淨過」和下句「增益常性不清淨過」句構平行，兩者都是「不清淨過」這一類過失；譯文把前一句改成另一種句構，讀者就看不出兩邊過失是對稱的。",
+    "T1579-072-004 review_doctrine: 原文「顯示不異亦非不異」的次第是：先說「不異」，即否定「異」；再說「非不異」，即否定「不異」。structured_contract 的 negation_scope 也是這樣標注。譯文卻寫成「既不是不異、也不是異」，把兩個命題的先後對調了。這和同段後文「相與真如不異、也非不異」的譯法不一致，也和 negation_scope 的標注對不上，讀者難以把譯文對回原文的兩個否定。",
+    "T1579-072-005 review_doctrine: 原文在這裡只把「戲論」列為相的差別名稱，沒有另外說明。正文括注卻加了兩個原文沒有的命題：一是用「虛妄分別所戲論、所呈現出來的相」解釋戲論，這是拿「戲論」來解釋「戲論」，形成循環定義，也是譯者自己的詮釋；二是加了否定性判斷「不等同於分別本身」。這兩點都不是原文命題，而且與 glossary 對「戲論」的 plain（「虛妄分別」）和 rule（無始虛妄分別名言）直接衝突。為了區分相與分別這兩事而作的說明屬於結構分析，應放在 notes（目前 notes 已有相同說明），不應以正文括注的形式出現，讓讀者誤以為這是原文本身的論斷。"
+  ],
+  "findings": {
+    "remaining": 22,
+    "round1": 167
+  },
+  "glossary_backlog": [
+    {
+      "category": "term_binding",
+      "claim": "term_occurrences 沒有登錄「貪瞋癡」（或貪、瞋、癡各自一項）的 occurrence，也沒有指定 primary term_id；同句的「纏」已登錄為 chan，列舉粒度前後不一致。",
+      "clause_id": "T30n1579_p0694c20-p0695a23",
+      "evidence": {
+        "reference_ids": [],
+        "source_quote": "貪瞋癡纏所",
+        "translation_quote": "貪、瞋、癡的纏"
+      },
+      "required_change": "為貪瞋癡補登 occurrence，並指定 primary term_id；可整體登錄為一項，也可拆成 tan／chen／chi 三項，選定後全卷統一粒度。",
+      "review_stage": "review_terms",
+      "severity": "med",
+      "unit_id": "T1579-072-001"
+    },
+    {
+      "category": "term_binding",
+      "claim": "「正行」的 term_id 定為 zhengxing，與同段「正性離生」（zhengxing_lisheng）的「正性」拼音相同（zhèngxíng／zhèngxìng），日後若為「正性」單獨建條目，id 會撞名，造成綁定混淆。",
+      "clause_id": "T30n1579_p0694c20-p0695a23",
+      "evidence": {
+        "reference_ids": [],
+        "source_quote": "捨於正行，處於邪行。",
+        "translation_quote": "捨棄了正行〔正確的修行〕"
+      },
+      "required_change": "把正行的 term_id 改為不會撞名的形式（例如 zhengxing_practice 或 zheng_xing2），並同步更新 term_occurrences 的綁定。",
+      "review_stage": "review_terms",
+      "severity": "low",
+      "unit_id": "T1579-072-001"
+    },
+    {
+      "category": "term_binding",
+      "claim": "「奢摩他」在 glossary 裡已經有 stable 條目，id 是 shamatha，但 term_occurrences 把它綁到 glossary 裡沒有的 id「shemota」。這樣一來這個 occurrence 連不回 glossary，一致性檢查追不到。",
+      "clause_id": "T30n1579_p0695a23-p0695c25",
+      "evidence": {
+        "reference_ids": [],
+        "source_quote": "於內心奢摩他正行",
+        "translation_quote": "第八，對內心奢摩他〔止：令內心寂靜安住〕的正行"
+      },
+      "required_change": "把 surface「奢摩他」的 term_id 從「shemota」改成 glossary id「shamatha」，作為 primary term_id。譯文不必改。",
+      "review_stage": "review_terms",
+      "severity": "high",
+      "unit_id": "T1579-072-002"
+    },
+    {
+      "category": "term_binding",
+      "claim": "「毘鉢舍那」在 glossary 裡已經有 stable 條目，id 是 vipashyana，但 term_occurrences 綁到 glossary 裡沒有的 id「piposhena」。",
+      "clause_id": "T30n1579_p0695a23-p0695c25",
+      "evidence": {
+        "reference_ids": [],
+        "source_quote": "慧法毘鉢舍那正行",
+        "translation_quote": "增上慧法毘鉢舍那〔觀：以增上慧觀察諸法〕"
+      },
+      "required_change": "把 surface「毘鉢舍那」的 term_id 從「piposhena」改成 glossary id「vipashyana」，作為 primary term_id。",
+      "review_stage": "review_terms",
+      "severity": "high",
+      "unit_id": "T1579-072-002"
+    },
+    {
+      "category": "term_binding",
+      "claim": "「加行」在 glossary 裡已經有 stable 條目，id 是 prayoga，但 term_occurrences 綁到 glossary 裡沒有的 id「jia_xing」。這組 id 錯了，會讓「加行」與「正加行」（zheng_jia_xing）的層次區分也無法對照 glossary 稽核。",
+      "clause_id": "T30n1579_p0695a23-p0695c25",
+      "evidence": {
+        "reference_ids": [],
+        "source_quote": "或作加行故",
+        "translation_quote": "或因作加行〔著手進行的努力、用功推進〕"
+      },
+      "required_change": "把 surface「加行」的 term_id 從「jia_xing」改成「prayoga」。「正加行」維持獨立的 term_id，並在綁定上註明它和 prayoga 是不同層次。",
+      "review_stage": "review_terms",
+      "severity": "high",
+      "unit_id": "T1579-072-002"
+    },
+    {
+      "category": "glossary_provenance",
+      "claim": "glossary 條目 kaushalya 的 source_terms 收了單獨的「善巧」，但它的 rule 只限於「對法類別的通達能力」。本段「善巧家長」是一般意義的熟練能幹，不屬於這個條目。譯文沒有綁定，作「善巧的家長」，處理正確；問題在 glossary 的範圍寫得太寬，自動比對時容易誤綁。",
+      "clause_id": "T30n1579_p0695a23-p0695c25",
+      "evidence": {
+        "reference_ids": [],
+        "source_quote": "謂如善巧家長於未成就幼童",
+        "translation_quote": "就像善巧的家長對待尚未長成的幼童那樣"
+      },
+      "required_change": "在 kaushalya 條目裡寫明：單獨的「善巧」只在指蘊、處、界等法類通達時才綁定；一般意義的「善巧」（如善巧家長）排除在外。或者把 source_terms 只留複合詞形式。",
+      "review_stage": "review_terms",
+      "severity": "low",
+      "unit_id": "T1579-072-002"
+    },
+    {
+      "category": "term_binding",
+      "claim": "glossary 條目 kaushalya（善巧）在原文和譯文都出現了，譯文也照 plain 寫成「善巧〔善於通達〕」，但 term_occurrences 沒有任何綁定到這個詞的 occurrence。",
+      "clause_id": "T30n1579_p0695c26-p0696b26",
+      "evidence": {
+        "reference_ids": [],
+        "source_quote": "於相有性得善巧故",
+        "translation_quote": "因為對相的有性得到善巧〔善於通達〕"
+      },
+      "required_change": "在 term_occurrences 新增 surface「善巧」，primary term_id 設為 glossary id「kaushalya」。",
+      "review_stage": "review_terms",
+      "severity": "med",
+      "unit_id": "T1579-072-003"
+    },
+    {
+      "category": "term_binding",
+      "claim": "「獨覺」的 occurrence 綁的 term_id 是「獨覺」，但 glossary 條目的 id 是「pratyekabuddha」。primary term_id 不是 glossary id，就無法連回 glossary 條目。",
+      "clause_id": "T30n1579_p0695c26-p0696b26",
+      "evidence": {
+        "reference_ids": [],
+        "source_quote": "聲聞、獨覺、諸菩薩等通達",
+        "translation_quote": "聲聞、獨覺、諸菩薩等通達真如"
+      },
+      "required_change": "把 surface「獨覺」的 term_id 由「獨覺」改為「pratyekabuddha」。",
+      "review_stage": "review_terms",
+      "severity": "med",
+      "unit_id": "T1579-072-003"
+    },
+    {
+      "category": "term_binding",
+      "claim": "「假有」的 occurrence 綁的 term_id 是「假有」，但 glossary 條目的 id 是「prajñapti-sat」（source_terms 包含「假有」）。primary term_id 和 glossary id 不一致。",
+      "clause_id": "T30n1579_p0695c26-p0696b26",
+      "evidence": {
+        "reference_ids": [],
+        "source_quote": "假有行中當言假有",
+        "translation_quote": "在假有的行中，應當說是假有"
+      },
+      "required_change": "把 surface「假有」的 term_id 由「假有」改為「prajñapti-sat」。",
+      "review_stage": "review_terms",
+      "severity": "med",
+      "unit_id": "T1579-072-003"
+    },
+    {
+      "category": "term_binding",
+      "claim": "「言說隨眠」綁到 term_id「隨眠」，有三個問題：一、這不是 glossary id「anuśaya」；二、notes 明說此處不取 anuśaya 的「潛伏煩惱」義，卻仍綁到這個條目，和「愛味」不歸入味境的處理方式不一致；三、成對的「言說隨覺」是整個複合詞自成一個 term_id，「言說隨眠」卻只拆出「隨眠」，兩者列舉粒度不一致。",
+      "clause_id": "T30n1579_p0695c26-p0696b26",
+      "evidence": {
+        "reference_ids": [],
+        "source_quote": "三、言說隨眠故；四、言說隨覺故",
+        "translation_quote": "三、言說隨眠〔「隨眠」在此指言說潛伏而尚未現起，與下一項成對〕"
+      },
+      "required_change": "把 surface「言說隨眠」的 primary term_id 改為複合詞「言說隨眠」，和「言說隨覺」粒度一致，並提出新的 term 條目；不要讓它的 primary term_id 指向 anuśaya（潛伏煩惱）。",
+      "review_stage": "review_terms",
+      "severity": "med",
+      "unit_id": "T1579-072-003"
+    },
+    {
+      "category": "term_binding",
+      "claim": "surface「心心所」是心與心所兩類法的合稱，occurrence 卻只綁到 term_id「心所」，漏掉了「心」，列舉粒度和原文不符。",
+      "clause_id": "T30n1579_p0695c26-p0696b26",
+      "evidence": {
+        "reference_ids": [],
+        "source_quote": "若智眷屬諸心心所亦名為",
+        "translation_quote": "各種心、心所"
+      },
+      "required_change": "把「心心所」綁到複合詞 term_id「心心所」；如果系統只能用單詞，就拆成「心」「心所」兩個 occurrence。",
+      "review_stage": "review_terms",
+      "severity": "low",
+      "unit_id": "T1579-072-003"
+    },
+    {
+      "category": "glossary_provenance",
+      "claim": "glossary 條目 id「dharatu」拼錯了，pali 和 sanskrit 欄都是「dhātu」。另外，本段的「界」只出現在「三界」「法界」中，不是這個條目所說的大種界義；目前沒有誤綁，但 id 錯拼會造成日後綁定失敗。",
+      "clause_id": "T30n1579_p0695c26-p0696b26",
+      "evidence": {
+        "reference_ids": [],
+        "source_quote": "善說法界",
+        "translation_quote": "善說法界"
+      },
+      "required_change": "把 glossary id 改正為「dhatu」或「dhātu」，並確認沒有既有 occurrence 引用錯拼的 id。",
+      "review_stage": "review_terms",
+      "severity": "low",
+      "unit_id": "T1579-072-003"
+    },
+    {
+      "category": "glossary_provenance",
+      "claim": "prajñapti-sat 條目的 rule 規定「〔〕外不加圓括號」，translation_patterns 卻列了「假有法（假名安立之法）」這個圓括號形式，條目內部互相矛盾。",
+      "clause_id": "T30n1579_p0695c26-p0696b26",
+      "evidence": {
+        "reference_ids": [],
+        "source_quote": "相當言實有，當言假有",
+        "translation_quote": "還是假有〔假名安立之法〕"
+      },
+      "required_change": "從 prajñapti-sat 的 translation_patterns 刪除「假有法（假名安立之法）」，只保留全形方括號的形式。",
+      "review_stage": "review_terms",
+      "severity": "low",
+      "unit_id": "T1579-072-003"
+    },
+    {
+      "category": "glossary_provenance",
+      "claim": "pratyekabuddha 條目的 plain 是「獨覺」，和原詞完全相同。照首次格式填入〔〕，就只會重複原詞，違反首次格式的要求；這個條目沒辦法提供可用的白話解釋。",
+      "clause_id": "T30n1579_p0695c26-p0696b26",
+      "evidence": {
+        "reference_ids": [],
+        "source_quote": "獨覺以初正智通達真如已",
+        "translation_quote": "聲聞、獨覺以初正智通達真如之後"
+      },
+      "required_change": "為 pratyekabuddha 補上真正的白話 plain（例如說明「不依佛教導、自行覺悟的聖者」），並在 evidence 中記錄出處；在補齊並審核以前，不要把這個 plain 當作 stable 使用。",
+      "review_stage": "review_terms",
+      "severity": "low",
+      "unit_id": "T1579-072-003"
+    },
+    {
+      "category": "glossary_provenance",
+      "claim": "anuśaya 條目的 id 用 IAST「anuśaya」，sanskrit 欄卻寫 ASCII 轉寫「anushaya」；kaushalya 條目同樣用了 ASCII 轉寫（IAST 應為 kauśalya）。羅馬化方式不統一，影響 id 與梵文值的比對。",
+      "clause_id": "T30n1579_p0695c26-p0696b26",
+      "evidence": {
+        "reference_ids": [],
+        "source_quote": "言說隨眠故",
+        "translation_quote": "言說隨眠〔"
+      },
+      "required_change": "統一 glossary 的梵文羅馬化方式：anuśaya 條目的 sanskrit 欄改為「anuśaya」，kaushalya 條目的 sanskrit 欄改為「kauśalya」（id 是否同步調整依系統規範處理）。",
+      "review_stage": "review_terms",
+      "severity": "low",
+      "unit_id": "T1579-072-003"
+    },
+    {
+      "category": "term_binding",
+      "claim": "term_occurrences 把「麁重」綁到 glossary:麁重、把「輕安」綁到 glossary:輕安，但本次輸入的 glossary 其實已經提供正式 id：「麁重」列在 dausthulya 的 source_terms 中，「輕安」對應 pratipassrabdhi。notes 說「本次輸入沒有提供 glossary 的正式 term_id」，這與輸入不符。結果是兩個 occurrence 都綁到不存在的 id，無法稽核。",
+      "clause_id": "T30n1579_p0696b27-p0697a12",
+      "evidence": {
+        "reference_ids": [],
+        "source_quote": "身心，麁重、輕安雖復是有",
+        "translation_quote": "麁重〔粗重性〕與輕安〔身心輕快、調適，堪能修行的狀態〕"
+      },
+      "required_change": "把「麁重」的 primary term_id 改成 dausthulya（如果依另一項 finding 拆分條目，就改綁拆分後專屬於麁重的 id），把「輕安」改成 pratipassrabdhi（或修正拼法後的 id）；並刪改 notes 中「沒有提供正式 term_id」「待 pipeline 對應」的不實說法。",
+      "review_stage": "review_terms",
+      "severity": "high",
+      "unit_id": "T1579-072-004"
+    },
+    {
+      "category": "glossary_provenance",
+      "claim": "glossary 條目 dausthulya 把兩個不同的概念合在一起：麁性／麁相（audarya，粗顯、粗糙）和麁重（dausthulya，身心不堪任性）。這個條目的 xuanzang 主詞是「麁性」，id 卻是 dausthulya，plain「粗重性」也偏向粗顯義。本句的麁重是與輕安對舉的 dausthulya，用這個條目無法正確提供 plain 與梵文出處。",
+      "clause_id": "T30n1579_p0696b27-p0697a12",
+      "evidence": {
+        "reference_ids": [],
+        "source_quote": "麁重、輕安",
+        "translation_quote": "麁重〔粗重性〕"
+      },
+      "required_change": "把條目拆成兩條：麁性／麁相（audarya）和麁重（dausthulya）；麁重條目的 xuanzang 設為「麁重」，plain 改成能表達「身心不堪任」的白話。兩條都維持 review，不要升為 stable。",
+      "review_stage": "review_terms",
+      "severity": "med",
+      "unit_id": "T1579-072-004"
+    },
+    {
+      "category": "glossary_provenance",
+      "claim": "glossary 條目 id「pratipassrabdhi」的拼法與同一條目 sanskrit 欄的「prashrabdhi」不一致，看起來混入了巴利文 paṭipassaddhi 的形式，但條目仍標為 stable。另外，譯者在 notes 指出這個 stable 條目的 plain「身心輕安」只是重複原詞，並建議修訂，但 glossary 端還沒有處理。",
+      "clause_id": "T30n1579_p0696b27-p0697a12",
+      "evidence": {
+        "reference_ids": [],
+        "source_quote": "輕安雖復是有",
+        "translation_quote": "輕安〔身心輕快、調適，堪能修行的狀態〕"
+      },
+      "required_change": "核對並修正 id 拼法，使它與 sanskrit 欄一致（例如 prasrabdhi），同時更新所有綁定；把 plain 修訂提案送 glossary 審核。修訂完成以前，不要依新 plain 回填，也不要把未經 evidence 核實的值當作 stable。",
+      "review_stage": "review_terms",
+      "severity": "med",
+      "unit_id": "T1579-072-004"
+    },
+    {
+      "category": "term_binding",
+      "claim": "「相有何相」裡的第二個「相」是特徵、標誌的意思，不是五事中的「相」。但 term_occurrences 只有一筆 surface「相」綁到 proposed:相，沒有區分兩種用法，稽核時容易把「特徵」義誤歸到五事的「相」。",
+      "clause_id": "T30n1579_p0696b27-p0697a12",
+      "evidence": {
+        "reference_ids": [],
+        "source_quote": "相有何相？答：分別所行相",
+        "translation_quote": "問：相有什麼樣的相〔這裡第二個「相」指特徵、標誌〕？"
+      },
+      "required_change": "在 term_occurrences 中替「特徵、標誌」義的「相」另設 occurrence 並綁到另一個 term_id（例如 proposed:相_特徵），或明確排除；proposed:相 只綁五事中的相。",
+      "review_stage": "review_terms",
+      "severity": "low",
+      "unit_id": "T1579-072-004"
+    },
+    {
+      "category": "term_binding",
+      "claim": "有幾筆綁定的 surface 粒度和 term_id 不一致：surface「增益常性」綁到 proposed:增益，surface「所行相」綁到 proposed:所行，surface 都比術語多出字；「如理作意」卻只把「作意」綁到 manaskara，沒有標出複合語「如理作意」。",
+      "clause_id": "T30n1579_p0696b27-p0697a12",
+      "evidence": {
+        "reference_ids": [],
+        "source_quote": "增益常性不清淨過",
+        "translation_quote": "增益常性〔虛妄添加恆常不變的性質〕"
+      },
+      "required_change": "讓 surface 和 term_id 的範圍一致：「增益」與「常性」分開，或把整個詞組改綁到對應的詞組條目；「所行」與「相」分開；「如理作意」整體標為 surface，primary term_id 用 manaskara，或另外提案建立複合語條目。",
+      "review_stage": "review_terms",
+      "severity": "low",
+      "unit_id": "T1579-072-004"
+    },
+    {
+      "category": "term_binding",
+      "claim": "「當言無生」在這裡只是說真如不是被生起的，屬於一般敘述；把它綁到 proposed:無生 並提案新建條目，可能和「無生法忍」等專門術語的「無生」混在一起，屬於過度綁定。",
+      "clause_id": "T30n1579_p0696b27-p0697a12",
+      "evidence": {
+        "reference_ids": [],
+        "source_quote": "當言無生",
+        "translation_quote": "應當說是無生〔真如本來如此，不是被生起的〕"
+      },
+      "required_change": "移除 proposed:無生 這筆綁定，或在提案條目中註明這裡的「無生」是一般敘述用法，不與專門術語共用 id。",
+      "review_stage": "review_terms",
+      "severity": "low",
+      "unit_id": "T1579-072-004"
+    },
+    {
+      "category": "term_binding",
+      "claim": "term_occurrences 的 primary term_id 與本次 glossary 條目 id 對不上，所以無法稽核：奢摩他綁到 T1579.term.shemota，glossary 是 shamatha；毘鉢舍那綁到 T1579.term.piposhena，glossary 是 vipashyana；初靜慮綁到 T1579.term.jinglv，glossary 是 dhyana；戲論綁到 T1579.term.xilun，glossary 是 prapanca；無為綁到 T1579.term.wuwei，glossary 是 asaṃskṛta；勝解綁到 T1579.term.shengjie，glossary 是 adhimoksha。這些 occurrence 都沒有一個能對應到 glossary 的 primary term_id。",
+      "clause_id": "T30n1579_p0697a13-p0697c04",
+      "evidence": {
+        "reference_ids": [],
+        "source_quote": "奢摩他相、毘鉢舍那相",
+        "translation_quote": "奢摩他〔止〕相、毘鉢舍那〔觀〕相"
+      },
+      "required_change": "把上述六個 occurrence 的 term_id 改成 glossary 現有的 id（shamatha、vipashyana、dhyana、prapanca、asaṃskṛta 或修正後的 id、adhimoksha）；或者另外建立明確的 id 對照表，讓每個 occurrence 都只解析到一個 glossary 條目。",
+      "review_stage": "review_terms",
+      "severity": "high",
+      "unit_id": "T1579-072-005"
+    },
+    {
+      "category": "term_binding",
+      "claim": "surface「相」「分別」的粒度太粗。「相」綁到 xiang_5shi（五事之相），但本段的「相」也出現在行相、色相、有相相、有相分別、本性相、影像相等複合詞中，而且這些複合詞有些已經另外綁定（行相、本性相、影像相）。「分別」綁到 fenbie，與「於境界任運分別」的綁定重疊，也會誤配到有相分別、染污分別等。因此無法判斷 primary term_id 指的是哪一處。",
+      "clause_id": "T30n1579_p0697a13-p0697c04",
+      "evidence": {
+        "reference_ids": [],
+        "source_quote": "問：相有何行相？答：應知此相",
+        "translation_quote": "問：相有哪些行相？"
+      },
+      "required_change": "把 surface 限定為五事意義下獨立出現的「相」「分別」（例如問句「相有何行相」「分別有何行相」中的那一處）；複合詞則各自綁定，或明確排除，避免同一字串同時屬於兩個 term_id。",
+      "review_stage": "review_terms",
+      "severity": "med",
+      "unit_id": "T1579-072-005"
+    },
+    {
+      "category": "glossary_provenance",
+      "claim": "glossary 的 prapanca 條目把 plain 定為「虛妄分別」，rule 又把戲論界定為「無始虛妄分別名言；為感生自體之最勝因」。這是另一段文脈的定義，而本段把戲論列為「相」的差別名稱，與「分別差別」分開（clause notes 已說明）。條目沒有限定適用範圍，status 是 review，卻沒有附任何 evidence。translation_patterns 中的「戲論（虛妄分別）」用了圓括號，也不符合「玄奘原詞〔白話解釋〕」格式。",
+      "clause_id": "T30n1579_p0697a13-p0697c04",
+      "evidence": {
+        "reference_ids": [],
+        "source_quote": "若戲論",
+        "translation_quote": "戲論〔此處列為相的差別名稱，指虛妄分別所戲論、所呈現出來的相，不等同於分別本身〕"
+      },
+      "required_change": "為 prapanca 條目補上 evidence，並在 rule 寫明適用範圍：五事脈絡中，戲論作為相的差別名稱時，不套用 plain「虛妄分別」。把 translation_patterns 的圓括號改成〔〕格式；在補齊 evidence 前保持 review，不升為 stable。",
+      "review_stage": "review_terms",
+      "severity": "med",
+      "unit_id": "T1579-072-005"
+    },
+    {
+      "category": "glossary_provenance",
+      "claim": "無為條目的 id「asaṃskṛta」帶有 IAST 變音符號，與其他 ASCII id 及 term_occurrences 的 T1579.term.wuwei 不一致。條目內部也互相矛盾：rule 說「〔〕外不加圓括號」，translation_patterns 卻列了「無為（無為法）」。status 是 review，但沒有 evidence。",
+      "clause_id": "T30n1579_p0697a13-p0697c04",
+      "evidence": {
+        "reference_ids": [],
+        "source_quote": "無為相",
+        "translation_quote": "無為〔無為法，即不由因緣造作的法〕相"
+      },
+      "required_change": "把 id 改成 ASCII 寫法（例如 asamskrta），並與 term_occurrences 對齊；從 translation_patterns 刪去「無為（無為法）」；補上 evidence 後再考慮更改 status。",
+      "review_stage": "review_terms",
+      "severity": "low",
+      "unit_id": "T1579-072-005"
+    },
+    {
+      "category": "glossary_provenance",
+      "claim": "界條目的 id「dharatu」拼錯了（應為 dhatu）。rule 用「此處」把界一律限定為大種界，但本段「蘊相、界相、處相」中的界是十八界的意思，地、水、火、風也是以「地相」等形式出現，不是「地界」。條目沒有標明適用範圍，容易被錯誤綁到本段的「界相」。",
+      "clause_id": "T30n1579_p0697a13-p0697c04",
+      "evidence": {
+        "reference_ids": [],
+        "source_quote": "蘊相、界",
+        "translation_quote": "蘊相、界相、處相"
+      },
+      "required_change": "把 id 更正為 dhatu 或 dhatu_dazhong 一類的拼法；在 rule 中寫明只適用於大種界的脈絡，並另立或指向十八界的條目，確保本段的「界相」不綁到這個條目。",
+      "review_stage": "review_terms",
+      "severity": "low",
+      "unit_id": "T1579-072-005"
+    },
+    {
+      "category": "glossary_provenance",
+      "claim": "幾個 status 為 stable 的條目沒有 evidence，梵文值也不規範：adhimoksha 應為 adhimokṣa；shamatha 的 sanskrit 欄列入巴利形式 samatha；vipashyana 用的是非 IAST 拼法（vipaśyanā）。這不符合「梵文只可使用 glossary 或 evidence 中的值」的可稽核要求。",
+      "clause_id": "T30n1579_p0697a13-p0697c04",
+      "evidence": {
+        "reference_ids": [],
+        "source_quote": "勝解所現",
+        "translation_quote": "勝解〔決定勝解，對所緣相決定取持〕"
+      },
+      "required_change": "為 adhimoksha、shamatha、vipashyana 補上 evidence；把 sanskrit 欄改成 IAST 規範形式，並把巴利形式移到 pali 欄。沒有 evidence 的條目應降為 review 或 inferred。",
+      "review_stage": "review_terms",
+      "severity": "low",
+      "unit_id": "T1579-072-005"
+    },
+    {
+      "category": "term_binding",
+      "claim": "「無為」在 glossary 中的條目 id 是「asaṃskṛta」，但 term_occurrences 把它綁到 glossary 裡沒有的 term_id「wuwei」。這樣一來，primary term_id 連不回已建檔的條目，plain「無為法」與 rule 也就無法追溯。",
+      "clause_id": "T30n1579_p0697c05-p0698c27",
+      "evidence": {
+        "reference_ids": [],
+        "source_quote": "真如唯無為",
+        "translation_quote": "哪些屬於無為〔無為法：不由因緣造作、沒有生滅變化的法〕"
+      },
+      "required_change": "把 surface「無為」的 primary term_id 從「wuwei」改成 glossary id「asaṃskṛta」。如果專案改以 wuwei 作為正式 id，就必須先在 glossary 建立對應關係，不可留下懸空的 id。",
+      "review_stage": "review_terms",
+      "severity": "high",
+      "unit_id": "T1579-072-006"
+    },
+    {
+      "category": "term_binding",
+      "claim": "多個已收入 glossary 的術語被綁到 glossary 中不存在的 term_id：戲論→xilun（glossary 為 prapanca）、假有→jiayou（prajñapti-sat）、異熟→yishu（vipaka）、執受→zhishou（upadi）、善巧→shanqiao（kaushalya）、三摩地→sanmodi（samadhi）、四聖諦→sishengdi（four-noble-truths）、修所斷→xiusuoduan（glossary 的 bhavana-marga 已把修所斷列入 source_terms）。primary term_id 與 glossary 脫節，無法稽核。",
+      "clause_id": "T30n1579_p0697c05-p0698c27",
+      "evidence": {
+        "reference_ids": [],
+        "source_quote": "一切言說戲論寂靜所緣",
+        "translation_quote": "一切言說與戲論〔虛妄分別〕寂靜的所緣"
+      },
+      "required_change": "把上列 occurrence 的 primary term_id 一一改成對應的 glossary id：prapanca、prajñapti-sat、vipaka、upadi、kaushalya、samadhi、four-noble-truths。修所斷要改綁 bhavana-marga，或另立 glossary 條目並說明與「修道」的區分。「有異熟」也要說明它與 vipaka 的關係（是改綁 vipaka 作為 primary，還是另立條目）。",
+      "review_stage": "review_terms",
+      "severity": "med",
+      "unit_id": "T1579-072-006"
+    },
+    {
+      "category": "glossary_provenance",
+      "claim": "glossary 條目 id「dharatu」拼錯了，應是 dhātu／dhatu。另外，這個條目的 rule 寫明「界」指大種界，「非十八界之認識範疇」，但本段「界處所攝」的「界」正是十八界的界。若依 source_terms「界」自動比對，就會錯誤套用這個條目。",
+      "clause_id": "T30n1579_p0697c05-p0698c27",
+      "evidence": {
+        "reference_ids": [],
+        "source_quote": "一切皆是界處所攝",
+        "translation_quote": "五事全都為界、處所攝"
+      },
+      "required_change": "把 id 更正為 dhatu 一類的正確拼法，並把 source_terms 中單字「界」的適用範圍限定在大種界的語境，或另立十八界的「界」條目，避免條目重疊或誤綁。",
+      "review_stage": "review_terms",
+      "severity": "med",
+      "unit_id": "T1579-072-006"
+    },
+    {
+      "category": "term_binding",
+      "claim": "本段的「界、處」（十八界、十二處）以及蘊、緣起等分類術語都沒有列入 term_occurrences，因此在消歧上無法稽核。這裡的「界」尤其容易被 dharatu 條目誤綁。",
+      "clause_id": "T30n1579_p0697c05-p0698c27",
+      "evidence": {
+        "reference_ids": [],
+        "source_quote": "一切皆是界處所攝",
+        "translation_quote": "五事全都為界、處所攝"
+      },
+      "required_change": "為「界」「處」（以及「蘊」「緣起」）新增 occurrence，綁到十八界／十二處等相應條目；不可綁到 dharatu（大種界）。",
+      "review_stage": "review_terms",
+      "severity": "low",
+      "unit_id": "T1579-072-006"
+    },
+    {
+      "category": "term_binding",
+      "claim": "法依、義依、了義經依、智依沒有列入 term_occurrences，也沒有 primary term_id。",
+      "clause_id": "T30n1579_p0697c05-p0698c27",
+      "evidence": {
+        "reference_ids": [],
+        "source_quote": "幾法依所攝？幾義依、幾了義經",
+        "translation_quote": "哪些為法依所攝？哪些為義依、哪些為了義經依、哪些為智依所攝？"
+      },
+      "required_change": "為四依新增 occurrence，可以作為一組條目或四個條目，並指定 primary term_id。",
+      "review_stage": "review_terms",
+      "severity": "low",
+      "unit_id": "T1579-072-006"
+    },
+    {
+      "category": "glossary_provenance",
+      "claim": "upadi 條目的 english（clinging）與 pali（upādāna）把「執受」等同於「取」或一般執著，和本條目 rule「不可譯為一般執著」自相矛盾。Sanskrit 欄同時列 upādi 與 upādāna，也沒有 evidence 或 inferred 標記。",
+      "clause_id": "T30n1579_p0697c05-p0698c27",
+      "evidence": {
+        "reference_ids": [],
+        "source_quote": "幾有執受？幾無執受？",
+        "translation_quote": "哪些有執受〔心心所執持攝受〕？"
+      },
+      "required_change": "更正或移除 upadi 條目中與「取（upādāna）」混同的 english 與 pali 值；未經 evidence 確認的梵巴值一律標記 inferred 並附 evidence，status 維持 review。",
+      "review_stage": "review_terms",
+      "severity": "med",
+      "unit_id": "T1579-072-006"
+    },
+    {
+      "category": "glossary_provenance",
+      "claim": "多個 status 為 review 的條目（asaṃskṛta、prajñapti-sat、vipaka、prapanca、upadi、dharatu、taste-object）帶有梵文和巴利文值，卻沒有 evidence，也沒有 inferred 標記，不符合「推定值須標記 inferred 並保存 evidence」的規定。條目 id 的拼法也不一致：有的用 IAST 附加符號（asaṃskṛta、prajñapti-sat），有的用 ASCII（kaushalya、shanta），不利穩定引用。",
+      "clause_id": "T30n1579_p0697c05-p0698c27",
+      "evidence": {
+        "reference_ids": [],
+        "source_quote": "假有故，不可說故",
+        "translation_quote": "因為是假有〔假名安立之法〕"
+      },
+      "required_change": "為上列條目補上 evidence，或把梵巴值標記為 inferred；並統一 glossary id 的拼寫慣例，例如全部改用 ASCII，再同步更新 term_occurrences。",
+      "review_stage": "review_terms",
+      "severity": "med",
+      "unit_id": "T1579-072-006"
+    },
+    {
+      "category": "glossary_provenance",
+      "claim": "shanta 條目（靜性，與下地麁相相對）的 translation_patterns 含「寂靜」，會和本段「諸行寂靜」「言說戲論寂靜」重疊，造成誤綁風險。本段這兩處是涅槃、無為意義的寂靜，並不是靜慮地的靜相。",
+      "clause_id": "T30n1579_p0697c05-p0698c27",
+      "evidence": {
+        "reference_ids": [],
+        "source_quote": "諸行寂靜所緣義故",
+        "translation_quote": "諸行寂靜〔一切有為造作止息〕"
+      },
+      "required_change": "把 shanta 條目的「寂靜」pattern 限定在靜慮地上下比較的語境，或從 patterns 中移除，並在 rule 中註明它與「諸行寂靜」條目的區分。",
+      "review_stage": "review_terms",
+      "severity": "low",
+      "unit_id": "T1579-072-006"
+    },
+    {
+      "category": "term_binding",
+      "claim": "term_id「xue-wuxue」看來涵蓋學、無學、非學非無學三者，但 surface 只列「非學非無學」，「學」「無學」兩個 occurrence 沒有列出，列舉粒度不一致。",
+      "clause_id": "T30n1579_p0697c05-p0698c27",
+      "evidence": {
+        "reference_ids": [],
+        "source_quote": "幾學？幾無學？幾非學非無學？",
+        "translation_quote": "哪些是學？哪些是無學？哪些是非學非無學"
+      },
+      "required_change": "兩種做法擇一：補列 surface「學」「無學」的 occurrence；或把 surface 改為「學、無學、非學非無學」，讓它與 term_id 的範圍一致。",
+      "review_stage": "review_terms",
+      "severity": "low",
+      "unit_id": "T1579-072-006"
+    },
+    {
+      "category": "term_binding",
+      "claim": "term_occurrences 中的 primary term_id「nimitta」「nama」「vikalpa」「tathata」「samyagjnana」「indriya」「bala」都不在本次 glossary 中，綁到的是不存在的條目，無法稽核。notes 也承認這些白話都是 inferred，但綁定卻像已經有條目一樣。",
+      "clause_id": "T30n1579_p0698c28-p0699c10",
+      "evidence": {
+        "reference_ids": [],
+        "source_quote": "問：緣相為境修幾念住？答：四。",
+        "translation_quote": "問：以「相」〔所緣對象的形相〕為所緣境，可以修幾種念住"
+      },
+      "required_change": "把這 7 個 occurrence 的綁定改成待建條目（pending/unbound）狀態，或先在 glossary 建立對應條目（status 不得高於 review/inferred，並附 evidence）後再綁定；同時把「念住」「五事」列入待建條目清單，不可引用 glossary 中不存在的 term_id。",
+      "review_stage": "review_terms",
+      "severity": "high",
+      "unit_id": "T1579-072-007"
+    },
+    {
+      "category": "term_binding",
+      "claim": "glossary 中已有條目的術語在本 clause 出現，卻沒有列入 term_occurrences：伏斷（vashikara）、隨眠（anuśaya）、靜慮／初靜慮／第二靜慮（dhyana）、奢摩他（shamatha）、毘鉢舍那（vipashyana）、神通（abhijna）、勝處／遍處（kasina-ayatana）、現法樂住（four-cultivations-of-samadhi 的 source_term）。現有列舉粒度不完整。",
+      "clause_id": "T30n1579_p0698c28-p0699c10",
+      "evidence": {
+        "reference_ids": [],
+        "source_quote": "當言伏斷故捨，非\n永害隨眠故捨",
+        "translation_quote": "應當說是由伏斷〔暫時伏斷〕而捨，不是由永害〔徹底斷除〕隨眠〔潛伏煩惱〕而捨"
+      },
+      "required_change": "在 term_occurrences 補上 伏斷→vashikara、隨眠→anuśaya、初靜慮／第二靜慮→dhyana、奢摩他→shamatha、毘鉢舍那→vipashyana、神通→abhijna、勝處／遍處→kasina-ayatana（或拆分後的新 id）各自的 occurrence 並指定 primary term_id；「現法樂住」要明確決定是否綁定 four-cultivations-of-samadhi，並寫下理由。",
+      "review_stage": "review_terms",
+      "severity": "high",
+      "unit_id": "T1579-072-007"
+    },
+    {
+      "category": "glossary_provenance",
+      "claim": "dhyana 條目的 plain「靜慮定」只是重複原詞，導致下游譯文的〔〕失去白話功能；translation_patterns 又把「禪」「禪定」列為可接受譯法，和 rule「不可把等持、等至也都混譯成禪定」互相拉扯。",
+      "clause_id": "T30n1579_p0698c28-p0699c10",
+      "evidence": {
+        "reference_ids": [],
+        "source_quote": "能入世間第二靜慮",
+        "translation_quote": "能進入世間的第二靜慮"
+      },
+      "required_change": "修訂 dhyana 條目：plain 改成真正的白話說明，並重新檢查 translation_patterns 中的「禪」「禪定」是否與 rule 衝突；修訂前維持現有 status，但要標記待審。",
+      "review_stage": "review_terms",
+      "severity": "med",
+      "unit_id": "T1579-072-007"
+    },
+    {
+      "category": "glossary_provenance",
+      "claim": "abhijna 條目的 xuanzang 是「五神通」、plain 是「五種神通」，source_terms 卻同時收了泛稱「神通」，把類名和泛稱混在同一條目，plain 不能套用到泛稱用法。",
+      "clause_id": "T30n1579_p0698c28-p0699c10",
+      "evidence": {
+        "reference_ids": [],
+        "source_quote": "切聖神通功德為增上",
+        "translation_quote": "一切聖者的神通"
+      },
+      "required_change": "把 abhijna 條目拆成泛稱「神通」與類名「五神通」，或另外補上泛稱用法的 plain，避免條目重疊。",
+      "review_stage": "review_terms",
+      "severity": "low",
+      "unit_id": "T1579-072-007"
+    },
+    {
+      "category": "glossary_provenance",
+      "claim": "伏斷條目的 id「vashikara」沒有任何 evidence 支持（sanskrit 欄是空的），但 id 看起來像梵語轉寫，容易被誤當成已確認的梵文對應；status 卻標成 stable。",
+      "clause_id": "T30n1579_p0698c28-p0699c10",
+      "evidence": {
+        "reference_ids": [],
+        "source_quote": "當言伏斷故捨",
+        "translation_quote": "由伏斷〔暫時伏斷〕而捨"
+      },
+      "required_change": "把伏斷條目 id 改成不暗示梵文對應的中性 id（例如以漢語拼音或描述性英文命名）；在取得 evidence 前不可隱含梵文值，並重新檢查 stable status 的依據。",
+      "review_stage": "review_terms",
+      "severity": "med",
+      "unit_id": "T1579-072-007"
+    },
+    {
+      "category": "glossary_provenance",
+      "claim": "隨眠條目的 id「anuśaya」用了帶變音符號的 ś，和其他條目的 ASCII id 慣例（例如同一條目 sanskrit 欄的「anushaya」、manaskara、vipashyana）不一致，綁定時容易拼錯或無法比對。",
+      "clause_id": "T30n1579_p0698c28-p0699c10",
+      "evidence": {
+        "reference_ids": [],
+        "source_quote": "永害隨眠故捨",
+        "translation_quote": "隨眠〔潛伏煩惱〕"
+      },
+      "required_change": "把 id 統一成 ASCII 形式（例如 anushaya），並同步更新所有引用。",
+      "review_stage": "review_terms",
+      "severity": "low",
+      "unit_id": "T1579-072-007"
+    },
+    {
+      "category": "glossary_provenance",
+      "claim": "dausthulya 條目把「麁性」（audarya，粗性）和「麁重」（dausthulya）合成一條：id 是 dausthulya，xuanzang 和 plain 卻是「麁性／粗重性」。本 clause 的「麁重」綁到這個 id，plain 無法對齊（notes 也已指出），status 仍是 review。",
+      "clause_id": "T30n1579_p0698c28-p0699c10",
+      "evidence": {
+        "reference_ids": [],
+        "source_quote": "依能解脫相及麁重二種縛故",
+        "translation_quote": "麁重〔身心沉重、不堪任用的狀態〕縛"
+      },
+      "required_change": "把條目拆成「麁性」與「麁重」兩條，各有自己的 id、xuanzang、plain 與 sanskrit；拆分後重新綁定本 clause 的「麁重」。",
+      "review_stage": "review_terms",
+      "severity": "med",
+      "unit_id": "T1579-072-007"
+    },
+    {
+      "category": "glossary_provenance",
+      "claim": "kasina-ayatana 條目把「勝處」和「遍處」合成同一個 id，plain「勝解制勝所緣與遍滿所緣」是兩個術語的合寫，無法逐詞對齊；「勝解」二字也和勝處的意義來源不明。本 clause 譯文因此只能自行暫定〔〕用字（notes 已說明）。",
+      "clause_id": "T30n1579_p0698c28-p0699c10",
+      "evidence": {
+        "reference_ids": [],
+        "source_quote": "諸勝處中，前四如初二解脫",
+        "translation_quote": "諸勝處〔制勝所緣的修習〕之中"
+      },
+      "required_change": "把條目拆成「勝處」「遍處」兩條，各有自己的 plain；重新檢查 plain 中的「勝解」是否有 evidence 支持，修正後再讓譯文對齊。",
+      "review_stage": "review_terms",
+      "severity": "med",
+      "unit_id": "T1579-072-007"
+    },
+    {
+      "category": "glossary_provenance",
+      "claim": "four-cultivations-of-samadhi 條目把「現法樂住」「智見」「盡諸漏」等列為 source_terms。本 clause 的「現法樂住」是道支的增上對象和行迹的建立依據，不是四修定的分類項，條目重疊會造成誤綁。",
+      "clause_id": "T30n1579_p0698c28-p0699c10",
+      "evidence": {
+        "reference_ids": [],
+        "source_quote": "於所證得一切漏盡現法樂住為",
+        "translation_quote": "現法樂住〔現世安樂而住〕"
+      },
+      "required_change": "把「現法樂住」從 four-cultivations-of-samadhi 的 source_terms 中獨立出來，另立條目；或在 rule 中註明只有在四修定語境下才綁定。",
+      "review_stage": "review_terms",
+      "severity": "low",
+      "unit_id": "T1579-072-007"
+    }
+  ],
+  "install": "none",
+  "job_id": "20261104-193950-audit-744f",
+  "juan": 72,
+  "proposed_terms": [],
+  "rewritten_units": [],
+  "schema_version": "1.0",
+  "sections_total": 7,
+  "verdict": "fail",
+  "warnings": [
+    {
+      "kind": "shared_boundary_lines",
+      "line_ids": [
+        "T30n1579_p0695a23"
+      ]
+    }
+  ],
+  "work": "T1579"
+}

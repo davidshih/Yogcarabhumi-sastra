@@ -1,0 +1,656 @@
+{
+  "attestation": null,
+  "blocking": [
+    "T1579-072-001 review_terms: term_occurrences 中 surface「聲聞」的 primary term_id 是 T1579.proposed.huixiang-puti-shengwen（迴向菩提聲聞），surface 和 term_id 對不上。單字「聲聞」也是「聲聞地」「聲聞種性」的組成部分，用這個 surface 綁定複合概念「迴向菩提聲聞」，會讓其他「聲聞」出現處的 primary term_id 不明確。",
+    "T1579-072-001 review_terms: 「第十地」首次出現的〔〕解釋只重複了原詞（「菩薩修行階位中的第十地」），沒有給出白話解釋，不完全符合「玄奘原詞〔白話解釋〕」的首次格式要求。",
+    "T1579-072-003 review_terms: glossary 已有 stable 條目 pratyekabuddha，其 source_terms 收錄「獨覺」，但 term_occurrences 把「獨覺」綁到暫用 id proposed:dujue，notes 又把「獨覺」列入提議新增條目。這會造成重複條目，也違反 notes 自己寫的「glossary 已有對應條目時改用既有 id」。",
+    "T1579-072-003 review_terms: 「聲聞」「菩薩」在本卷首次出現時沒有依「玄奘原詞〔白話解釋〕」的格式加注；同一處的「獨覺」有加〔〕，前後處理不一致。",
+    "T1579-072-003 review_terms: 「自性、差別」是假立論的核心術語對，首次出現時沒有〔〕解釋，term_occurrences 也沒有綁定 term_id。一般讀者無法理解「自性、差別假立」指什麼，這組術語在後文「自性、差別假立不成就義」中的一致性也無從稽核。",
+    "T1579-072-003 review_terms: 「實有行」綁定專屬的 proposed:shiyou-xing，與它對舉的「假有行」卻綁到 prajñapti-sat（即「假有」本身的 id）。兩邊綁定層級不對稱，稽核實有／假有這組範疇時會失準。",
+    "T1579-072-003 review_terms: 「真實義」已綁 proposed:zhenshiyi，但首次出現時沒有〔〕白話解釋，不合首次出現格式。",
+    "T1579-072-003 review_terms: 「中道」已綁 proposed:zhongdao，但首次出現時沒有〔〕白話解釋；它前面的「增益」「損減」都有注解，處理不一致。",
+    "T1579-072-003 review_terms: 「行」（三界行、實有行、假有行、有相諸行）在本段反覆出現，是有為法義的術語，但首次出現時沒有〔〕解釋，也沒有獨立的 term_id；只有複合詞「實有行」「假有行」各自綁定。",
+    "T1579-072-003 review_terms: 「善巧」綁定的 kaushalya 條目標為 stable，但梵文值與 id 都是 ASCII 拼寫，本次輸入也沒有 provenance evidence。這不合「無 evidence 不得列為 stable」的規則。譯文本身沒有使用梵文值，因此問題出在 glossary，不在譯文。",
+    "T1579-072-004 review_terms: 「輕安」的 primary term_id 是 pratipassrabdhi。這個 glossary 條目的 status 仍是 stable，但梵文值 prashrabdhi 沒有附任何帶 source_id 的 evidence，而且 term_id 拼法和條目內的梵文值不一致（review_evidence 是空的，無法核實）。clause note 已標成 review 並註明是阻擋項，但 glossary 層級的修正還沒完成，所以這筆 occurrence 仍然掛在一個未經證實、卻標為 stable 的條目上。譯文的首次格式「輕安〔……〕」本身沒有問題。",
+    "T1579-072-004 review_terms: 「麁重」的 primary term_id 是 dausthulya。這個條目把 dausthulya 和 audarya 合成了一條，標目和 display 都是「麁性／粗重性（麁性）」，跟本處的 surface「麁重」對不上；條目 rule 說「白話正文多用粗重」，但譯文依共同政策以「麁重〔……〕」為正文，兩邊的規則互相衝突。兩個梵文值都沒有 evidence。",
+    "T1579-072-004 review_terms: term_occurrences 用到 13 個帶 proposed: 前綴的 term_id：proposed:xiang、proposed:ming、proposed:fenbie、proposed:zhenru、proposed:zhengzhi、proposed:butejialuo、proposed:shengyi、proposed:gongxiang、proposed:wuji、proposed:zhongzi、proposed:yun、proposed:feibang、proposed:zengyi。它們不在輸入的 glossary 裡，也沒有列進 note 的「本次新增的佔位條目」清單，所以來源、狀態和沒有梵文值的情況都沒有登記，無法稽核。",
+    "T1579-072-004 review_terms: 有些 surface 互相包含，沒有位置欄位就無法唯一錨定：「所行」（proposed:suoxing）包含在「所行相」（proposed:xiang-biaozhi）裡；「相」（proposed:xiang）同時是「共相」「有何相」「所行相」「所依相」的子字串；「蘊」（proposed:yun）也出現在「取非即蘊」（proposed:qu）裡面。機器解析時，同一處文字可能同時配到兩個 term_id。",
+    "T1579-072-005 review_terms: glossary 已有 stable 條目 shamatha（source_terms 奢摩他）與 vipashyana（source_terms 毘鉢舍那）。譯文雖按首次格式作「奢摩他〔止〕」「毘鉢舍那〔觀〕」，但 term_occurrences 沒有任何指向 shamatha 或 vipashyana 的 occurrence，違反「每個 occurrence 指定 primary term_id」。",
+    "T1579-072-005 review_terms: glossary stable 條目 dhyana 的 source_terms 明列「初靜慮」「第二靜慮」「第三靜慮」「第四靜慮」，本條四處都出現，但 term_occurrences 沒有任何一筆指向 dhyana。另外，首次解說「靜慮定的第一階」解釋的是「初靜慮」，不是「靜慮」這個詞本身，和 glossary 的 plain「靜慮定」沒有清楚對應。",
+    "T1579-072-005 review_terms: 「勝解」是 glossary stable 條目 adhimoksha 的 source_term，譯文也已採用 glossary plain「決定勝解」作首次解說，但 term_occurrences 沒有指派 adhimoksha，provenance 無法稽核。",
+    "T1579-072-005 review_terms: 核心術語的 occurrence 列得不完整，也沒有位置錨點。以「真如」為例，譯文至少出現在五相列舉、真如問答、真如差別列舉和「真如的差別名稱」等處，term_occurrences 卻只有兩筆 proposed:zhenru；「正智」「相」「名」「分別」也有同樣問題。這樣無法逐一核對每個 occurrence 的 primary term_id，也無法核對首次出現與一般用法的區分。",
+    "T1579-072-005 review_terms: 心不相應行、心所有、處非處、薩迦耶、任運、差別、取（緣取）等詞，譯文都按「原詞〔解釋〕」作了首次解說，但既沒有 glossary 條目，notes 的 proposed_terms 清單也沒有提案 id，term_occurrences 中同樣沒有指派。結果是首次格式已經套用，術語登錄卻缺漏，處理方式也和行相、遍計、安立諦等已提案的詞不一致。",
+    "T1579-072-006 review_terms: 共同規則要求每個 occurrence 指定 primary term_id，但大量已在譯文中以〔〕作首次解說的術語在 term_occurrences 中完全沒有綁定：心所有、心不相應行、色、心、蘊、緣起、處非處、根、有漏、無漏、漏盡、有為、有諍、世間、出世間、麁、細、同分、彼同分、有所緣、相應、有行、有依、有上、無記、學、無學、無執受、非有異熟、色界繫、無色界繫、不繫，以及個別出現的空、無願、無相等。notes 說「由 pipeline 依 glossary 核對」，但這等於把術語審查延後，本輸出的 occurrence 清單不完整，不能通過術語一致性檢查。",
+    "T1579-072-006 review_terms: term_occurrences 只以 surface 字串綁定，沒有位置或序號，每個 surface 只列一次。這樣會產生誤綁與重疊：「名」(proposed:ming) 也會比對到「名無漏」「名出世間」「三摩地名」「解脫門名」中作「稱為／名稱」用的「名」；「異熟」(vipaka) 會比對到「有異熟」「非有異熟」內部，與 proposed:you-yishu 重疊；「增上戒」會比對到「增上戒眷屬」內部；「增上心」「增上慧」會比對到「增上心所行」「增上慧所行」，違反該兩條 proposed rule；「相」(proposed:xiang) 會比對到「……相義」「無相」「相應」，違反 proposed:xiang 自己的 rule。",
+    "T1579-072-006 review_terms: 共同規則規定首次出現採「玄奘原詞〔白話解釋〕」。「無為」卻寫成「無為（無為法）〔……〕」，在〔〕外多插入一段圓括號。這與本版對「假有」「戲論」刪除〔〕外插入語的處理不一致，同一段內首次格式出現兩套標準。",
+    "T1579-072-006 review_terms: 「異熟」首次出現同樣在〔〕外插入「（果報）」，而且〔〕內又以「果報」作結，一處出現兩次「果報」，格式與「假有」「戲論」的處理也不一致。",
+    "T1579-072-006 review_terms: 「清淨善巧所緣」的「善巧」與 stable 條目 kaushalya 的 source_terms「善巧」完全相同，卻沒有綁任何 primary，也沒有〔〕首次解說。notes 只寫「有待維護者確認」。依共同規則，occurrence 不可沒有 primary。",
+    "T1579-072-006 review_terms: 四聖諦綁 stable 條目 four-noble-truths，glossary plain 為「四種聖者所證真理」，譯文〔〕卻寫作「聖者所見」，用字偏離 stable 條目。",
+    "T1579-072-006 review_terms: 「假有」綁 prajñapti-sat（xuanzang 為「假有法」，plain 為「假名安立之法」），譯文〔〕卻另寫「只依名言假立而有，沒有獨立自體」，與 glossary plain 用字不同，也沒有說明偏離理由。",
+    "T1579-072-006 review_terms: occurrence 的 surface「言說戲論」不在 prapanca 的 source_terms（戲論、樂著戲論）之內；而〔〕緊接在「言說戲論」之後，只解說「戲論」，surface 與 term 的範圍不一致。",
+    "T1579-072-006 review_terms: 「有執受」綁 upadi，該條梵巴值（upādi／upādāna）沒有 evidence，status 是 review，id 拼寫也有疑問。目前「不得匯出梵巴值」的限制只寫在 notes，結構化的 occurrence 上沒有對應標記，pipeline 可能照樣匯出。",
+    "T1579-072-006 review_terms: notes 中的 proposed_terms 定義以「sanskrit: 空｜pali: 空」表示欄位留空，但「空」本身就是本段術語（śūnya 系），機讀或人工閱讀時都可能誤解為梵巴值。",
+    "T1579-072-007 review_terms: 兩處「隨眠」的 term_occurrences 都綁到 anushaya。但 glossary 中沒有 anushaya，現有 id 是 anuśaya；notes 的待建條目清單也沒有列出 anushaya。這兩處 occurrence 因此指向不存在的條目，無法追溯 provenance。",
+    "T1579-072-007 review_terms: glossary 的 vashikara 仍是 status stable，source_terms 也仍含「伏斷」。這個 id 暗示對應梵語 vaśīkāra，卻沒有任何 evidence。本段 occurrence 已改綁待建的 fuduan，但 glossary 尚未降級或遷移，「伏斷」因此同時對應一個 stable 條目和一個待建條目，primary term_id 不唯一。",
+    "T1579-072-007 review_terms: 勝處、遍處兩處 occurrence 都綁 kasina-ayatana。這個條目仍是 stable，sanskrit 的 abhibhvayatana、krtsnayatana 與 pali 的 abhibhayatana、kasina 都沒有 evidence，也沒有標 inferred；plain／translation_patterns 也還保留「勝解制勝所緣」。譯文對勝處的首次括注是「制勝所緣的修法」，與 glossary 不一致。notes 第（3）項列出的維護事項都還沒有落實。",
+    "T1579-072-007 review_terms: 「麁重」的 occurrence 綁待建的 cuzhong，但 glossary 的 dausthulya 仍把「麁重」列在 source_terms 與 translation_patterns 中，sanskrit 的 dausthulya 也沒有標 inferred。結果同一個詞同時對應兩個條目，dausthulya 也還沒有依 notes 第（4）項拆分。",
+    "T1579-072-007 review_terms: 兩處「神通」的 occurrence 綁待建的 shentong，但 stable 條目 abhijna 的 source_terms 與 translation_patterns 仍含泛稱「神通」，display 卻是「五神通」。這樣自動比對會把「一切聖神通功德」誤配到五神通，primary term_id 產生衝突。",
+    "T1579-072-007 review_terms: 兩處「現法樂住」的 occurrence 綁待建的 xianfa-lezhu，但 stable 條目 four-cultivations-of-samadhi 的 source_terms／translation_patterns 仍含「現法樂住」。本段討論的是道支的增上與行迹的建立，不是四修定，兩個條目重疊會造成誤綁。",
+    "T1579-072-007 review_terms: 原文出現 stable 條目 shamatha（奢摩他）與 vipashyana（毘鉢舍那），各兩次（「行迹、法迹、奢摩他、毘鉢舍那」以及「建立奢摩他、毘鉢舍那」），但 term_occurrences 中完全沒有綁定。這兩個詞的首次格式「奢摩他〔止〕」「毘鉢舍那〔觀〕」本身符合規則。",
+    "T1579-072-007 review_terms: occurrence 列舉的粒度不一致：隨眠、現法樂住、神通按出現次數逐一列出；「靜慮」（含初靜慮、第二靜慮及「所餘靜慮」）只列一筆，相、名、分別、真如、正智、遍處、異生等多次出現的詞也都只列一筆。這不符合「每個 occurrence 指定 primary term_id」的規則。",
+    "T1579-072-007 review_terms: 有幾個術語沒有任何 occurrence 綁定，也不在待建清單中：增上戒、增上心、增上慧，以及自在障、壞緣法念住、非安立（真如）、勝知勝見、根、力、菩提支等。其中增上戒、增上心、增上慧在譯文首次出現時也沒有「〔〕」白話解釋，不符合首次格式。",
+    "T1579-072-007 review_terms: glossary 條目 dharatu 的 id 拼法有誤（應為 dhatu），source_terms 與 translation_patterns 又包含泛稱「界」，會誤配本段的欲界、無色界，以及譯文括注中的色界、三界。雖然本段的大種、欲界已正確改綁 dazhong、yujie，但條目本身仍會干擾自動比對。",
+    "T1579-072-001 review_doctrine: 「得法性發心」的〔〕自稱「依下文的界定」，卻把定義概括為「已經進入聖道之後的發心」。下文的界定有兩部分：一是「諸菩薩已入菩薩正性離生」，二是「迴向菩提諸聲聞等」。第二部分原文只說是迴向菩提的聲聞等，並沒有說他們已經「進入聖道」。把「進入聖道」套到聲聞這一組，是原文沒有寫出的判定。另外，這段〔〕把兩部分合併成單一條件，讀者會誤以為這種發心只有一個判準。",
+    "T1579-072-001 review_doctrine: 原文界定不決定發心時並列兩種情形：「非彼種性」（不屬菩薩種性）和「設彼種性復退還法」（屬菩薩種性但是退還法）。列名處的〔〕只寫「不確定、可能退失的發心」，只對應第二種退還的情形，沒有涵蓋第一種「不屬於菩薩種性」。這會讓讀者在讀到正式界定之前，先形成過窄的理解。",
+    "T1579-072-002 review_doctrine: 總名「不堪任性」的括注「不能承受、接受利益的狀態」把五種類目都限定在「接受利益」上，範圍窄於原文。按原文的定義，第二種是此人自己「於現法中，無有堪能修正方便」，第三種是「無有功能成辦彼果」，第四種是「俱無堪能」，講的都是修道用功和成辦果方面不堪任，並不是接受他人利益；只有第五種「於攝受饒益無堪任性」才直接涉及被攝受、得饒益。這個括注把第五種的內容套成了五種共同的總義，會讓讀者誤解第二至第四種的命題範圍。結尾「有堪任性〔能夠承受、接受利益的狀態〕」的括注也有同樣的問題。",
+    "T1579-072-003 review_doctrine: 這句說的是聲聞、獨覺以後所得的世間出世間正智，對三界寂靜生起欣求，是正面的用法，和前面的「厭怖三界過患」對舉。〔〕內把「味」解釋成「愛著、耽樂之意」，「愛著」「耽樂」在佛典白話中多帶負面意味，指執著、貪溺。這會讓一般讀者以為聖者的正智對寂靜仍有貪著，與原文以「厭怖過患／愛味寂靜」對舉的正面義理不合。排除味境的用意本身正確，問題只在正面義的措辭。",
+    "T1579-072-004 review_doctrine: notes 說四個譬喻「每個譬喻都用『雖復是有』的讓步句」，這與原文不符。原文只有共相、麁重輕安兩個譬喻用「雖復是有」；種子譬喻作「種子雖有」，虛空譬喻作「於諸色處雖有虛空」。另外，「何以故？俱有過故」只出現在種子、虛空兩喻之後，而且只有虛空喻逐一列出了異、不異兩種過失。正文譯文本身把四喻都譯成讓步句，義理上沒有錯，問題只在 notes 對原文句式的描述被過度概括，可能讓讀者誤以為四喻句式完全相同。",
+    "03 真實義五事總標: source has 假有法 but translation lacks one of 假有法（假名安立之法）",
+    "05 五事行相與差別名: source has 無為 but translation lacks one of 無為（無為法）",
+    "06 五事攝屬諸門: source has 假有法 but translation lacks one of 假有法（假名安立之法）"
+  ],
+  "findings": {
+    "remaining": 47,
+    "round1": 166
+  },
+  "install": "none",
+  "job_id": "20261022-083631-audit-1e67",
+  "juan": 72,
+  "proposed_terms": [
+    {
+      "note": "菩薩階位名；不得以 adhimoksha 為 primary term_id。",
+      "source_quote": "謂從勝解行地乃",
+      "status": "proposed",
+      "xuanzang": "勝解行地"
+    },
+    {
+      "source_quote": "已入菩薩正性離生",
+      "status": "proposed",
+      "xuanzang": "正性離生"
+    },
+    {
+      "note": "含世俗受、得法性、不決定、決定、不清淨、清淨、羸劣、強盛、未成果、已成果十個子術語，需逐一建 id。",
+      "source_quote": "復次，有十發心。",
+      "status": "proposed",
+      "xuanzang": "十發心"
+    },
+    {
+      "source_quote": "已成果發心者，謂如來",
+      "status": "proposed",
+      "xuanzang": "如來地"
+    },
+    {
+      "source_quote": "菩薩應當恒常隨護。一、聞思所成心，二、悲心，",
+      "status": "proposed",
+      "xuanzang": "四種心（聞思所成心、悲心、資糧心、修所成心）"
+    },
+    {
+      "contrast": "有堪任性",
+      "evidence": "T30n1579_p0695a23-p0695c25：「於清淨無堪任性；二、於加行無堪任性」",
+      "pali": [],
+      "plain": "無法承受、無法被成就某種利益的狀態",
+      "sanskrit": [],
+      "status": "inferred",
+      "xuanzang": "無堪任性"
+    },
+    {
+      "evidence": "T30n1579_p0695a23-p0695c25：「同般涅槃法相續已熟」",
+      "pali": [],
+      "plain": "能夠證入涅槃的種性條件",
+      "sanskrit": [],
+      "status": "inferred",
+      "xuanzang": "般涅槃法"
+    },
+    {
+      "contrast": "邪行",
+      "evidence": "T30n1579_p0695a23-p0695c25：「菩薩有九正行」",
+      "pali": [],
+      "plain": "正確的對待與修行方式",
+      "sanskrit": [],
+      "status": "inferred",
+      "xuanzang": "正行"
+    },
+    {
+      "evidence": "T30n1579_p0695a23-p0695c25：「能感定受」",
+      "pali": [],
+      "plain": "必定承受果報",
+      "sanskrit": [],
+      "status": "inferred",
+      "xuanzang": "定受"
+    },
+    {
+      "note": "五事之一；梵文值未提供 evidence，不填。",
+      "pali": [],
+      "plain": "所認識的現象、相狀",
+      "sanskrit": [],
+      "source_terms": [
+        "相"
+      ],
+      "status": "review",
+      "xuanzang": "相"
+    },
+    {
+      "note": "五事之一。",
+      "pali": [],
+      "plain": "名稱、言說",
+      "sanskrit": [],
+      "source_terms": [
+        "名"
+      ],
+      "status": "review",
+      "xuanzang": "名"
+    },
+    {
+      "note": "五事之一。",
+      "pali": [],
+      "plain": "分別認識的心",
+      "sanskrit": [],
+      "source_terms": [
+        "分別"
+      ],
+      "status": "review",
+      "xuanzang": "分別"
+    },
+    {
+      "note": "五事之一。",
+      "pali": [],
+      "plain": "諸法真實不變的本性",
+      "sanskrit": [],
+      "source_terms": [
+        "真如"
+      ],
+      "status": "review",
+      "xuanzang": "真如"
+    },
+    {
+      "note": "五事之一。",
+      "pali": [],
+      "plain": "正確證知真如的智慧",
+      "sanskrit": [],
+      "source_terms": [
+        "正智"
+      ],
+      "status": "review",
+      "xuanzang": "正智"
+    },
+    {
+      "note": "音譯詞；梵文值待 evidence。",
+      "pali": [],
+      "plain": "個人、有情",
+      "sanskrit": [],
+      "source_terms": [
+        "補特伽羅"
+      ],
+      "status": "review",
+      "xuanzang": "補特伽羅"
+    },
+    {
+      "note": "依本段原文「此中欲貪說名為取」。",
+      "pali": [],
+      "plain": "執取；此處專指欲貪",
+      "sanskrit": [],
+      "source_terms": [
+        "取"
+      ],
+      "status": "review",
+      "xuanzang": "取"
+    },
+    {
+      "id": "xingxiang",
+      "note": "本條核心術語，尚未收入 glossary；梵文待 evidence 提供後再補",
+      "source_terms": [
+        "行相"
+      ],
+      "status": "review",
+      "xuanzang": "行相"
+    },
+    {
+      "id": "anli_di",
+      "note": "本條「取安立諦行相」需要白話解釋；梵文待 evidence 提供後再補",
+      "source_terms": [
+        "安立諦"
+      ],
+      "status": "review",
+      "xuanzang": "安立諦"
+    },
+    {
+      "id": "dhatu_18",
+      "note": "十八界意義的「界」，與 dharatu（大種界）區分",
+      "source_terms": [
+        "界"
+      ],
+      "status": "review",
+      "xuanzang": "界"
+    },
+    {
+      "note": "五事之一；梵文未有 evidence，不得自填",
+      "pali": [],
+      "sanskrit": [],
+      "source_terms": [
+        "相"
+      ],
+      "status": "proposed",
+      "xuanzang": "相"
+    },
+    {
+      "note": "五事之一",
+      "pali": [],
+      "sanskrit": [],
+      "source_terms": [
+        "名"
+      ],
+      "status": "proposed",
+      "xuanzang": "名"
+    },
+    {
+      "note": "五事之一",
+      "pali": [],
+      "sanskrit": [],
+      "source_terms": [
+        "分別"
+      ],
+      "status": "proposed",
+      "xuanzang": "分別"
+    },
+    {
+      "note": "五事之一",
+      "pali": [],
+      "sanskrit": [],
+      "source_terms": [
+        "正智"
+      ],
+      "status": "proposed",
+      "xuanzang": "正智"
+    },
+    {
+      "note": "五事之一",
+      "pali": [],
+      "sanskrit": [],
+      "source_terms": [
+        "真如"
+      ],
+      "status": "proposed",
+      "xuanzang": "真如"
+    },
+    {
+      "note": "原文自釋：安立諦謂四聖諦，非安立諦謂真如",
+      "pali": [],
+      "sanskrit": [],
+      "source_terms": [
+        "安立諦",
+        "非安立諦"
+      ],
+      "status": "proposed",
+      "xuanzang": "安立諦／非安立諦"
+    },
+    {
+      "note": "十八界、十二處；與 dharatu 條區分",
+      "pali": [],
+      "sanskrit": [],
+      "source_terms": [
+        "界處所攝"
+      ],
+      "status": "proposed",
+      "xuanzang": "界處"
+    },
+    {
+      "note": "與 dharatu 條區分",
+      "pali": [],
+      "sanskrit": [],
+      "source_terms": [
+        "欲界繫",
+        "色界繫",
+        "無色界繫",
+        "不繫"
+      ],
+      "status": "proposed",
+      "xuanzang": "三界繫"
+    },
+    {
+      "note": "與 taste-object 條區分",
+      "pali": [],
+      "sanskrit": [],
+      "source_terms": [
+        "有愛味",
+        "無愛味"
+      ],
+      "status": "proposed",
+      "xuanzang": "愛味"
+    },
+    {
+      "note": "與 bhavana-marga 條區分",
+      "pali": [],
+      "sanskrit": [],
+      "source_terms": [
+        "聞所成",
+        "思所成",
+        "修所成"
+      ],
+      "status": "proposed",
+      "xuanzang": "聞所成／思所成／修所成"
+    },
+    {
+      "note": "原文區分總說、三摩地名、解脫門名三種說法",
+      "pali": [],
+      "sanskrit": [],
+      "source_terms": [
+        "空",
+        "無願",
+        "無相",
+        "解脫門"
+      ],
+      "status": "proposed",
+      "xuanzang": "三解脫門"
+    },
+    {
+      "evidence_clause_id": "T30n1579_p0698c28-p0699c10",
+      "id": "smrtyupasthana-nianzhu",
+      "pali": [],
+      "plain": "安住正念的觀修",
+      "sanskrit": [],
+      "source_terms": [
+        "念住",
+        "受念住",
+        "心念住",
+        "法念住",
+        "壞緣法念住"
+      ],
+      "status": "review",
+      "xuanzang": "念住"
+    },
+    {
+      "evidence_clause_id": "T30n1579_p0698c28-p0699c10",
+      "id": "zhenru",
+      "pali": [],
+      "plain": "諸法真實如是的本性（五事之一）",
+      "sanskrit": [],
+      "source_terms": [
+        "真如",
+        "真如相"
+      ],
+      "status": "review",
+      "xuanzang": "真如"
+    },
+    {
+      "evidence_clause_id": "T30n1579_p0698c28-p0699c10",
+      "id": "zhengzhi",
+      "pali": [],
+      "plain": "如實證知的智慧（五事之一）",
+      "sanskrit": [],
+      "source_terms": [
+        "正智"
+      ],
+      "status": "review",
+      "xuanzang": "正智"
+    },
+    {
+      "evidence_clause_id": "T30n1579_p0698c28-p0699c10",
+      "id": "ba-jietuo",
+      "pali": [],
+      "plain": "八種解脫相縛與麁重縛的觀修",
+      "sanskrit": [],
+      "source_terms": [
+        "八解脫",
+        "解脫"
+      ],
+      "status": "review",
+      "xuanzang": "八解脫"
+    },
+    {
+      "evidence_clause_id": "T30n1579_p0698c28-p0699c10",
+      "id": "juezhi-daozhi",
+      "pali": [],
+      "plain": "覺悟的支分／聖道的支分",
+      "sanskrit": [],
+      "source_terms": [
+        "覺支",
+        "菩提支",
+        "道支",
+        "戒支"
+      ],
+      "status": "review",
+      "xuanzang": "覺支／道支"
+    },
+    {
+      "evidence_clause_id": "T30n1579_p0698c28-p0699c10",
+      "id": "xingji-faji",
+      "pali": [],
+      "plain": "修行進路的類型／任持正法的類型",
+      "sanskrit": [],
+      "source_terms": [
+        "行迹",
+        "法迹"
+      ],
+      "status": "review",
+      "xuanzang": "行迹／法迹"
+    },
+    {
+      "evidence_clause_id": "T30n1579_p0698c28-p0699c10",
+      "id": "xianfa-lezhu",
+      "pali": [],
+      "plain": "今生當下安樂而住",
+      "sanskrit": [],
+      "source_terms": [
+        "現法樂住"
+      ],
+      "status": "review",
+      "xuanzang": "現法樂住"
+    },
+    {
+      "id": "proposed:shiyou",
+      "pali": [],
+      "sanskrit": [],
+      "status": "review",
+      "xuanzang": "實有"
+    },
+    {
+      "id": "proposed:shisuyou",
+      "pali": [],
+      "sanskrit": [],
+      "status": "review",
+      "xuanzang": "世俗有"
+    },
+    {
+      "id": "proposed:shengyiyou",
+      "pali": [],
+      "sanskrit": [],
+      "status": "review",
+      "xuanzang": "勝義有"
+    },
+    {
+      "id": "proposed:yanshuo-suimian",
+      "pali": [],
+      "sanskrit": [],
+      "status": "review",
+      "xuanzang": "言說隨眠"
+    },
+    {
+      "id": "proposed:jibie",
+      "pali": [],
+      "sanskrit": [],
+      "status": "review",
+      "xuanzang": "記別"
+    },
+    {
+      "plain": "所認知對象呈現的種種相狀",
+      "provenance": "no_evidence",
+      "sanskrit": [],
+      "sense": "五事之一",
+      "status": "proposed",
+      "term_id": "proposed:xiang",
+      "xuanzang": "相"
+    },
+    {
+      "plain": "特徵、標記",
+      "provenance": "no_evidence",
+      "sanskrit": [],
+      "sense": "「相有何相」等句中的後一個「相」",
+      "status": "proposed",
+      "term_id": "proposed:xiang-lakshana-sense",
+      "xuanzang": "相"
+    },
+    {
+      "plain": "用來稱呼事物的名稱",
+      "provenance": "no_evidence",
+      "sanskrit": [],
+      "status": "proposed",
+      "term_id": "proposed:ming",
+      "xuanzang": "名"
+    },
+    {
+      "plain": "心識對所緣對象的分別思量",
+      "provenance": "no_evidence",
+      "sanskrit": [],
+      "status": "proposed",
+      "term_id": "proposed:fenbie",
+      "xuanzang": "分別"
+    },
+    {
+      "plain": "諸法真實如是的本性",
+      "provenance": "no_evidence",
+      "sanskrit": [],
+      "status": "proposed",
+      "term_id": "proposed:zhenru",
+      "xuanzang": "真如"
+    },
+    {
+      "plain": "正確的智慧",
+      "provenance": "no_evidence",
+      "sanskrit": [],
+      "status": "proposed",
+      "term_id": "proposed:zhengzhi",
+      "xuanzang": "正智"
+    },
+    {
+      "plain": "個人、有情",
+      "provenance": "no_evidence",
+      "sanskrit": [],
+      "status": "proposed",
+      "term_id": "proposed:butejialuo",
+      "xuanzang": "補特伽羅"
+    },
+    {
+      "plain": "究竟真實的意義",
+      "provenance": "no_evidence",
+      "sanskrit": [],
+      "status": "proposed",
+      "term_id": "proposed:shengyi",
+      "xuanzang": "勝義"
+    },
+    {
+      "plain": "諸法共通的性質",
+      "provenance": "no_evidence",
+      "sanskrit": [],
+      "status": "proposed",
+      "term_id": "proposed:gongxiang",
+      "xuanzang": "共相"
+    },
+    {
+      "plain": "非善非惡",
+      "provenance": "no_evidence",
+      "sanskrit": [],
+      "status": "proposed",
+      "term_id": "proposed:wuji",
+      "xuanzang": "無記"
+    },
+    {
+      "plain": "能生起諸法的潛在功能",
+      "provenance": "no_evidence",
+      "sanskrit": [],
+      "status": "proposed",
+      "term_id": "proposed:zhongzi",
+      "xuanzang": "種子"
+    },
+    {
+      "plain": "欲貪（本處定義）",
+      "provenance": "no_evidence",
+      "sanskrit": [],
+      "status": "proposed",
+      "term_id": "proposed:qu",
+      "xuanzang": "取"
+    },
+    {
+      "plain": "構成身心的五類聚合",
+      "provenance": "no_evidence",
+      "sanskrit": [],
+      "status": "proposed",
+      "term_id": "proposed:yun",
+      "xuanzang": "蘊"
+    },
+    {
+      "plain": "否定本來存在的事物",
+      "provenance": "no_evidence",
+      "sanskrit": [],
+      "status": "proposed",
+      "term_id": "proposed:feibang",
+      "xuanzang": "誹謗"
+    },
+    {
+      "plain": "把本來沒有的性質強加上去",
+      "provenance": "no_evidence",
+      "sanskrit": [],
+      "status": "proposed",
+      "term_id": "proposed:zengyi",
+      "xuanzang": "增益"
+    },
+    {
+      "aliases": [
+        "anuśaya"
+      ],
+      "id": "anushaya",
+      "note": "從 anuśaya 遷移而來；既有梵巴文值須附 evidence 才能保留",
+      "pali": [],
+      "sanskrit": [],
+      "status": "review",
+      "xuanzang": "隨眠"
+    },
+    {
+      "id": "zengshang-jie",
+      "pali": [],
+      "sanskrit": [],
+      "status": "review",
+      "xuanzang": "增上戒"
+    },
+    {
+      "id": "zengshang-xin",
+      "pali": [],
+      "sanskrit": [],
+      "status": "review",
+      "xuanzang": "增上心"
+    },
+    {
+      "id": "zengshang-hui",
+      "pali": [],
+      "sanskrit": [],
+      "status": "review",
+      "xuanzang": "增上慧"
+    },
+    {
+      "id": "zizai-zhang",
+      "pali": [],
+      "sanskrit": [],
+      "status": "review",
+      "xuanzang": "自在障"
+    },
+    {
+      "id": "fei-anli",
+      "pali": [],
+      "sanskrit": [],
+      "status": "review",
+      "xuanzang": "非安立"
+    }
+  ],
+  "rewritten_units": [],
+  "schema_version": "1.0",
+  "sections_total": 7,
+  "verdict": "fail",
+  "warnings": [
+    {
+      "kind": "shared_boundary_lines",
+      "line_ids": [
+        "T30n1579_p0695a23"
+      ]
+    }
+  ],
+  "work": "T1579"
+}

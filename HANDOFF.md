@@ -1,5 +1,130 @@
 # HANDOFF — yogacara (佛典白話翻譯)
 
+## Juan 72 published without a seal (2026-11-04)
+
+Updated 2026-11-04 by claude-code (claude-opus-5-5). Branch `claude/audit-t1579-067-072`.
+
+- Owner decision 2026-11-04: publish the juan 72 rewrite of job `20261104-193950-audit-744f` as it is, and fix
+  the 22 findings later.
+- `plans/20261104-juan72-publish-unsealed-claude/publish_unsealed.py` takes the steps of the audit's pass path
+  except the reviews and the seal: the live md must be the audit's base text, `assign_paragraph_ids`, no id lost,
+  `run_content_checks` (line ranges and the glossary check: 0 issues), then the md, its page (legacy term style)
+  and the search indexes.
+- Changed: `translations/T1579-072-baihua.md`, `docs/T1579/translations/T1579-072-baihua.html`,
+  `docs/T1579/search.json`. The other search indexes did not change. Paragraph ids: the 28 old ids stay, 51 new
+  (79). All 81 pages: 11,607 paragraphs, every id present and unique. All relative links resolve.
+- Browser check (local `http.server`): 7 sections, 79 paragraphs with unique ids, 125 term tips, no console error,
+  the 3 old ids tested scroll to their paragraph.
+- Juan 72 has no attestation. Its open findings are in
+  `plans/20261104-juan72-publish-unsealed-claude/juan72-open-findings-claude.md`: 22 blocking (D1–D9, T1–T13) and
+  N1. N1: the fixer's working notes are on the page (note text 297 characters before, 4,939 after), with words
+  like glossary, plain, `term_id`, clause and pipeline.
+- Tests: the publication made 2 tests of `tests/test_legacy_audit_acceptance.py` fail. They use juan 72 as the
+  fixture with 9 glossary issues ("facts measured on main, commit dd46ba8"), and the published text has none.
+  `build_template` now copies the dd46ba8 md and page of juan 72 from `tests/fixtures/dd46ba8/` over the live
+  ones and rebuilds the search indexes of the tree. No assertion changed. 317 OK.
+
+## Juan 72 again after the glossary fix (2026-11-04)
+
+Updated 2026-11-04 by claude-code (claude-opus-5-5). Branch `claude/audit-t1579-067-072`.
+
+- The owner approved on 2026-11-04: fix the 3 glossary patterns, then run juan 72 again under the option b gate.
+- `55deabc`: in `translations/glossary/T1579-terms.json`, `vipaka`, `asaṃskṛta` and `prajñapti-sat` get `異熟〔`,
+  `無為〔`, `假有法〔` and `假有〔` as their first `translation_patterns`. The old （） patterns stay as alternatives.
+  The `rule` of `asaṃskṛta` and `prajñapti-sat` now describes the 〔〕 form, because the rule text goes into the
+  review and fix prompts.
+  - Why `X〔` and not `X〔plain〕`: the glossary check is a substring match, so `無為〔無為法〕` locks the gloss
+    text. On the juan 72 candidate of run `20261022-083631-audit-1e67`, `X〔plain〕` gives 5 check findings and
+    `X〔` gives 0. The wording inside 〔〕 stays a `review_terms` `plain_wording` matter, which blocks.
+  - Why the old patterns stay: a replacement made 54 tests fail. The audit tests use juan 7 as a clean fixture,
+    and juan 7 writes `異熟（果報）`. 30 published juans use the （） forms. With both kinds, the check gives 100
+    findings over all T1579 juans before and after the change, in the same sections.
+  - Tests: 317 OK before and after.
+- Heartbeat of the headless CLI before the run: OK, 2.4 s, USD 0.015.
+- Run `20261104-193950-audit-744f` (juan 72, `--model opus --fix-rounds 2`, a new job in tmux): 57 calls, 56 of 57
+  contracts valid (one `review_doctrine` answer for section 5 quoted text that is not in the reviewed text; the
+  retry passed), 67.2 min, list price USD 15.74, no usage limit.
+- Verdict `fail`. The live md, its page and the search indexes did not change. The rewrite is in
+  `audits/20261104-193950-audit-744f/candidate/` (translation / source ratio 1.58; live 0.29).
+- Blocking findings per review round: 167 → 26 → 22 (`review_doctrine` 81 → 10 → 9, `review_terms` 77 → 15 → 13,
+  glossary check 9 → 1 → 0).
+- The 22 at the end: `review_doctrine` 9 (med 3, low 6); glossary check 0; `review_terms` 13
+  (`first_occurrence_format` 9, `term_rendering` 3, `plain_wording` 1). By severity: med 8, low 14. Glossary
+  backlog 45: `term_binding` 23, `glossary_provenance` 22. The report and a recount from the stored answers agree
+  (`plans/20261101-audit-gate-option-b-claude/summarize_audit_run.py`).
+- The glossary fix worked: the check ends at 0, and the two `review_terms` findings about （） outside 〔〕 did not
+  come back.
+- Verified now: real Opus answers use only the five `review_terms` categories (21 answers, 241 findings, 0 outside
+  the enum).
+- Why it still fails: the second fix round removed 4 findings only (26 → 22). Each rewrite gives the reviewers new
+  text, and they find new small issues in it (for example 決擇 and 抉擇 in one section, 貪瞋癡 without a 〔〕
+  gloss). The gate blocks a finding of any severity. Not verified: whether more fix rounds get to 0. The trend
+  says probably not.
+- Cost of one more fix round (a fix and a review of all 7 sections): about 23 min and USD 5.6. A resume cannot
+  change `--fix-rounds`, so 3 rounds means a new job: about 90 min and USD 21.
+
+## Audit gate option b (2026-11-01)
+
+Updated 2026-11-01 by claude-code (claude-opus-5-5). Branch `claude/audit-t1579-067-072`.
+
+- The owner chose option b on 2026-11-01. A finding on the reader's text blocks the verdict of an audit: every
+  `review_doctrine` finding, every glossary-check finding, and a `review_terms` finding of category
+  `first_occurrence_format`, `plain_wording` or `term_rendering`. A `review_terms` finding of category
+  `term_binding` or `glossary_provenance` is a warning. It goes to `glossary_backlog` in the audit report and does
+  not block. Any other category blocks (fail-closed).
+- Code: `scripts/audited.py` `finding_blocks`. The `review_terms` schema gives `category` an enum of the five values
+  and a description (`TERM_CATEGORY_GUIDE`). The guide is in the schema, not in `prompts/audited/review_terms.txt`,
+  because `acceptance.sh` locks the prompt files byte for byte.
+- A review whose findings are all warnings passes: it gets an attestation, the gate reuses it, and the coverage
+  ledger accepts it after it runs `finding_blocks` again on the stored answer. The fixer gets blocking findings
+  only, so a section with warnings only stays byte for byte.
+- Tests: 301 before, 317 after (`tests/test_audit_gate_option_b.py` 16; 3 of them run the real command and verify
+  the seal). Four hand mutants of the new logic each fail 2 to 8 of the new tests.
+- Juan 72 judged again from the stored answers of run `20261022-083631-audit-1e67`, with no model call
+  (`plans/20261101-audit-gate-option-b-claude/rejudge_juan72.py`, result `juan72-rejudge-claude.json`): verdict
+  `fail`. Blocking 21: `review_doctrine` 5 (all low), glossary check 3, `review_terms` 13 (first-occurrence
+  format 10, plain wording 3). Glossary backlog 26: binding 17, provenance 9. The old run had free-text categories:
+  the script maps them to the five values and names 5 findings whose required change edits a 〔〕 gloss.
+- Why juan 72 could not pass (fixed on 2026-11-04 in `55deabc`, see the top section): the glossary entries `vipaka` (`異熟（果報）`), `asaṃskṛta` (`無為（無為法）`) and
+  `prajñapti-sat` (`假有法（假名安立之法）`) have `translation_patterns` with full-width parentheses. The glossary
+  check wants that text verbatim; `review_terms` wants nothing outside the 〔〕 (findings 22 and 23 of the last
+  round). No fix round can satisfy both.
+- Status report: `plans/20261101-audit-gate-option-b-claude/`.
+
+## Audit of juan 67–72 with Opus 5.5 — Claude contribution (2026-10-22)
+
+Updated 2026-10-22 by claude-code (claude-opus-5-5). Branch `claude/audit-t1579-067-072`.
+
+- The owner lifted the hold and asked for Opus 5.5 at high / xhigh in place of gpt-5.6-sol. Juan 72 first.
+- `e3da779`: `audit --model opus` sends `review_terms`, `review_doctrine` and `fix` to `claude-opus-5-5` through
+  `claude -p --safe-mode --tools ""` (subscription login, API env scrubbed). The efforts stay as in `STAGE_SPECS`.
+  The JSON envelope gives token usage and the list-price cost of every call to the audit events.
+- `e5ea2f4`: the first real run (job `20261022-071703-audit-666c`) failed on section 1. Attempt 1 left out
+  `reference_ids`; attempt 2 wrote one `}` too many. `llm.py` now passes the stage schema to `--json-schema`.
+  The API refuses `oneOf` at the top level of that schema, so `llm.py` drops it; `validate_review_contract` still
+  checks the verdict against the findings.
+- Run `20261022-072452-audit-8998` (juan 72): 35 calls, 35 of 35 contracts valid, 48 min, list price USD 10.63
+  (the subscription pays). Round 1: 157 findings in all 7 sections. The fixer rewrote all 7 sections: the
+  translation / source ratio went from 0.30 to 1.68. Round 2: 57 findings remain (`review_terms` 40,
+  `review_doctrine` 12, glossary check 5; severity high 3, med 29, low 20). Verdict `fail`. The live md, page and
+  search indexes did not change. The rewritten text is in `audits/20261022-072452-audit-8998/candidate/`.
+- Why it fails: the gate needs zero findings of any severity, and the audit has one fix round. 40 of the 57 are
+  about `term_occurrences` bookkeeping, not the reader's text.
+- Offline dry run first (`--model echo`, scratch copy): all 6 juans fail on 38 glossary-check findings alone.
+- `d8c610d`: `audit --fix-rounds N` (default 1, owner choice 2026-10-22). Each round fixes what the last review
+  left and reviews only those units again. The job stores the value; a resume cannot change it.
+- Run `20261022-083631-audit-1e67` (juan 72, `--fix-rounds 2`): 56 calls, 56 of 56 contracts valid, 80.6 min,
+  list price USD 18.08. Findings per review round: 166 → 69 → 47. `review_doctrine` converges (88 → 18 → 5,
+  all 5 low). `review_terms` does not (69 → 48 → 39: high 9, med 14, low 16). Verdict `fail`; the live text did
+  not change. Rewrite in `audits/20261022-083631-audit-1e67/candidate/` (ratio 1.72).
+- The 39 `review_terms` findings: about 8 name defects of `translations/glossary/T1579-terms.json` itself
+  (stable entries without evidence: 輕安 `pratipassrabdhi`, 伏斷 `vashikara`, 勝處／遍處 `kasina-ayatana`;
+  a reference to `anushaya` where the id is `anuśaya`). The fixer cannot change the glossary, so more rounds
+  cannot clear them. About 17 are `term_occurrences` bindings that the reader does not see. About 8 touch the
+  reader's text (first-occurrence format, plain wording against the glossary).
+- Tests: 275 before, 301 after (`tests/test_opus_audit_backend.py` 14, `tests/test_audit_fix_rounds.py` 12).
+- Status report: `plans/20261022-audit-t1579-067-072-opus-claude/`.
+
 ## Current state
 - Two pipelines live side by side since the merge of `codex/batch1-69` (thread merge-audit-pipeline, 2026-10-13). `scripts/runner.py` is the production runner; the merge did not change one byte of it, of `docs/`, of `translations/` or of `data/`. `scripts/audited.py` is the runner of the branch: JSON contracts bound to `unit_id` / `source_hash` / `clause_id`, an audit store (`audits/<job>/events.jsonl`, `artifacts/sha256/`), evidence-bound reviews, a coverage ledger, a quality gate and a volume attestation. Its jobs are in `jobs/audited/`, its prompts in `prompts/audited/`, its status in `locks/audited-status.json`. Both runners take `locks/runner.pid`, so only one of them runs at a time. T1579 only.
 - `python3 scripts/audited.py audit --juans 67-72` (or `--resume <job id>`) audits a published juan with the review chain only. It never translates again, never commits and never pushes. A section that no review and no glossary check names stays byte for byte, with its paragraph ids; a named section goes to the fixer once and is reviewed again. A juan that passes is installed, its page and the search indexes are rebuilt, and it is sealed (`audits/<job>/T1579-NNN-attestation-*.json`). A juan that does not pass keeps its md, its page and the search indexes; its report is `audits/<job>/T1579-NNN-audit-report.json`. Exit 0 only when every juan is sealed.
@@ -69,14 +194,25 @@
 - `works.json` metadata has drifted: T1558 still says `pipeline_ready: false` with 30/30 juans done; T1579 `scope: 聲聞地`, but translations cover 1–12 and 51–80 too. Not changed.
 
 ## Todo
-- **ON HOLD (owner, 2026-10-21): do not start the audit until the owner says go.** No audit ran; no Codex quota was spent. Audit T1579 juan 67–72 with `scripts/audited.py audit` (owner decision 2026-10-13: review chain only, these six juans only). Owner decision 2026-10-21 on the place: the audit runs in this repo, and `audits/` / `artifacts/` stay in this repo's PR; after the merge, copy the changed `translations/`, `docs/` and `data/` into `dharma-site` `sources/treatises/` as a writer-zone commit, so the live site gets the audited text. Reason: the monorepo contract (`cc_import_tree` in `dharma-site` `plans/20261012-repo-consolidation-claude/contract-checks.sh`) limits the treatise writer zone to `data/ translations/ docs/` and rejects `audits/` and `artifacts/`. Side effect the owner accepted: the old Pages site then moves past the import version. Setup is ready (2026-10-21): worktree `~/projects/translation/yogacara-audit-t1579`, branch `claude/audit-t1579-067-072` at `b305890` (the commit that `dharma-site` M2 imported), codex-cli 0.159.0 present, baseline `python3 -B -m unittest discover -s tests` 275 OK. First command when the hold lifts: `python3 scripts/audited.py audit --juans 72`; report the Codex quota it used; then the other five juans. Deliver `audits/`, `artifacts/`, the rewritten md and pages and the reports as one PR. A juan that fails is reported and its text stays.
+- **Juan 72: fix the open findings later** (owner, 2026-11-04). Juan 72 is published without a seal. The list is
+  `plans/20261104-juan72-publish-unsealed-claude/juan72-open-findings-claude.md`: 22 blocking findings and N1
+  (pipeline language in the page notes). A new audit of the published text:
+  `python3 scripts/audited.py audit --juans 72 --model opus --fix-rounds 2` (about 70 min, USD 16 list price).
+- **Juans 67–71 need the owner's go.** They have not run: at the two-round rate (11.5 min and USD 2.58 per
+  section) their 76 sections take about 14.6 h and USD 196 list price. Command:
+  `python3 scripts/audited.py audit --juans 67-71 --model opus --fix-rounds 2`. Before a run: heartbeat the
+  headless CLI (skill `headless-claude`) and run it in tmux. Under the zero-finding gate they probably fail like
+  juan 72 (22 left after 2 rounds); the owner may want the same publish-as-is rule for them. Options a, c and d of 2026-10-22
+  were: fix the glossary first, publish the rewrite by hand without a seal, re-translate 67–72. Earlier plan, kept for its decisions: audit T1579 juan 67–72 with `scripts/audited.py audit` (owner decision 2026-10-13: review chain only, these six juans only). Owner decision 2026-10-21 on the place: the audit runs in this repo, and `audits/` / `artifacts/` stay in this repo's PR; after the merge, copy the changed `translations/`, `docs/` and `data/` into `dharma-site` `sources/treatises/` as a writer-zone commit, so the live site gets the audited text. Reason: the monorepo contract (`cc_import_tree` in `dharma-site` `plans/20261012-repo-consolidation-claude/contract-checks.sh`) limits the treatise writer zone to `data/ translations/ docs/` and rejects `audits/` and `artifacts/`. Side effect the owner accepted: the old Pages site then moves past the import version. Setup is ready (2026-10-21): worktree `~/projects/translation/yogacara-audit-t1579`, branch `claude/audit-t1579-067-072` at `b305890` (the commit that `dharma-site` M2 imported), codex-cli 0.159.0 present, baseline `python3 -B -m unittest discover -s tests` 275 OK. First command when the hold lifts: `python3 scripts/audited.py audit --juans 72`; report the Codex quota it used; then the other five juans. Deliver `audits/`, `artifacts/`, the rewritten md and pages and the reports as one PR. A juan that fails is reported and its text stays.
 - Two older defects on `main` that the security review of this thread named: `scripts/build_shengwen_di_html.py` `fetch_json` retries without TLS verification after a certificate error (CWE-295), and the site search writes `search.json` text into the page with `innerHTML` (CWE-79). Not fixed in this thread.
 - iPhone app: done. The 佛典 tab of the 追更簿 app (`~/projects/manga-tracker`, PR #5 then PR #6 `5a794a7` on main) reads `docs/app/library.json`; the user checked it on the iPhone on 2026-10-06. Keep the manifest shape (version 1) stable or update `Sutra.swift` there in the same change.
 - T1821 juan 1–2: finish the doctrinal and parallel-source reviews. How to re-run only the reviews is unverified; enqueueing again goes through the reprocess-approval flow (`awaiting_approval`).
 
 ## Commands
 ```bash
-python3 -B -m unittest discover -s tests                                  # 275 tests
+python3 -B -m unittest discover -s tests                                  # 317 tests
+python3 -B plans/20261101-audit-gate-option-b-claude/rejudge_juan72.py   # juan 72 under the option b gate, no model call
+python3 -B plans/20261101-audit-gate-option-b-claude/summarize_audit_run.py 20261104-193950-audit-744f -v  # verdict, counts, cost of a run
 bash plans/20261013-merge-audit-pipeline-claude/acceptance.sh             # 28 checks of the merge
 python3 scripts/audited.py audit --juans 7 --model echo                   # offline dry run; do it in a scratch copy
 python3 -m unittest discover -s tests -q

@@ -1,0 +1,27 @@
+{
+  "attestation": null,
+  "blocking": [
+    "review_terms: output is not one JSON object: Expecting ',' delimiter: line 1 column 745 (char 744)"
+  ],
+  "findings": {
+    "remaining": 0,
+    "round1": 0
+  },
+  "install": "none",
+  "job_id": "20261022-071703-audit-666c",
+  "juan": 72,
+  "proposed_terms": [],
+  "rewritten_units": [],
+  "schema_version": "1.0",
+  "sections_total": 7,
+  "verdict": "fail",
+  "warnings": [
+    {
+      "kind": "shared_boundary_lines",
+      "line_ids": [
+        "T30n1579_p0695a23"
+      ]
+    }
+  ],
+  "work": "T1579"
+}

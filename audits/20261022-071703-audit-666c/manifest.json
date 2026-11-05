@@ -1,0 +1,71 @@
+{
+  "artifacts": [
+    {
+      "bytes": 6450,
+      "compression": "gzip",
+      "encoding": "utf-8",
+      "kind": "response",
+      "path": "artifacts/sha256/2c/2c1715b86c8e5560665e0c50459eae3083bae41e15ad6218e81465a083814b3a.gz",
+      "sha256": "2c1715b86c8e5560665e0c50459eae3083bae41e15ad6218e81465a083814b3a"
+    },
+    {
+      "bytes": 5625,
+      "compression": "gzip",
+      "encoding": "utf-8",
+      "kind": "response",
+      "path": "artifacts/sha256/b7/b74c71ff24b85630469048b8861dfffe8385aaa0579fb5958b1b0776d86824d9.gz",
+      "sha256": "b74c71ff24b85630469048b8861dfffe8385aaa0579fb5958b1b0776d86824d9"
+    },
+    {
+      "bytes": 12945,
+      "compression": "gzip",
+      "encoding": "utf-8",
+      "kind": "request",
+      "path": "artifacts/sha256/d6/d696248987b07ceca84b7ab8a66ac67d972b0ac411a17ccb22b43061028c643c.gz",
+      "sha256": "d696248987b07ceca84b7ab8a66ac67d972b0ac411a17ccb22b43061028c643c"
+    },
+    {
+      "bytes": 8706,
+      "compression": "gzip",
+      "encoding": "utf-8",
+      "kind": "request",
+      "path": "artifacts/sha256/ff/ff93cdce6edf85124223db0abe5a7fd7a9e7675d0e2ea3150f4929f85582b407.gz",
+      "sha256": "ff93cdce6edf85124223db0abe5a7fd7a9e7675d0e2ea3150f4929f85582b407"
+    }
+  ],
+  "batch_id": null,
+  "commit": {
+    "branch": null,
+    "hash": null,
+    "pushed_at": null
+  },
+  "event_count": 4,
+  "event_log": {
+    "path": "audits/20261022-071703-audit-666c/events.jsonl",
+    "sha256": "6ec86d49f43866fc3b8bf8c705aeedebfcd5651076151db01fa6318ec8afc1f4"
+  },
+  "generated_at": "2026-10-22T07:18:34.094-04:00",
+  "job_id": "20261022-071703-audit-666c",
+  "quality_verdict": "not_run",
+  "schema_version": "1.0",
+  "stages": {
+    "review_terms": {
+      "call_count": 2,
+      "efforts": [
+        "high"
+      ],
+      "models": [
+        "claude-opus-5-5"
+      ],
+      "usage": {
+        "cached_input": 2952,
+        "input": 13113,
+        "output": 9582,
+        "reasoning": 4467,
+        "total": 22695
+      },
+      "usage_availability_reason": {}
+    }
+  },
+  "translation_started_at": "2026-10-22T07:17:03.719-04:00"
+}

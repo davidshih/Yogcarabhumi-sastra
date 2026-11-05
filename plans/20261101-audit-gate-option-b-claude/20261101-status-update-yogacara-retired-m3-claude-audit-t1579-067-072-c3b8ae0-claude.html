@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>yogacara-retired-m3 — Status Update</title>
+<style>
+:root{--bg:#f6f7f9;--panel:#fff;--ink:#1a1d21;--muted:#5c6470;--line:#e3e6ea;--accent:#0b6bcb;--accent-soft:#e8f1fb;--crit:#c62828;--high:#d84315;--med:#b8860b;--low:#607d8b;--ok:#2e7d32;--code:#f0f2f5}
+:root[data-theme=dark]{--bg:#14171b;--panel:#1d2126;--ink:#e6e9ed;--muted:#9aa4b0;--line:#2c323a;--accent:#5aa2e8;--accent-soft:#1c2a3a;--crit:#ef6a5f;--high:#f0885c;--med:#e0b84f;--low:#93a7b3;--ok:#7bc47f;--code:#12151a}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#14171b;--panel:#1d2126;--ink:#e6e9ed;--muted:#9aa4b0;--line:#2c323a;--accent:#5aa2e8;--accent-soft:#1c2a3a;--crit:#ef6a5f;--high:#f0885c;--med:#e0b84f;--low:#93a7b3;--ok:#7bc47f;--code:#12151a}}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang TC",sans-serif;overflow-x:hidden}main{max-width:1000px;margin:auto;padding:32px 38px 72px}.ps-fallback{display:flex;flex-wrap:wrap;gap:4px 14px;margin-bottom:20px;padding-bottom:10px;border-bottom:1px solid var(--line)}.ps-fallback a{color:var(--muted);text-decoration:none}@media(max-width:800px){main{padding:24px 16px}}h1{margin:0 0 6px}h2{margin-top:2em;border-bottom:2px solid var(--line)}code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--code);padding:.12em .4em;border-radius:5px;word-break:break-word}.meta{color:var(--muted)}.statgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px}.stat,.card,.next,details,.bluf{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px;margin:12px 0}.bluf{border-left:4px solid var(--accent)}.stat .n{font-size:1.7rem;font-weight:800}.progress{height:12px;background:var(--code);border-radius:10px;overflow:hidden;margin:8px 0}.progress span{display:block;height:100%;background:var(--accent)}.timeline{border-left:2px solid var(--line);padding-left:22px}.timeline li{margin:14px 0}.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px}table{width:100%;border-collapse:collapse}th,td{padding:9px 12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}.badge{display:inline-block;border-radius:99px;padding:.1em .55em;font-size:.75rem;font-weight:700}.crit{color:var(--crit)}.high{color:var(--high)}.med{color:var(--med)}.low{color:var(--low)}.ok{color:var(--ok)}
+</style>
+</head>
+<body>
+<!-- page-shell v2: collapsible numbered TOC (open by default) + Light/Dark theme switch (no stored choice: follow the OS). Canonical copy: repo-docs skill, templates/page-shell.html. Paste it unchanged right after <body>, or run scripts/page_shell.py FILE.html to insert or refresh it. -->
+<style>
+:root{--ps-w:272px;--ps-rail:52px;--ps-bar:52px;--ps-bg:#fff;--ps-ink:#1a1d21;--ps-muted:#5c6470;--ps-line:#e3e6ea;--ps-accent:#0b6bcb;--ps-hover:#eef3f9;color-scheme:light}
+:root[data-theme=dark]{--ps-bg:#1d2126;--ps-ink:#e6e9ed;--ps-muted:#9aa4b0;--ps-line:#2c323a;--ps-accent:#7ab6f0;--ps-hover:#262c34;color-scheme:dark}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--ps-bg:#1d2126;--ps-ink:#e6e9ed;--ps-muted:#9aa4b0;--ps-line:#2c323a;--ps-accent:#7ab6f0;--ps-hover:#262c34;color-scheme:dark}}
+.ps-side{display:none}.ps-js .ps-fallback{display:none}
+.ps-js{padding-left:var(--ps-w)}.ps-js[data-toc=closed]{padding-left:var(--ps-rail)}
+.ps-js .ps-side{display:flex;flex-direction:column;position:fixed;z-index:1000;top:0;bottom:0;left:0;width:var(--ps-w);background:var(--ps-bg);color:var(--ps-ink);border-right:1px solid var(--ps-line);font:14px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang TC",sans-serif;text-align:left}
+.ps-head{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:10px;border-bottom:1px solid var(--ps-line)}
+.ps-side button{display:inline-flex;align-items:center;gap:5px;min-height:32px;margin:0;padding:4px 9px;font:inherit;color:inherit;background:transparent;border:1px solid var(--ps-line);border-radius:7px;cursor:pointer}
+.ps-side button:focus-visible,.ps-toc a:focus-visible{outline:2px solid var(--ps-accent);outline-offset:1px}
+.ps-theme{display:flex;gap:3px}.ps-theme button{padding:4px 7px;font-size:13px}
+.ps-theme button[aria-pressed=true]{background:var(--ps-accent);border-color:var(--ps-accent);color:var(--ps-bg);font-weight:600}
+.ps-toc{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:8px 6px 24px}
+.ps-toc ol{list-style:none;margin:0;padding:0}.ps-toc ol ol{margin:0 0 4px 16px}
+.ps-toc a{display:flex;gap:7px;padding:4px 8px;border-radius:6px;color:var(--ps-ink);text-decoration:none}
+.ps-toc ol ol a{color:var(--ps-muted);font-size:13px}
+.ps-num{flex:none;color:var(--ps-accent);font-variant-numeric:tabular-nums}
+.ps-js[data-toc=closed] .ps-side{width:var(--ps-rail)}
+.ps-js[data-toc=closed] .ps-head,.ps-js[data-toc=closed] .ps-theme{flex-direction:column}
+.ps-js[data-toc=closed] .ps-head{border-bottom:0}
+.ps-js[data-toc=closed] .ps-label,.ps-js[data-toc=closed] .ps-toc{display:none}
+@media(hover:hover){.ps-side button:not([aria-pressed=true]):hover,.ps-toc a:hover{background:var(--ps-hover)}}
+@media(max-width:800px){
+.ps-js,.ps-js[data-toc]{padding-left:0;padding-top:var(--ps-bar);scroll-padding-top:calc(var(--ps-bar) + 8px)}
+.ps-js .ps-side,.ps-js[data-toc] .ps-side{right:0;bottom:auto;width:auto;border-right:0;border-bottom:1px solid var(--ps-line)}
+.ps-js .ps-head,.ps-js[data-toc] .ps-head{flex-direction:row;flex-wrap:nowrap;justify-content:space-between;height:var(--ps-bar);padding:0 12px;border-bottom:0}
+.ps-js[data-toc] .ps-theme{flex-direction:row}.ps-js[data-toc] .ps-label{display:inline}
+.ps-toc{max-height:calc(100vh - var(--ps-bar));max-height:calc(100dvh - var(--ps-bar));border-top:1px solid var(--ps-line)}
+}
+@media(max-width:420px){.ps-js[data-toc] .ps-theme .ps-label{display:none}}
+@media print{.ps-side{display:none!important}.ps-js{padding:0!important}}
+</style>
+<aside class="ps-side" id="ps-side" aria-label="頁面工具">
+<div class="ps-head">
+<button type="button" id="ps-toggle" aria-controls="ps-toc" aria-expanded="true" aria-label="目錄" title="收合 / 展開目錄"><span aria-hidden="true">☰</span><span class="ps-label">目錄</span></button>
+<div class="ps-theme" role="group" aria-label="主題">
+<button type="button" data-theme-choice="light" aria-pressed="false" aria-label="Light" title="Light"><span aria-hidden="true">☀</span><span class="ps-label">Light</span></button>
+<button type="button" data-theme-choice="dark" aria-pressed="false" aria-label="Dark" title="Dark"><span aria-hidden="true">☾</span><span class="ps-label">Dark</span></button>
+</div>
+</div>
+<nav class="ps-toc" id="ps-toc" aria-label="目錄"></nav>
+</aside>
+<script>
+(function(){
+var d=document,root=d.documentElement,side=d.getElementById('ps-side'),toggle=d.getElementById('ps-toggle'),toc=d.getElementById('ps-toc');
+if(!side||!toggle||!toc)return;
+var mobile=window.matchMedia('(max-width:800px)'),os=window.matchMedia('(prefers-color-scheme:dark)'),choices=side.querySelectorAll('[data-theme-choice]');
+function get(k){try{return window.localStorage.getItem(k)}catch(e){return null}}
+function put(k,v){try{window.localStorage.setItem(k,v)}catch(e){}}
+function pressed(t){for(var i=0;i<choices.length;i++)choices[i].setAttribute('aria-pressed',String(choices[i].getAttribute('data-theme-choice')===t))}
+function shown(){var t=root.getAttribute('data-theme');return t==='light'||t==='dark'?t:(os.matches?'dark':'light')}
+function theme(t){if(t==='light'||t==='dark')root.setAttribute('data-theme',t);else root.removeAttribute('data-theme');pressed(shown())}
+function open(o,save){root.setAttribute('data-toc',o?'open':'closed');toggle.setAttribute('aria-expanded',String(o));if(save&&!mobile.matches)put('page-shell-toc',o?'open':'closed')}
+function start(){open(!mobile.matches&&get('page-shell-toc')!=='closed')}
+theme(get('page-shell-theme'));
+if(os.addEventListener)os.addEventListener('change',function(){pressed(shown())});
+root.classList.add('ps-js');
+start();
+if(mobile.addEventListener)mobile.addEventListener('change',start);
+toggle.addEventListener('click',function(){open(toggle.getAttribute('aria-expanded')!=='true',true)});
+side.addEventListener('click',function(e){var b=e.target.closest('[data-theme-choice]');if(b){var t=b.getAttribute('data-theme-choice');theme(t);put('page-shell-theme',t)}});
+toc.addEventListener('click',function(e){var a=e.target.closest('a');if(!a)return;for(var t=d.getElementById(decodeURIComponent(a.hash.slice(1)));t;t=t.parentElement)if(t.tagName==='DETAILS')t.open=true;if(mobile.matches)open(false)});
+function build(){
+var heads=d.querySelectorAll('h2,h3'),list=d.createElement('ol'),item=null,sub=null,n=0,m=0;
+for(var i=0;i<heads.length;i++){
+var h=heads[i],text=h.textContent.replace(/\s+/g,' ').trim(),label=text.replace(/^(?:\d+(?:\.\d+)*[.)、:]?\s+|[①-⑳]\s*)/,'')||text;
+if(!label||side.contains(h))continue;
+if(!h.id){var base=label.toLowerCase().replace(/[^\p{L}\p{N}]+/gu,'-').replace(/^-+|-+$/g,'')||'section',id=base,k=2;while(d.getElementById(id))id=base+'-'+k++;h.id=id}
+var li=d.createElement('li'),a=d.createElement('a'),num=d.createElement('span');
+num.className='ps-num';a.href='#'+encodeURIComponent(h.id);a.appendChild(num);a.appendChild(d.createTextNode(label));li.appendChild(a);
+if(h.tagName==='H3'&&item){m++;num.textContent=n+'.'+m;if(!sub){sub=d.createElement('ol');item.appendChild(sub)}sub.appendChild(li)}
+else{n++;m=0;num.textContent=String(n);item=li;sub=null;list.appendChild(li)}
+}
+toc.appendChild(list);
+}
+if(d.readyState==='loading')d.addEventListener('DOMContentLoaded',build);else build();
+})();
+</script>
+<!-- /page-shell -->
+
+<main>
+<nav class="ps-fallback" aria-label="目錄">
+<strong>Status Update</strong>
+<a href="#overview">1. 進度總覽</a>
+<a href="#timeline">2. 工作時間軸</a>
+<a href="#status">3. 當前狀態</a>
+<a href="#unverified">未驗證</a>
+<a href="#findings">4. 待處理發現</a>
+<a href="#next">5. 下一步計畫</a>
+<a href="#details">6. 技術細節附錄</a>
+</nav>
+<h1>yogacara-retired-m3 — Status Update</h1>
+<p class="meta">日期時間: <b>2026-11-01 23:21</b> · 專案: <b>yogacara-retired-m3</b> · 分支: <code>claude/audit-t1579-067-072</code> · Commit: <code>c3b8ae0</code> · 作者: claude-code/claude-opus-5-5</p>
+<div class="bluf" id="bluf"><b>🟡 黃</b> audit gate 已改成 option b（只擋讀者看得到的問題，term_occurrences 綁定與 glossary provenance 改成 warning 進 glossary backlog），317 個測試全過；但卷 72 用新 gate 重判<b>仍然 fail</b>（21 擋、26 backlog），其中 3 筆 glossary check 跟 2 筆首次格式是 glossary pattern 自己打架，fix 幾輪都解不掉。需要你決定：卷 72 下一步要不要先修 3 條 glossary pattern（<code>vipaka</code>、<code>asaṃskṛta</code>、<code>prajñapti-sat</code>）再重跑（約 80 min、USD 18 list price），還是先跑卷 67–71。</div>
+
+<h2 id="overview">1. 進度總覽</h2>
+<div class="statgrid">
+<div class="stat"><div class="n">317</div><div>測試 OK（baseline 301）</div></div>
+<div class="stat"><div class="n">4/4</div><div>mutant 被新測試抓到</div></div>
+<div class="stat"><div class="n">47</div><div>卷 72 剩下的 finding（舊 gate 全擋）</div></div>
+<div class="stat"><div class="n crit">21</div><div>新 gate 仍擋</div></div>
+<div class="stat"><div class="n med">26</div><div>進 glossary backlog</div></div>
+<div class="stat"><div class="n">0</div><div>重判花的 model call</div></div>
+</div>
+<p>Gate 改動（code + 測試 + prompt）</p><div class="progress"><span style="width:100%"></span></div><p>100%</p>
+<p>卷 72 重判</p><div class="progress"><span style="width:100%"></span></div><p>100%：verdict fail</p>
+<p>T1579 卷 67–72 audit 整體（6 卷中封印 0 卷）</p><div class="progress"><span style="width:0%"></span></div><p>0%</p>
+
+<h2 id="timeline">2. 工作時間軸</h2>
+<ol class="timeline">
+<li><span class="badge ok">已完成</span> 2026-10-22：卷 72 兩輪 fix 後 fail，剩 47 筆（<code>c3b8ae0</code>）。</li>
+<li><span class="badge ok">已完成</span> 2026-11-01：owner 選 option b。</li>
+<li><span class="badge ok">已完成</span> TDD：16 個新測試先紅後綠；<code>finding_blocks</code>、review_terms category enum、warning-only review 可重用、ledger 從存證回答重算、report 加 <code>glossary_backlog</code>。</li>
+<li><span class="badge ok">已完成</span> 卷 72 離線重判：<code>plans/20261101-audit-gate-option-b-claude/juan72-rejudge-claude.json</code>。</li>
+<li><span class="badge high">當前</span> commit + push 到 <code>claude/audit-t1579-067-072</code>；dharma-site 開 PR 關 <code>t1579-audit-gate-change</code>。</li>
+<li><span class="badge low">待做</span> 卷 72：修 3 條 glossary pattern 後重跑，或擱著；卷 67–71（約 14.6 h、USD 196 list price）。</li>
+</ol>
+
+<h2 id="status">3. 當前狀態</h2>
+<div class="tablewrap"><table>
+<tr><th>項目</th><th>狀態</th><th>驗證</th></tr>
+<tr><td>baseline 測試</td><td><span class="badge ok">完成</span></td><td><code>python3 -B -m unittest discover -s tests</code>：301 OK（66 s）</td></tr>
+<tr><td>新 gate（<code>scripts/audited.py</code>）</td><td><span class="badge ok">完成</span></td><td>同一指令：317 OK（69 s），新檔 <code>tests/test_audit_gate_option_b.py</code> 16 個</td></tr>
+<tr><td>只剩 binding／provenance warning 的卷 → pass 並封印</td><td><span class="badge ok">完成</span></td><td>端到端：真的 <code>audited.py audit</code> 跑卷 7，<code>publisher.verify_attestation</code> 印 <code>sealed</code>；fixer 沒被叫、md 與頁面 digest 不變、review_terms 只呼叫 12 次（gate 重用 warning-only 的 review）</td></tr>
+<tr><td>doctrine finding 仍 fail（就算 label 寫 <code>term_binding</code>）</td><td><span class="badge ok">完成</span></td><td>端到端 exit 1、無 attestation</td></tr>
+<tr><td>review_terms 首次格式 finding 仍 fail</td><td><span class="badge ok">完成</span></td><td>端到端 exit 1，送 fixer</td></tr>
+<tr><td>新測試咬得到新邏輯</td><td><span class="badge ok">完成</span></td><td>4 個手動 mutant（ledger 不吃 warning、warning review 沒 attestation、reviews 沒拿分類器、分類器不看 stage）各讓 2–8 個測試失敗</td></tr>
+<tr><td>merge acceptance</td><td><span class="badge med">既有失敗</span></td><td><code>bash plans/20261013-merge-audit-pipeline-claude/acceptance.sh</code>：26 PASS、2 FAIL，2 個都是改動前就會紅的（見 4. 待處理發現）</td></tr>
+<tr><td>卷 72 重判</td><td><span class="badge crit">fail</span></td><td>存證回答還原出 report 的 47 筆（39/5/3，腳本自我核對）；擋 21（doctrine 5、glossary check 3、terms 13）、backlog 26</td></tr>
+</table></div>
+<h3 id="unverified">未驗證</h3>
+<ul>
+<li>真的 Opus 會不會照 5 個 category 回答：<code>--json-schema</code> 有帶 enum，但還沒有真 run。下一次 audit 跑完看 events 的 category 分佈 — <code>python3 -B plans/20261101-audit-gate-option-b-claude/rejudge_juan72.py</code> 的同款讀法</li>
+<li>Codex backend（<code>--model auto</code>）不強制 schema，可能回舊式自由 label：設計上 fail-closed（擋），但會讓卷 fail 而不是靜默放行；沒有真 run 驗過。</li>
+<li>卷 72 重判的 5 筆「混合」改標是我依 <code>required_change</code> 判的（表在 <code>rejudge_juan72.py</code> 的 <code>MIXED</code>）；就算 39 筆 terms 全部降級，doctrine + glossary check 的 8 筆還是擋，所以 verdict 不受這個判斷影響。</li>
+</ul>
+
+<h2 id="findings">4. 待處理發現</h2>
+<div class="card"><span class="badge high">HIGH</span><p><b>glossary pattern 跟首次格式規則互相矛盾，卷 72 用任何 gate 都過不了。</b><code>translations/glossary/T1579-terms.json</code> 的 <code>vipaka</code>（<code>異熟（果報）</code>）、<code>asaṃskṛta</code>（<code>無為（無為法）</code>）、<code>prajñapti-sat</code>（<code>假有法（假名安立之法）</code>）用全形圓括號當 <code>translation_patterns</code>；glossary check 要求譯文逐字含 pattern，review_terms 卻要求〔〕外不能多插圓括號（卷 72 #22、#23）。fixer 改哪邊都被另一邊擋。修法：把這 3 條 pattern 改成〔〕格式或拿掉。</p></div>
+<div class="card"><span class="badge med">MED</span><p><b>卷 72 doctrine 還有 5 筆 low。</b>option b 讓 doctrine 一律擋，不分 severity；兩輪 fix 已從 88 → 18 → 5，再一輪大概能清掉，但這要花錢重跑。</p></div>
+<div class="card"><span class="badge low">LOW</span><p><b>merge acceptance 有 2 個既有 FAIL。</b><code>acceptance.sh</code> 鎖的是 2026-10-13 的 main（<code>dd46ba8</code>）：分支的 <code>b305890</code>（#10，卷 1、62）讓 <code>docs</code>、<code>translations</code> 跟它不同，加上 10-22 兩次真 run 留下的 <code>audits/</code>，所以「equal main」「no test left a file」兩項改動前就紅。我第一版改了 <code>prompts/audited/review_terms.txt</code>，踩到 branch 檔案 byte-for-byte 鎖；已改回，把 category 定義搬進 schema，重跑後那項 PASS。</p></div>
+<div class="card"><span class="badge low">LOW</span><p><b>舊 run 的 category 是自由文字。</b>新 gate 只認 5 個 enum，舊 label（<code>primary_term_id</code> 等）一律擋；所以舊 job 用 <code>--resume</code> 時要重問被改過 prompt 的單位（prompt hash 變了），會花錢。卷 72 的舊 job 已 fail，不建議 resume，要重跑就開新 job。</p></div>
+
+<h2 id="next">5. 下一步計畫</h2>
+<div class="next"><b>P0 · 15 min · 需要 owner 點頭</b><p>修 3 條 glossary pattern（<code>vipaka</code>、<code>asaṃskṛta</code>、<code>prajñapti-sat</code>）成〔〕格式，跑 <code>python3 -B -m unittest discover -s tests</code>。</p></div>
+<div class="next"><b>P1 · 約 80 min、USD 18 list price · 需要 owner 點頭</b><p>新 job 重跑卷 72：heartbeat headless CLI 後在 tmux 跑 <code>python3 scripts/audited.py audit --juans 72 --model opus --fix-rounds 2</code>。</p></div>
+<div class="next"><b>P2 · 約 14.6 h、USD 196 list price</b><p>item <code>t1579-audit-67-71</code>：<code>python3 scripts/audited.py audit --juans 67-71 --model opus --fix-rounds 2</code>。建議等卷 72 用新 gate 證明能過再開。</p></div>
+
+<h2 id="details">6. 技術細節附錄</h2>
+<details><summary>Root cause / evidence</summary>
+<p>舊 gate：<code>review_audit_candidate</code> 與 <code>gate_audit_candidate</code> 把 <code>audit_findings</code> 回傳的所有 finding 都當 blocking，coverage ledger 也要求每個 review 回答 <code>verdict == "pass"</code> 且 <code>findings == []</code>。卷 72 最後一輪 39 筆 review_terms 中 26 筆的 <code>required_change</code> 只改 term_occurrences 或 glossary 本身，fixer 沒權限改 glossary，所以 48 → 39 收斂不了。</p>
+<p>新 gate：<code>finding_blocks(finding, stage)</code> 只放行 review_terms 且 category 屬於 <code>term_binding</code>／<code>glossary_provenance</code> 的 finding；其他一律擋（含未知 label，fail-closed）。<code>review_pass(..., blocks=finding_blocks)</code> 讓只剩 warning 的回答得到 attestation（帶 <code>warnings</code> 數），warning 存在 <code>prog["glossary_backlog"][unit][stage]</code>，每次重審該單位就覆蓋。ledger 在 <code>allow_warnings=True</code> 時從存證的 response artifact 重新跑 <code>finding_blocks</code>，不信 job 檔。fixer 只收 blocking finding，所以只有 warning 的段落一字不動。</p>
+<p>卷 72 重判數字：blocking 21 = review_doctrine 5 + term_check 3 + review_terms 13（first_occurrence_format 10、plain_wording 3）；backlog 26 = term_binding 17 + glossary_provenance 9。</p>
+</details>
+<details><summary>Changed files</summary>
+<p><code>scripts/audited.py:236</code> — <code>TERM_TEXT_CATEGORIES</code>、<code>TERM_BACKLOG_CATEGORIES</code>、<code>REVIEW_TERMS_CATEGORIES</code>、<code>finding_blocks</code></p>
+<p><code>scripts/audited.py:239</code> — <code>TERM_CATEGORY_GUIDE</code>：5 個 category 的定義，放在 schema 的 <code>description</code>（prompt 檔被 merge acceptance 鎖成 byte-for-byte，所以不改 prompt 檔）</p><p><code>scripts/audited.py:313</code> — review_terms 的 <code>category</code> 改成 enum + guide</p>
+<p><code>scripts/audited.py:1629</code> — <code>review_pass</code> 的 <code>blocks</code>：warning-only 回答拿 attestation、更新 backlog</p>
+<p><code>scripts/audited.py:1743</code> — <code>write_coverage_ledger(allow_warnings=)</code>，evidence 加 <code>warnings</code> 數</p>
+<p><code>scripts/audited.py:2476</code> — audit report 加 <code>glossary_backlog</code></p>
+<p><code>scripts/audited.py:2590</code> — <code>audit_findings</code> 只回傳 blocking；<code>:2686</code> gate 的 ledger 帶 <code>allow_warnings=True</code></p>
+<p><code>tests/test_audit_gate_option_b.py</code> — 16 個測試（13 unit、3 端到端）</p>
+<p><code>plans/20261101-audit-gate-option-b-claude/rejudge_juan72.py</code>、<code>juan72-rejudge-claude.json</code> — 卷 72 離線重判</p>
+</details>
+<details><summary>Suggested commit message</summary><p><code>(feat) audit gate option b: binding and provenance findings of review_terms become a glossary backlog</code></p></details>
+</main>
+</body>
+</html>

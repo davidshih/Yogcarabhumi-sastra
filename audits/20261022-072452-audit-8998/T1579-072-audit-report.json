@@ -1,0 +1,150 @@
+{
+  "attestation": null,
+  "blocking": [
+    "T1579-072-001 review_terms: notes 說「勝解行地」裡的「勝解」可以另外連到 glossary 詞條 adhimoksha。但這個詞條的 rule 把勝解定為心所義的「對所緣相決定取持」，source_terms 只收獨立的「勝解」；本次輸入裡沒有任何證據說明地位名「勝解行地」中的成分「勝解」就是這個詞條。這樣連結，會把詞條的 stable 梵文、巴利文值（adhimoksha／adhimokkha）沒有依據地帶進地位術語。另外，如果真的連到這個詞條，譯文 gloss 用「堅定信解」，也跟詞條 rule「不簡化為一般理解」有衝突。",
+    "T1579-072-001 review_terms: 十種發心的名目在列舉處第一次出現時，都沒有採「玄奘原詞〔白話解釋〕」格式，要到後面逐條定義時才有解釋。這不符合每卷術語首次出現的格式規則。",
+    "T1579-072-001 review_terms: occurrence 的 surface「聲聞地」在譯文裡被 gloss 從中間切開，寫成「聲聞〔…〕地」，所以複合詞「聲聞地」既沒有連續的對應字面，也沒有自己的首次解釋。另外，primary term 是要給 proposed:聲聞 還是 proposed:聲聞地，也不明確。",
+    "T1579-072-001 review_terms: occurrence 的 surface「聲聞種性」「菩薩種性」在譯文中寫成「聲聞的種性」「菩薩的種性」，沒有逐字對應的字面；而且同一處另外有 proposed:種性 的 occurrence，primary 歸屬不明確。",
+    "T1579-072-001 review_terms: occurrence 的 surface「利養恭敬」被當成一個詞條，但譯文寫成「利養〔財物供養〕、恭敬」，只解釋了「利養」，整個詞條的字面和首次解釋都不一致。",
+    "T1579-072-001 review_terms: 本段出現的煩惱術語「貪、瞋、癡」，以及跟它對舉的修行術語「正行」「邪行」，都沒有列入 term_occurrences，也沒有 primary term_id；同段的「纏」卻已經列為術語，處理標準前後不一致。",
+    "T1579-072-001 review_terms: 地位術語「第十地」沒有列入 term_occurrences。勝解行地的 gloss 又另外引進原文沒有出現的「初地」，但地位體系的術語在 occurrence 層面沒有對應的詞條。",
+    "T1579-072-002 review_terms: Several term_occurrences surfaces contain parenthetical labels that are not in the source, such as 「同般涅槃法相續未熟（於彼果成辦無堪任性）」「同般涅槃法相續未熟（於加行及彼果成辦無堪任性）」「造作積集能障正加行業（於加行無堪任性）」「於此無間造作積集能障正加行業（於加行及彼果成辦無堪任性）」. Because these surfaces are not literal source substrings, the occurrences cannot be matched back to positions in the CBETA text, and the audit chain breaks. This mostly hits the repeated string 「同般涅槃法相續未熟」, which occurs twice.",
+    "T1579-072-002 review_terms: The first-occurrence gloss for the proposed term proposed-wukanrenxing (不堪任性/無堪任性) narrows the term to 「承受、領受某方面的利益」. In the source, only the general statement 「不能領受所作義利樂事」 is about receiving benefit. The second type is defined by 「無有堪能修正方便」 (lacking the capacity to practice) and the third by 「無有功能成辦彼果」 (lacking the ability to bring the result about); neither is about receiving benefit. The gloss for proposed-youkanrenxing (有堪任性), 「有堪能承受、領受相應利益」, has the same narrowing. Neither gloss matches the scope of the term as this clause defines it.",
+    "T1579-072-002 review_terms: The glossary rule for shamatha and vipashyana is 「白話用『止／觀』，重要處用『止（奢摩他）』『觀（毘鉢舍那）』」. In the Q&A section, the second occurrences of 奢摩他 and 毘鉢舍那 are left as the bare transliteration. They follow neither the plain-language 止/觀 form nor the display form, so they do not match the rule.",
+    "T1579-072-003 review_terms: 原文中「假有」只出現 8 次：相問答 3 次、名問答 2 次，分別、真如、正智問答各 1 次。term_occurrences 卻列了 9 筆 surface=「假有」。多出的第 9 筆對應原文「說之為假」，原文字面是「假」，不是「假有」。把它的 surface 記成「假有」，會讓 occurrence 和原文字面對不起來，也就無法稽核。",
+    "T1579-072-003 review_terms: 這裡的「言說隨眠」是分別屬於世俗有的第三種因緣，說的是言說留下的潛伏傾向，不是一般所說的煩惱隨眠。譯文套用了 glossary anuśaya 的 plain「潛伏煩惱」作夾注，讀者會以為「言說的潛伏煩惱」，誤解原文意思。glossary 的 rule 只說「需要白話時」才用潛伏煩惱來說明，並沒有要求每個語境都這樣解釋。",
+    "T1579-072-003 review_terms: glossary 條目 prajñapti-sat 的 pali 欄寫「paññatti」，對應的是 prajñapti（施設、假名），不是 prajñapti-sat（假有）。兩者詞形不對應。這個條目目前是 review 狀態，譯文沒有直接引用 Pali 值，但 provenance 有疑點，應在升為 stable 之前處理。",
+    "T1579-072-004 review_terms: 「如理作意」的 primary term_id 綁定 manaskara，但白話解釋「依正確道理思惟」不屬於該詞條 translation_patterns（作意／專注觀修／作意思惟）。該詞條的 rule 規定，需要白話展開時只能用「專注觀修（作意）」或「作意思惟」。另外，surface「如理作意」是複合詞，但詞條 source_terms 只有「作意」。目前譯文自訂了一個 glossary 未授權的譯法；notes 只請維護者事後補規則，綁定在補規則前就已生效，前後不一致。",
+    "T1579-072-004 review_terms: 「輕安」綁定的詞條 pratipassrabdhi 標為 stable，但 id 與 sanskrit 欄 prashrabdhi 不一致，本次也沒有任何 review_evidence 支持其中任何一個梵文值。依共同規則，沒有 evidence 的梵文值不得當作 stable。譯者已在 notes 中指出這個問題，但這個 occurrence 仍以 stable 詞條作為 primary 綁定，provenance 沒有被隔離。",
+    "T1579-072-004 review_terms: 現有詞條 dausthulya 的 source_terms 與 translation_patterns 都明列「麁重」，status 也是 review（不是 stable），本來就可以作為這個 occurrence 的 primary term_id。改綁 pending:麁重 等於為已經涵蓋的 surface 另開重複的暫定 id，造成同一詞在不同 unit 的綁定分裂。而且這裡與輕安對舉的「麁重」正對應該詞條 id 所示的 dausthulya 義，不構成脫離該詞條的理由；問題在於該詞條混入了 audarya（麁性），應該拆分的是 audarya。",
+    "T1579-072-004 review_terms: 末段「相有何相」以及「分別所行相」「言說所依相」等的「相」是「特徵」義，不是五事之一的「相」。譯文正文已經用〔這裡第二個「相」指特徵〕和「特徵」作出區分，但 term_occurrences 只有一個 surface「相」綁 pending:五事-相，沒有為「特徵」義另立 occurrence。這和本段對「取」兩種用法的處理方式不一致。",
+    "T1579-072-004 review_terms: 「於諸色處」的意思是「有色法存在的各處」，譯文的括注也取一般語義。但 occurrence 綁定 pending:色處。這個 id 日後如果建成十二處中「色處」的專門詞條，這個 occurrence 就會被誤連到技術義。",
+    "T1579-072-004 review_terms: 「無常、苦、無我」是作為諸行共相列舉的術語，但沒有出現在 term_occurrences，也沒有依每卷首次出現的「玄奘原詞〔白話解釋〕」格式處理。本段其他同層級術語（諸行、共相）都已經加括注，處理方式不一致。",
+    "T1579-072-005 review_terms: 地、水、火、風四個 occurrence 的 primary term_id 標成 dharatu，但這個條目的 source_terms 是「界、大種界、地界、水界、火界、風界」。原文這裡寫的是「地相」等，不是「地界」，表面形式並不符合。而且同一串列舉中的空相、識相標成 unmatched，同一組六項卻用了兩種標法，前後不一致。另外，如果真的歸入 dharatu，這是本卷首次出現，卻沒有依首次格式加〔〕白話解釋。",
+    "T1579-072-005 review_terms: 「戲論」在真如差別名「無戲論界」中第二次出現，但 term_occurrences 只記了相差別中的第一次出現，第二次沒有指定 primary term_id。",
+    "T1579-072-005 review_terms: 「界」是 dharatu 條目的 source_term，而該條目明文排除三界與十八界。本段的欲界、色界、無色界、法界、無相界、無戲論界中的「界」，都沒有記錄 occurrence，也沒有標 unmatched，之後可能被自動誤配到 dharatu。",
+    "T1579-072-005 review_terms: 「薩迦耶」加了〔〕解釋，但 term_occurrences 沒有記錄這個 occurrence，glossary 也沒有對應條目。〔〕內的「音譯詞，意為『有身』」暗示有外語原詞，但本次 glossary 和 review_evidence 都沒有提供依據，provenance 無法追溯。",
+    "T1579-072-006 review_terms: 共同規則要求每個 occurrence 都指定 primary term_id，但「諸行寂靜」標成 unassigned，這不是有效的 term_id。notes 已建議另立「諸行寂靜」條目，term_occurrences 卻沒有用擬議 id。同一個結構的「言說戲論寂靜」（出世間門）也沒有列為 occurrence。",
+    "T1579-072-006 review_terms: 「愛味」標成 unassigned，沒有指定 primary term_id。不套用 taste-object 的判斷正確，因為這裡是貪愛耽著之味，不是舌所緣的味境；但仍需要一個有效的 term_id。同門類推的「依耽嗜依出離」也沒有列為 occurrence。",
+    "T1579-072-006 review_terms: 「清淨善巧」標成 unassigned，沒有指定 primary term_id。kaushalya 的 translation_patterns 含「善巧」，會被 term_check 命中；但它的 rule 是「對法類別的通達能力」，和此處形容真如所緣的「清淨善巧」語境不同。既不指派又不另立條目，就會留下未決 occurrence。",
+    "T1579-072-006 review_terms: 「有異熟」被指派 vipaka，但 vipaka 的 source_terms 和 translation_patterns 都沒有「有異熟」。在義理上，「異熟」是果報本身，「有異熟」是能招感異熟果者，譯文也分別註成〔果報〕與〔能招感異熟果〕。兩個概念共用一個 primary term_id，會讓「異熟／有異熟」兩門的判別在術語層混同。",
+    "T1579-072-006 review_terms: 「戲論」指派 prapanca，但首次出現的白話〔脫離實義的虛妄言論與概念造作〕和 glossary 的 plain「虛妄分別」不一致。避免與五事之「分別」混淆的理由成立，但 glossary 尚未核准這個替代白話，目前屬於未登錄的術語偏離，跨卷一致性無法保證。",
+    "T1579-072-006 review_terms: upadi 條目的梵巴英值沒有任何帶 source_id 的 evidence：pali「upādāna」通常對應玄奘譯的「取」，english 含「clinging」，與 rule「不可譯為一般執著」矛盾。這些值目前以普通值呈現，違反「推定值必須標記 inferred」的規則。譯文本身的〔心心所執持攝受〕與 plain 一致，沒有問題。",
+    "T1579-072-006 review_terms: term_occurrences 只列了部分術語。本段有大量判門術語都有首次〔〕白話，卻沒有 occurrence 和 primary term_id，例如見所斷、有為、有漏／無漏、蘊、緣起、處非處、因緣、等無間緣、所緣緣、增上緣、法依、義依、了義經依、智依、有諍、出世間、同分／彼同分、聞所成／思所成／修所成、空／無願／無相、解脫門、增上戒／心／慧、學／無學。其中「見所斷」與已指派 bhavana-marga 的「修所斷」對舉，bhavana-marga 的 rule 也要求「與見道所斷區分」，缺了對應 id 就無法執行這條規則。",
+    "T1579-072-006 review_terms: prajñapti-sat 的 occurrence 寫成 surface「假有法」，但原文只有「假有」。譯文把它寫成「假有法〔假名安立之法〕」，多補了「法」字，玄奘原詞的形式和原文不符。",
+    "T1579-072-006 review_terms: glossary 有幾處格式與 provenance 問題：asaṃskṛta、vipaka、prajñapti-sat、prapanca 的 translation_patterns 用全形圓括號寫法，和共同規則的「玄奘原詞〔白話〕」衝突，造成 term_check 誤報；id 寫法不一致（asaṃskṛta、prajñapti-sat 帶附加符號，其他是 ASCII）；dharatu 疑為 dhātu 的筆誤；shanta、kaushalya 的 sanskrit 值不是 IAST，卻標為 stable 而且沒有 evidence。譯文的「無為〔無為法〕」本身符合共同規則。",
+    "T1579-072-007 review_terms: 在 glossary 中，「勝處」列在已是 stable 的 kasina-ayatana 條目的 source_terms 裡。本段卻把「遍處」掛在 kasina-ayatana，把「勝處」另掛到 glossary 不存在的新 id shengchu-mastery-base。同一 clause 內，同一個 stable 條目所涵蓋的兩個詞被拆到兩個 id，與 glossary 衝突。notes 也把勝處列為新建條目，但沒有處理它和 kasina-ayatana 的重疊。",
+    "T1579-072-007 review_terms: term_occurrences 引用了一批 glossary 中不存在的 term_id：xiang-sign、ming-name、fenbie-discrimination、zhenru-suchness、zhengzhi-right-knowledge、nianzhu-mindfulness-establishment、wushi-five-matters、gen-faculty、li-power、juezhi-awakening-factor、daozhi-path-factor、xingji-practice-path、faji-dharma-path、ba-jietuo-eight-liberations、xianfa-lezhu、fuduan-suppression。notes 稱這些都已「新建 glossary 條目，狀態為 review」，但輸入的 glossary 裡沒有，contract 也沒有對應的 proposed_terms 紀錄。因此這些 id 目前無法解析，provenance 無從稽核。",
+    "T1579-072-007 review_terms: 「伏斷」改掛 fuduan-suppression，但 glossary 裡仍有一條 id 為 vashikara 的 stable 條目，xuanzang 也是「伏斷」，source_terms 同樣含「伏斷」。現在同一個詞同時對應兩個 id，自動 term_check 會判定衝突。此外，vashikara 條目沒有任何 sanskrit evidence 卻標為 stable，id 本身就是沒有依據的梵文推定。",
+    "T1579-072-007 review_terms: 「麁重」掛在 dausthulya 條目上，但該條目的 xuanzang 是「麁性」，display 是「粗重性（麁性）」，english 是 coarseness/grossness，語義屬於麁性（audarya）。譯文〔〕把麁重釋為「身心粗重、不堪任的狀態」，這與條目的 plain、english 不一致。結果是：同一個 id 下的 display 和本段實際用法互相矛盾。",
+    "T1579-072-007 review_terms: 「現法樂住」改掛新 id xianfa-lezhu。但 stable 條目 four-cultivations-of-samadhi 的 source_terms 和 translation_patterns 仍然列有「現法樂住」，所以同一個詞在 glossary 層面有兩個 owner。notes 雖已說明兩者無關，glossary 卻沒有同步修改。",
+    "T1579-072-007 review_terms: term_occurrences 只按 surface 列出「相」「名」「力」「根」各一筆，但這些字在本段有大量非術語或異義的用法：「應知其相」（指特徵）、「勝處所緣力」「二種勢力」（一般的力量）、「得根名」「轉名為力」「亦名微細相」中的「名」（稱為）、「鈍根、利根」（根器）、「相縛」等。只依 surface 對應，會把這些非五事、非五根五力的用法誤標為 xiang-sign、ming-name、li-power、gen-faculty。",
+    "T1579-072-007 review_terms: 「所緣」「自性」是本段反覆使用的核心術語，但首次出現時沒有依「玄奘原詞〔白話解釋〕」格式說明，也沒有掛 term_id。",
+    "T1579-072-007 review_terms: 譯文以〔〕說明了多個術語，包括異生、安立諦、非安立真如、無所有處、非想非非想處、增上、自在障、增上戒／心／慧，但 term_occurrences 沒有替它們指定 primary term_id，術語一致性無法追蹤。",
+    "T1579-072-001 review_doctrine: 原文只說未成果發心的範圍是「從勝解行地乃至第十地」，沒有說勝解行地「已有堅定信解」。譯文方括號把「堅定」加在「信解」前面，原文沒有這個限定。勝解行地的特點是依勝解而修行、尚未證入，譯文說成已達「堅定」的狀態，屬於增加義理。另外，notes 自稱已刪除沒有依據的「決定勝解」，方括號卻又放入意思相近的「堅定信解」，前後不一致。",
+    "T1579-072-002 review_doctrine: 方括號把「不堪任性」一律界定為「沒有堪能承受、領受某方面的利益」，這個說法和原文對五種的分別界定不一致。原文中，第二至四種是對加行、對成辦彼果「無有堪能修正方便」「無有功能成辦彼果」，指的是自己修行與成辦果的能力；第一種是本性無有般涅槃法。這些都不是「領受利益」。只有總述「不能領受所作義利樂事」和第五種「攝受饒益」比較接近「領受利益」的意思。這個概括會把五種不同的無堪任性錯誤地統一成「受益能力」。結尾說明「有堪任性」的方括號「有堪能承受、領受相應利益」也有同樣問題。",
+    "T1579-072-002 review_doctrine: 原文「施功於燧」只說在燧上施功，沒有「持續」這個意思。譯文直接在正文加入「持續」，等於替這個譬喻補上了取義，違反「九正行譬喻不補入解釋」的處理原則（見 notes）。",
+    "T1579-072-003 review_doctrine: 「言說隨眠」是說明分別屬於世俗有的第三種因緣。原文的四種因緣中，第一種「雜染起故」已經涵蓋煩惱染污。第三、第四種「言說隨眠」「言說隨覺」與名的第三種因緣「言說所依」並列，重點都在言說：分別帶有言說方面潛伏的習性，並且隨著言說而起覺知。譯文把這裡的「隨眠」夾注成〔潛伏煩惱〕，讀者會理解成『因為有與言說相關的潛伏煩惱』，這把言說層面的潛伏習性縮窄成煩惱。結果第三種因緣和第一種「雜染起故」意思重疊，也偏離原文以言說為中心的論證次第。",
+    "T1579-072-003 review_doctrine: 「於五明處善修方便」的意思是菩薩在五明處上妥善地用功修習（加行、修學）。夾注〔用功修習各種學習的方法〕把「方便」解成『學習的方法』，多出了『方法』這一層，和原文『善修方便』（善加用功修習）的意思不完全相符，容易讓讀者以為修習的對象是學習技巧本身。",
+    "T1579-072-004 review_doctrine: notes「判定的區分」把最後一段五事之相的關係概括為「能取與所取的對應」。原文只用「所行」描述這組關係：分別以相為所行，正智以真如為所行，相是分別所行，真如是正智所行。「能取／所取」在唯識是專門術語，指應當捨離的二取分別。用它來說正智與真如，等於說正智仍有能取所取的二取結構，這和正智、真如的義理相衝突，而且是原文沒有的增益詮釋。",
+    "T1579-072-004 review_doctrine: 原文「不異有何過」「異有何過」沒有寫出主語。譯文直接在正文補上「取與蘊」，卻沒有放進〔〕。補入的指涉本身正確（指取與蘊的關係），但沒有按共同規則把它標成補入的文字，讀者會誤以為原文就寫明了「取與蘊」。",
+    "T1579-072-005 review_doctrine: 本段末尾依五事（相、名、分別、真如、正智）分別列出各自的異名。原文把「戲論」放在「相差別」中，和「影像、顯現、有、薩迦耶、有為、緣生」同屬「相」的異名；「分別、思惟、遍計」等則另外列為「分別差別」。譯文在這裡把「戲論」注成〔虛妄分別〕，等於告訴讀者戲論就是分別。這會讓讀者把相的異名歸到分別一類，抹掉本段要建立的相與分別的界線。前文「本性相」是「先分別所生」，相與分別是能生與所生的關係，不能互相等同，所以這個注與本段的次第結構衝突。glossary 的白話模式「虛妄分別」不適用於本處，而且該條目 status 仍是 review，也不足以支持它在這個語境中凌駕原文的分類。",
+    "T1579-072-006 review_doctrine: 在聞思修門，譯文把「聞所成／思所成／修所成」解釋成「…而成就的智慧」。可是原文接著判定相、分別「是三種」，名「是聞思所成」。照這個解釋讀下去，名就成了一種智慧，和本段開頭「名唯心不相應行」的判定衝突，因為心不相應行不是心或心所，不能是慧。相也包含色法（相通五種），同樣不能全部歸為智慧。原文在這裡只說「聞所成」等，沒有限定為「慧」，譯文的補解把範圍縮小了，造成指涉上的矛盾。",
+    "T1579-072-007 review_doctrine: 譯文用頓號把原文「世間出世間正智」拆開，讀成「世間正智」與「出世間正智」兩類。但本段的判法一貫是：世間的根、力、覺支、道支都「以分別為自性」，只有出世間的才「以正智為自性」。所以本段沒有任何依據說存在「純屬世間的正智」。「世間出世間正智」可能是一個不可拆開的複合詞，指同一種正智。拆開讀等於替原文多加了一個命題。",
+    "T1579-072-007 review_doctrine: 正智首次出現時，〔〕內寫「有世間、出世間兩類」。本段原文沒有這個二分。而且這個說法和本段「世間者以分別為自性、出世間者以正智為自性」的結構互相衝突，會讓讀者誤以為正智包含純世間的一類。",
+    "T1579-072-007 review_doctrine: 原文只說緣真如、正智為境時「亦由永害隨眠故捨」，並沒有說同時也由伏斷而捨。〔〕補入「除了伏斷之外，同時」，是把「亦」解讀成兼含兩種捨法，在原文之外多加了一個命題。這裡的「亦」也可以只是和前文對照（前面說不是永害，這裡則是永害），本段沒有證據可以判定哪一種讀法正確。",
+    "05 五事行相與差別名: source has 無為 but translation lacks one of 無為（無為法）",
+    "06 五事攝屬諸門: source has 味 but translation lacks one of 味境",
+    "06 五事攝屬諸門: source has 異熟 but translation lacks one of 異熟（果報）, 異熟所攝, 異熟所生",
+    "06 五事攝屬諸門: source has 無為 but translation lacks one of 無為（無為法）",
+    "06 五事攝屬諸門: source has 假有法 but translation lacks one of 假有法（假名安立之法）"
+  ],
+  "findings": {
+    "remaining": 57,
+    "round1": 157
+  },
+  "install": "none",
+  "job_id": "20261022-072452-audit-8998",
+  "juan": 72,
+  "proposed_terms": [
+    {
+      "evidence": {
+        "clause_id": "T30n1579_p0695a23-p0695c25",
+        "source_quote": "一、於\n清淨無堪任性"
+      },
+      "note": "沒有提供梵文 evidence，不填梵文；相對詞為「有堪任性」。",
+      "pali": [],
+      "plain": "沒有能力承受或接受（某種利益）的狀態",
+      "sanskrit": [],
+      "status": "inferred",
+      "xuanzang": "無堪任性"
+    },
+    {
+      "evidence": {
+        "clause_id": "T30n1579_p0695a23-p0695c25",
+        "source_quote": "本性無\n有般涅槃法"
+      },
+      "note": "沒有提供梵文 evidence，不填梵文。",
+      "pali": [],
+      "plain": "能證入涅槃的種性或法則",
+      "sanskrit": [],
+      "status": "inferred",
+      "xuanzang": "般涅槃法"
+    },
+    {
+      "note": "五事之一；sanskrit 未有 evidence，不得填值",
+      "sanskrit": [],
+      "status": "review",
+      "xuanzang": "相"
+    },
+    {
+      "note": "五事之一",
+      "sanskrit": [],
+      "status": "review",
+      "xuanzang": "名"
+    },
+    {
+      "note": "五事之一",
+      "sanskrit": [],
+      "status": "review",
+      "xuanzang": "分別"
+    },
+    {
+      "note": "五事之一",
+      "sanskrit": [],
+      "status": "review",
+      "xuanzang": "真如"
+    },
+    {
+      "note": "五事之一",
+      "sanskrit": [],
+      "status": "review",
+      "xuanzang": "正智"
+    },
+    {
+      "note": "建議從 dausthulya/麁性 詞條拆出；sanskrit 待 evidence 確認",
+      "sanskrit": [],
+      "status": "review",
+      "xuanzang": "麁重"
+    },
+    {
+      "note": "本段定義為欲貪；須與動詞用法的「取相」區分",
+      "sanskrit": [],
+      "status": "review",
+      "xuanzang": "取"
+    }
+  ],
+  "rewritten_units": [],
+  "schema_version": "1.0",
+  "sections_total": 7,
+  "verdict": "fail",
+  "warnings": [
+    {
+      "kind": "shared_boundary_lines",
+      "line_ids": [
+        "T30n1579_p0695a23"
+      ]
+    }
+  ],
+  "work": "T1579"
+}

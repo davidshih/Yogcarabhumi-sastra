@@ -93,6 +93,7 @@ STAGE_SPECS = {
     "fix": StageSpec("gpt-5.6-sol", "high", "translation"),
     "repair": StageSpec("gpt-5.6-sol", "high", "translation"),
 }
+OPUS_MODEL = llm.CLAUDE_AUDIT_MODELS[0]  # `audit --model opus` (owner decision 2026-10-22: Opus 5.5 replaces gpt-5.6-sol)
 DUAL_STAGES = ("draft_codex", "draft_glm")
 QUEUES = ("auto", "dual", "mix") + llm.FAKE_MODELS + ("dual-echo",)
 ENQUEUE_MODES = ("auto", "dual") + llm.FAKE_MODELS + ("dual-echo",)
@@ -123,6 +124,8 @@ def stage_model(job: dict, stage: str) -> str:
         return job["model"]  # an offline backend of the legacy audit answers every stage itself
     if job["model"] in llm.FAKE_MODELS or job["model"] == "dual-echo":
         return "echo"
+    if job["model"] == "opus":
+        return OPUS_MODEL  # an audit job only: the review chain and the fixer, at the efforts of STAGE_SPECS
     return STAGE_SPECS[stage].model
 
 
@@ -227,6 +230,33 @@ REVIEW_EVIDENCE_FIELDS = ("source_quote", "translation_quote", "reference_ids")
 REVIEW_FINDING_FIELDS = (
     "clause_id", "severity", "category", "claim", "evidence", "required_change",
 )
+# The categories of a review_terms finding. Owner decision 2026-11-01 (option b): a finding on the reader's text
+# blocks the verdict of an audit; a finding on a term_occurrences binding or on the glossary itself is a warning
+# for the glossary backlog.
+TERM_TEXT_CATEGORIES = ("first_occurrence_format", "plain_wording", "term_rendering")
+TERM_BACKLOG_CATEGORIES = ("term_binding", "glossary_provenance")
+REVIEW_TERMS_CATEGORIES = TERM_TEXT_CATEGORIES + TERM_BACKLOG_CATEGORIES
+# The reviewer reads this in the schema (the prompt embeds it, and `claude -p --json-schema` sends it). It lives here,
+# not in prompts/audited/review_terms.txt: the merge acceptance locks the prompt files byte for byte.
+TERM_CATEGORY_GUIDE = (
+    "要改譯文正文或〔〕內容才能解決的，用前三個：first_occurrence_format（首次出現沒有照「玄奘原詞〔白話解釋〕」格式，"
+    "或〔〕只重複原詞）、plain_wording（〔〕的白話用字偏離 glossary plain，又沒有在 notes 說明理由）、"
+    "term_rendering（術語譯錯、漏譯、混用，或加入原文沒有的術語）。不必改譯文正文或〔〕就能解決的，用後兩個："
+    "term_binding（term_occurrences 的綁定、primary term_id、surface、列舉粒度）、glossary_provenance（glossary "
+    "條目本身的 status、evidence、id 拼法、條目重疊）。同一個問題既要改譯文又要改綁定時，拆成兩個 finding，"
+    "各用自己的 category。"
+)
+
+
+def finding_blocks(finding: dict, stage: str | None = None) -> bool:
+    """Option b of the audit gate: does this finding block the verdict?
+
+    Only a review_terms finding with a backlog category is a warning. Every other finding blocks: review_doctrine,
+    the glossary check, and a category that is not one of the five (a model that ignored the schema).
+    `stage` names the review of a raw answer, which has no review_stage field.
+    """
+    stage = stage or finding.get("review_stage")
+    return not (stage == "review_terms" and finding.get("category") in TERM_BACKLOG_CATEGORIES)
 
 
 def normalized_reference_ids(values: set[str]) -> set[str]:
@@ -280,7 +310,8 @@ def review_schema(stage: str | None = None, unit_id_value: str | None = None,
     finding_properties = {
         "clause_id": bound_string(clause_id_value),
         "severity": {"enum": ["crit", "high", "med", "low"]},
-        "category": nonblank_string(),
+        "category": ({"enum": list(REVIEW_TERMS_CATEGORIES), "description": TERM_CATEGORY_GUIDE}
+                     if stage == "review_terms" else nonblank_string()),
         "claim": nonblank_string(),
         "evidence": {
             "type": "object",
@@ -1468,13 +1499,16 @@ def review_is_reusable(attestation: object, events: dict[str, dict], *, stage: s
 
 def review_pass(job: dict, juan: int, md_path: Path, pass_name: str,
                 prog: dict, round_number: int, *, only_units: set[str] | None = None,
-                reuse_attestations: bool = False, apply_proposed_terms: bool = True) -> list[dict]:
+                reuse_attestations: bool = False, apply_proposed_terms: bool = True,
+                blocks=None) -> list[dict]:
     """Run one review pass over the sections of a translation and return its findings.
 
     only_units: review these units only; the attestations of every other unit stay as they are.
     reuse_attestations: skip a unit whose passing review answered the prompt that would be sent now.
     apply_proposed_terms: when false, a proposed term is kept in prog["proposed_terms"] and the glossary
     file is not changed.
+    blocks: the gate of an audit (finding_blocks). A review whose findings are all warnings passes: it gets an
+    attestation, and its warnings replace the unit's entry in prog["glossary_backlog"]. None: any finding fails.
     """
     entries = bth.parse_entries(md_path.read_text(encoding="utf-8"))
     selected = [idx for idx in range(len(entries))
@@ -1506,7 +1540,7 @@ def review_pass(job: dict, juan: int, md_path: Path, pass_name: str,
                 "translation_ratio": round(ratio, 4),
                 "warning": "translation_ratio_below_one_third",
                 "routing": {
-                    "stage": "review_doctrine", "model": "gpt-5.6-sol", "effort": "xhigh",
+                    "stage": "review_doctrine", "model": stage_model(job, "review_doctrine"), "effort": "xhigh",
                 },
             }
         raw_evidence = job.get("review_evidence", {}).get(current_unit, [])
@@ -1602,7 +1636,21 @@ def review_pass(job: dict, juan: int, md_path: Path, pass_name: str,
             "round": round_number, "stage": pass_name, "unit_id": current_unit,
             "verdict": payload["verdict"], "finding_count": len(section_findings),
         })
-        if payload["verdict"] == "pass":
+        passed = payload["verdict"] == "pass"
+        term_warnings = []
+        if blocks is not None:
+            term_warnings = [{**finding, "unit_id": current_unit, "review_stage": pass_name, "section_index": idx}
+                             for finding in section_findings if not blocks(finding, pass_name)]
+            passed = passed or (payload["verdict"] == "changes_required"
+                                and len(term_warnings) == len(section_findings))
+            backlog = prog.setdefault("glossary_backlog", {})
+            unit_backlog = backlog.setdefault(current_unit, {})
+            unit_backlog.pop(pass_name, None)
+            if term_warnings:
+                unit_backlog[pass_name] = term_warnings
+            if not unit_backlog:
+                backlog.pop(current_unit)
+        if passed:
             prog.setdefault("review_attestations", {}).setdefault(current_unit, {})[pass_name] = {
                 "stage": pass_name,
                 "verdict": "pass",
@@ -1614,6 +1662,7 @@ def review_pass(job: dict, juan: int, md_path: Path, pass_name: str,
                 "structured_contract_sha256": item["structured_contract_sha256"],
                 "source_quote": item["source"],
                 "translation_quote": item["translation"],
+                **({"warnings": len(term_warnings)} if term_warnings else {}),
             }
         if pass_name == "review_terms" and payload.get("proposed_terms"):
             if apply_proposed_terms:
@@ -1701,7 +1750,10 @@ def run_review_chain(job: dict, juan: int, md_path: Path, prog: dict) -> None:
 
 
 def write_coverage_ledger(job: dict, juan: int, md_path: Path, data_path: Path,
-                          start: str, end: str, *, exact_once: bool = True) -> Path:
+                          start: str, end: str, *, exact_once: bool = True,
+                          allow_warnings: bool = False) -> Path:
+    """allow_warnings: the gate of an audit (option b). A review answer whose findings are all warnings by
+    finding_blocks covers its clause like a passing one. The check reads the stored answer, not the job file."""
     prog = job["progress"].setdefault(str(juan), {})
     translation_text = md_path.read_text(encoding="utf-8")
     entries = bth.parse_entries(translation_text)
@@ -1745,12 +1797,19 @@ def write_coverage_ledger(job: dict, juan: int, md_path: Path, data_path: Path,
                 response = json.loads(audit.read_artifact(ROOT, response_ref).decode("utf-8"))
             except (AttributeError, KeyError, OSError, ValueError, TypeError):
                 response = {}
+            answered = response.get("findings")
+            warnings_only = (
+                allow_warnings
+                and response.get("verdict") == "changes_required"
+                and isinstance(answered, list) and bool(answered)
+                and all(isinstance(finding, dict) and not finding_blocks(finding, review_stage)
+                        for finding in answered)
+            )
             response_valid = (
                 response.get("stage") == review_stage
                 and response.get("unit_id") == current_unit
                 and response.get("source_hash") == source_hash(entry.source)
-                and response.get("verdict") == "pass"
-                and response.get("findings") == []
+                and ((response.get("verdict") == "pass" and answered == []) or warnings_only)
             )
             valid_attestation = (
                 attestation.get("verdict") == "pass"
@@ -1787,6 +1846,7 @@ def write_coverage_ledger(job: dict, juan: int, md_path: Path, data_path: Path,
                 "review_event_id": attestation["review_event_id"],
                 "source_quote": attestation["source_quote"],
                 "translation_quote": attestation["translation_quote"],
+                **({"warnings": len(answered)} if warnings_only else {}),
             })
         valid = contract_valid and len(review_evidence) == 2
         clauses.append({
@@ -2293,7 +2353,12 @@ def cmd_enqueue(args) -> None:
 # ---------- legacy audit: review a published translation without translating it again ----------
 
 AUDIT_JOB_ID_RE = re.compile(r"^[0-9]{8}-[0-9]{6}-audit-[0-9a-f]{4}$")
-AUDIT_JOB_MODELS = ("auto", "echo") + llm.AUDIT_FAKE_MODELS
+AUDIT_JOB_MODELS = ("auto", "opus", "echo") + llm.AUDIT_FAKE_MODELS
+DEFAULT_FIX_ROUNDS = 1  # a job written before --fix-rounds existed has this many
+
+
+def job_fix_rounds(job: dict) -> int:
+    return job.get("fix_rounds", DEFAULT_FIX_ROUNDS)
 # No review_parallel: the command has no channel for parallel-source evidence.
 AUDIT_REVIEW_PASSES = ("review_terms", "review_doctrine")
 TERM_CHECK_STAGE = "term_check"
@@ -2418,6 +2483,13 @@ def write_audit_report(job: dict, juan: int, prog: dict, blocking: list[str]) ->
         "rewritten_units": prog.get("rewritten_units", []) if passed else [],
         "warnings": prog.get("audit_warnings", []),
         "blocking": blocking,
+        # Option b: the review_terms warnings of the last review of each unit, for the glossary maintainers.
+        "glossary_backlog": [
+            {key: value for key, value in finding.items() if key != "section_index"}
+            for unit in sorted(prog.get("glossary_backlog", {}))
+            for stage in AUDIT_REVIEW_PASSES
+            for finding in prog["glossary_backlog"][unit].get(stage, [])
+        ],
         "findings": prog.get("findings", {"round1": 0, "remaining": 0}),
         "proposed_terms": prog.get("proposed_terms", []),
         "attestation": prog.get("volume_attestation", {}).get("path") if install == "sealed" else None,
@@ -2528,14 +2600,17 @@ def term_check_findings(job: dict, juan: int, md_path: Path) -> list[dict]:
 
 def audit_findings(job: dict, juan: int, prog: dict, candidate: Path, round_number: int,
                    only_units: set[str] | None = None) -> list[dict]:
-    """The two evidence reviews and the mechanical glossary check of one round."""
+    """The blocking findings of the two evidence reviews and the mechanical glossary check of one round.
+
+    The warnings (option b) stay in prog["glossary_backlog"]: they are not fixed and do not block.
+    """
     findings: list[dict] = []
     for pass_name in AUDIT_REVIEW_PASSES:
         findings += review_pass(
             job, juan, candidate, pass_name, prog, round_number, only_units=only_units,
-            reuse_attestations=only_units is None, apply_proposed_terms=False,
+            reuse_attestations=only_units is None, apply_proposed_terms=False, blocks=finding_blocks,
         )
-    return findings + term_check_findings(job, juan, candidate)
+    return [finding for finding in findings if finding_blocks(finding)] + term_check_findings(job, juan, candidate)
 
 
 def blocking_line(finding: dict) -> str:
@@ -2546,7 +2621,7 @@ def blocking_line(finding: dict) -> str:
 
 def review_audit_candidate(job: dict, juan: int, prog: dict, candidate: Path, data_path: Path,
                            start: str, end: str) -> None:
-    """K5 steps 5 to 8: review, one fix round, and the gate. Returns only when the candidate passed."""
+    """K5 steps 5 to 8: review, the fix rounds of the job, and the gate. Returns only when the candidate passed."""
     # Step 8 is gate_audit_candidate, below.
     entries = bth.parse_entries(candidate.read_text(encoding="utf-8"))
     contracts = prog.setdefault("clause_contracts", {})
@@ -2566,12 +2641,15 @@ def review_audit_candidate(job: dict, juan: int, prog: dict, candidate: Path, da
     save_job(job)
 
     first = audit_findings(job, juan, prog, candidate, 1)
-    remaining: list[dict] = []
-    if first:
-        fix_findings(job, juan, candidate, first, prog)
-        # One fix round. Only the rewritten units are reviewed again; the glossary check reads the whole file.
-        remaining = audit_findings(job, juan, prog, candidate, 2,
-                                   only_units={finding["unit_id"] for finding in first})
+    remaining = first
+    for fix_round in range(1, job_fix_rounds(job) + 1):
+        if not remaining:
+            break
+        fix_findings(job, juan, candidate, remaining, prog)
+        # Each fix round takes what the last review left. Only the rewritten units are reviewed again;
+        # the glossary check reads the whole file.
+        remaining = audit_findings(job, juan, prog, candidate, fix_round + 1,
+                                   only_units={finding["unit_id"] for finding in remaining})
     if remaining:
         prog["findings"] = {"round1": len(first), "remaining": len(remaining)}
         prog["review_verdict"] = "fail"
@@ -2590,7 +2668,7 @@ def gate_audit_candidate(job: dict, juan: int, prog: dict, candidate: Path, data
     reuse rule asks again each unit whose prompt, built from the pinned inputs, is not the one that was
     answered. Nothing changed: no model is called.
     """
-    remaining = audit_findings(job, juan, prog, candidate, 3)
+    remaining = audit_findings(job, juan, prog, candidate, job_fix_rounds(job) + 2)  # after the last fix review
     # Nothing new in round 1: the findings that an earlier attempt fixed stay in the count.
     prog["findings"] = {"round1": round1 or prog.get("findings", {}).get("round1", 0),
                         "remaining": len(remaining)}
@@ -2616,7 +2694,7 @@ def gate_audit_candidate(job: dict, juan: int, prog: dict, candidate: Path, data
         save_job(job)
         raise AuditBlocked(lost)
 
-    write_coverage_ledger(job, juan, candidate, data_path, start, end, exact_once=False)
+    write_coverage_ledger(job, juan, candidate, data_path, start, end, exact_once=False, allow_warnings=True)
     issues = run_checks(job, juan, candidate, data_path, start, end, exact_once=False)
     record_quality_gate(job, juan, candidate, issues, audit_kind="legacy_review")
     if issues:
@@ -2996,6 +3074,9 @@ def audit_job_problem(job: object, job_id: str) -> str | None:
         return f"juans outside 1-{total}: {outside}"
     if job.get("model") not in AUDIT_JOB_MODELS:
         return f"model {job.get('model')!r} is not one of {', '.join(AUDIT_JOB_MODELS)}"
+    fix_rounds = job_fix_rounds(job)
+    if type(fix_rounds) is not int or fix_rounds < 1:
+        return f"fix_rounds must be a positive integer: {fix_rounds!r}"
     for field in ("progress", "volumes"):
         value = job.get(field, {})
         if not isinstance(value, dict) or any(not isinstance(item, dict) for item in value.values()):
@@ -3005,14 +3086,14 @@ def audit_job_problem(job: object, job_id: str) -> str | None:
     return None
 
 
-def new_audit_job(work: str, juans_spec: str, model: str) -> dict:
+def new_audit_job(work: str, juans_spec: str, model: str, fix_rounds: int = DEFAULT_FIX_ROUNDS) -> dict:
     try:
         juans = parse_juans(juans_spec)
     except ValueError:
         raise SystemExit(f"invalid --juans: {juans_spec}")
     job = {
         "id": f"{datetime.now():%Y%m%d-%H%M%S}-audit-{uuid.uuid4().hex[:4]}",
-        "kind": AUDIT_JOB_KIND, "work": work, "juans": juans, "model": model,
+        "kind": AUDIT_JOB_KIND, "work": work, "juans": juans, "model": model, "fix_rounds": fix_rounds,
         "state": "queued", "created": now_iso(), "updated": now_iso(),
         "pid": None, "resume_at": None, "error": None,
         "progress": {},
@@ -3054,8 +3135,12 @@ def cmd_audit(args) -> int:
             job = load_audit_job(args.resume)
             if args.model is not None and args.model != job["model"]:
                 raise SystemExit(f"job {job['id']} runs with --model {job['model']}; a resume cannot change it")
+            if args.fix_rounds is not None and args.fix_rounds != job_fix_rounds(job):
+                raise SystemExit(f"job {job['id']} runs with {job_fix_rounds(job)} fix rounds; "
+                                 "a resume cannot change it")
         else:
-            job = new_audit_job(args.work, args.juans, args.model or "auto")
+            job = new_audit_job(args.work, args.juans, args.model or "auto",
+                                DEFAULT_FIX_ROUNDS if args.fix_rounds is None else args.fix_rounds)
             JOBS_DIR.mkdir(parents=True, exist_ok=True)
         unchanged = json.dumps(job, ensure_ascii=False, sort_keys=True)
         print(f"audit job {job['id']}: {job['work']} juans {sorted(job['juans'])} via {job['model']}", flush=True)
@@ -3107,7 +3192,11 @@ def main() -> int:
     target.add_argument("--resume", metavar="JOB_ID", help="continue the audit job with this id")
     aud.add_argument("--work", default=SUPPORTED_WORK, help="only T1579 is supported")
     aud.add_argument("--model", choices=AUDIT_JOB_MODELS,
-                     help="auto (default) uses the pinned models; the echo backends run offline for free")
+                     help="auto (default) uses the pinned models; opus sends every review and the fixer to "
+                          "Claude Opus 5.5 at the same efforts; the echo backends run offline for free")
+    aud.add_argument("--fix-rounds", type=int, metavar="N",
+                     help="fix rounds per juan before the verdict (default 1); each round fixes and reviews again "
+                          "only the units that the last review named")
     args = parser.parse_args()
     if args.cmd == "enqueue":
         cmd_enqueue(args)

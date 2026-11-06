@@ -1,5 +1,13 @@
 # HANDOFF — yogacara (佛典白話翻譯)
 
+> This repository is archived; the project lives in `sources/treatises/` of davidshih/dharma-site (monorepo M3,
+> 2026-10-15; archived by monorepo M7 C2, 2026-11-05). Work there by pull request (`gh -R davidshih/dharma-site`,
+> base `main`); its snapshot is dharma-site's `HANDOFF.md`, its open items `docs/status.json`, and the rules of
+> the tree are dharma-site's `docs/decisions/0001-source-trees-in-this-repo-claude.md`.
+> T1579 juan 72 stays as published, without a seal, with its 22 open findings and N1 (owner, 2026-11-05).
+> To run the audit of this repository again, unarchive it first:
+> `gh repo unarchive davidshih/Yogcarabhumi-sastra --yes`.
+
 ## Juan 72 published without a seal (2026-11-04)
 
 Updated 2026-11-04 by claude-code (claude-opus-5-5). Branch `claude/audit-t1579-067-072`.
